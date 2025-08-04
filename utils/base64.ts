@@ -1,9 +1,6 @@
 export function base64Encode(str: string): string {
   const uint8 = new TextEncoder().encode(str);
-  let binary = "";
-  uint8.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
+  const binary = Array.from(uint8, byte => String.fromCharCode(byte)).join('');
   return btoa(binary);
 }
 
