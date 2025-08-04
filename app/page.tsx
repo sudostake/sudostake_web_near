@@ -28,9 +28,9 @@ async function getVaultState(): Promise<RpcResult<unknown>> {
       finality: "optimistic",
     });
     if (!isCodeResult(res)) {
-    throw new Error(
-      "RPC response does not contain expected CodeResult structure with result and logs arrays"
-    );
+      throw new Error(
+        "RPC response does not contain expected CodeResult structure with result and logs arrays"
+      );
     }
     const raw = res.result;
     const bytes = new Uint8Array(raw);
