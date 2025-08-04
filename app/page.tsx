@@ -1,5 +1,6 @@
 import { providers } from "near-api-js";
 import { base64Encode } from "@/utils/base64";
+import type { CodeResult } from "@near-js/types";
 
 async function getVaultState() {
   const provider = new providers.JsonRpcProvider({ url: "https://rpc.testnet.near.org" });
@@ -11,7 +12,7 @@ async function getVaultState() {
       args_base64: base64Encode(JSON.stringify({})),
       finality: "optimistic",
     });
-    const raw = (res as unknown as { result: number[] | Uint8Array }).result;
+    const raw = (res as CodeResult).result;
     const bytes = new Uint8Array(raw);
     const decoded = new TextDecoder().decode(bytes);
     return JSON.parse(decoded);
