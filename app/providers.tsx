@@ -5,16 +5,20 @@ import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
 import { WalletSelectorProvider } from "@near-wallet-selector/react-hook";
+import type { WalletSelectorParams, WalletModuleFactory } from "@near-wallet-selector/core";
 
-const walletSelectorConfig = {
+// WalletModuleFactory is invariant in its generic; we assert here to satisfy WalletSelectorParams
+const modules = [
+  setupBitteWallet(),
+  setupMeteorWallet(),
+  setupLedger(),
+  setupNightly(),
+] as unknown as WalletModuleFactory[];
+
+const walletSelectorConfig: WalletSelectorParams = {
   network: "testnet", // "mainnet"
   // Optional: createAccessKeyFor: "hello.near-examples.testnet",
-  modules: [
-    setupBitteWallet(),
-    setupMeteorWallet(),
-    setupLedger(),
-    setupNightly(),
-  ],
+  modules,
 };
 
 export default function Providers({
