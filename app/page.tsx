@@ -9,8 +9,10 @@ function isCodeResult(res: unknown): res is CodeResult {
   return (
     typeof res === "object" &&
     res !== null &&
-    Array.isArray((res as any).result) &&
-    Array.isArray((res as any).logs)
+    "result" in res &&
+    Array.isArray((res as CodeResult).result) &&
+    "logs" in res &&
+    Array.isArray((res as CodeResult).logs)
   );
 }
 
