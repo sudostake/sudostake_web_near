@@ -19,7 +19,10 @@ export function Navigation() {
       });
       setLabel(`Logout ${signedAccountId}`);
     } else {
-      setAction(() => signIn);
+      // wrap signIn in a no-arg callback for consistency
+      setAction(() => () => {
+        signIn();
+      });
       setLabel("Login");
     }
   }, [signedAccountId, signIn, signOut]);
