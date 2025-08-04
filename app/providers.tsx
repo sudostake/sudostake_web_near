@@ -8,14 +8,14 @@ import { setupNightly } from "@near-wallet-selector/nightly";
 import { WalletSelectorProvider } from "@near-wallet-selector/react-hook";
 
 const walletSelectorConfig = {
-  network: "testnet" as WalletSelectorParams["network"], // "mainnet"
+  network: "testnet", // "mainnet"
   // Optional: createAccessKeyFor: "hello.near-examples.testnet",
   modules: [
     setupBitteWallet(),
     setupMeteorWallet(),
     setupLedger(),
     setupNightly(),
-  ] as WalletSelectorParams["modules"],
+  ],
 };
 
 export default function Providers({
