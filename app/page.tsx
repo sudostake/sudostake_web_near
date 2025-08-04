@@ -2,6 +2,18 @@ import { providers } from "near-api-js";
 import { base64Encode } from "@/utils/base64";
 import type { CodeResult } from "@near-js/types";
 
+/**
+ * Type guard for NEAR RPC call_function response (CodeResult).
+ */
+function isCodeResult(res: unknown): res is CodeResult {
+  return (
+    typeof res === "object" &&
+    res !== null &&
+    Array.isArray((res as any).result) &&
+    Array.isArray((res as any).logs)
+  );
+}
+
 // Standard RPC response wrapper: data on success, error message on failure
 type RpcResult<T> = { data: T | null; error: string | null };
 
@@ -15,7 +27,10 @@ async function getVaultState(): Promise<RpcResult<unknown>> {
       args_base64: base64Encode(JSON.stringify({})),
       finality: "optimistic",
     });
-    const raw = (res as CodeResult).result;
+    if (!isCodeResult(res)) {
+      throw new Error("Unexpected RPC response format: missing code result");
+    }
+    const raw = res.result;
     const bytes = new Uint8Array(raw);
     const decoded = new TextDecoder().decode(bytes);
     const result = JSON.parse(decoded);

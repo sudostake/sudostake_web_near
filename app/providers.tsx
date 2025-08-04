@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import type { WalletSelectorParams } from "@near-wallet-selector/core";
 import { setupBitteWallet } from "@near-wallet-selector/bitte-wallet";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
