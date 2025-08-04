@@ -8,18 +8,28 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
  * Navigation bar with Login/Logout button.
  */
 export function Navigation() {
+  /**
+   * Auth button state:
+   * - action: click handler (no-op until auth state resolved)
+   * - label: button text reflecting current auth state
+   *
+   * When signedAccountId, signIn, or signOut change, update both action and label:
+   *  • signedAccountId present → action calls signOut, label shows "Logout <accountId>"
+   *  • otherwise → action calls signIn, label shows "Login"
+   */
   const [action, setAction] = useState<() => void>(() => () => {});
   const [label, setLabel] = useState<string>("Loading...");
   const { signedAccountId, signIn, signOut } = useWalletSelector();
 
   useEffect(() => {
     if (signedAccountId) {
+      // user is signed in: clicking will sign out
       setAction(() => () => {
         signOut().catch((err) => console.error(err));
       });
       setLabel(`Logout ${signedAccountId}`);
     } else {
-      // wrap signIn in a no-arg callback for consistency
+      // user is not signed in: clicking will initiate sign-in flow
       setAction(() => () => {
         signIn();
       });
