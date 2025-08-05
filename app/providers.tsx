@@ -20,6 +20,8 @@ const modules = [
 
 const walletSelectorConfig: WalletSelectorParams = {
   network: "testnet", // "mainnet"
+  // Route through our proxy to avoid CORS on testnet RPC
+  fallbackRpcUrls: ["/api/rpc"],
   // Optional: createAccessKeyFor: "hello.near-examples.testnet",
   modules,
 };
