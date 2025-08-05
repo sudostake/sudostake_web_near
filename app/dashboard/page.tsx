@@ -1,27 +1,82 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { AccountSummary } from "../components/AccountSummary";
+import Big from "big.js";
+import { providers, utils } from "near-api-js";
 
 export default function Dashboard() {
-  const { signedAccountId } = useWalletSelector();
+  const { signedAccountId, viewFunction } = useWalletSelector();
   const router = useRouter();
 
-  // If user signs out (no account), redirect to no-auth home
+  const [nearBalance, setNearBalance] = useState<string>("—");
+  const [usdcBalance, setUsdcBalance] = useState<string>("—");
+
+  // If user signs out (no account), redirect to landing
   useEffect(() => {
     if (!signedAccountId) {
       router.replace("/");
     }
   }, [signedAccountId, router]);
 
+  // Fetch balances when signed in
+  useEffect(() => {
+    if (!signedAccountId) return;
+    const rpc = new providers.JsonRpcProvider({ url: "/api/rpc" });
+    rpc
+      .query({
+        request_type: "view_account",
+        account_id: signedAccountId,
+        finality: "final",
+      })
+      .then((acct) =>
+        setNearBalance(
+          utils.format.formatNearAmount(
+            (acct as unknown as { amount: string }).amount
+          )
+        )
+      )
+      .catch((err) => {
+        console.warn("NEAR balance fetch failed:", err);
+        setNearBalance("—");
+      });
+  }, [signedAccountId]);
+
+  useEffect(() => {
+    if (!signedAccountId) return;
+    const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
+    viewFunction({
+      contractId: USDC_CONTRACT,
+      method: "ft_balance_of",
+      args: { account_id: signedAccountId },
+    })
+      .then((raw) => {
+        const tokenRaw = raw as string;
+        const decimals = 6;
+        const human = new Big(tokenRaw)
+          .div(10 ** decimals)
+          .toFixed(decimals);
+        setUsdcBalance(human);
+      })
+      .catch((err) => {
+        console.warn("USDC balance fetch failed:", err);
+        setUsdcBalance("—");
+      });
+  }, [signedAccountId, viewFunction]);
+
   if (!signedAccountId) {
     return null;
   }
 
+  // Account summary component
+  const summary = <AccountSummary near={nearBalance} usdc={usdcBalance} />;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="w-full max-w-2xl">
+    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      {summary}
+      <main className="w-full max-w-2xl mx-auto mt-8">
         <h1 className="text-2xl font-bold text-center">Dashboard</h1>
         <p className="mt-4 text-center text-gray-700">
           Welcome, {signedAccountId}!
