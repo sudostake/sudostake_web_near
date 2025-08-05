@@ -8,6 +8,9 @@ import Big from "big.js";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
 
+// NEP-141 USDC token contract on testnet
+const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
+
 export default function Dashboard() {
   const { signedAccountId, viewFunction } = useWalletSelector();
   const router = useRouter();
@@ -49,7 +52,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!signedAccountId) return;
-    const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
     viewFunction({
       contractId: USDC_CONTRACT,
       method: "ft_balance_of",
