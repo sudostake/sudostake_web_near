@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
  */
 export async function POST(request: Request) {
   const rpcRequest = await request.json();
-  const rpcResponse = await fetch("https://rpc.testnet.near.org", {
+  const rpcResponse = await fetch("https://rpc.testnet.fastnear.com", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(rpcRequest),
