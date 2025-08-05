@@ -41,6 +41,7 @@ export default function Dashboard() {
         finality: "final",
       })
     .then((value) => {
+        // We assert AccountView here; consider adding a type guard to verify the response shape
         const acct = value as AccountView;
         setNearBalance(utils.format.formatNearAmount(acct.amount));
       })
@@ -58,7 +59,16 @@ export default function Dashboard() {
       args: { account_id: signedAccountId },
     })
       .then((raw) => {
-        const tokenRaw = raw as string;
+        // Ensure the viewFunction returns a string for ft_balance_of
+        if (typeof raw !== "string") {
+          console.warn(
+            `USDC balance expected string but got ${typeof raw}`,
+            raw
+          );
+          setUsdcBalance("—");
+          return;
+        }
+        const tokenRaw = raw;
         const decimals = 6;
         const human = new Big(tokenRaw)
           .div(10 ** decimals)
