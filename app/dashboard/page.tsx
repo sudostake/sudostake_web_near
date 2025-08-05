@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
@@ -22,10 +22,15 @@ export default function Dashboard() {
     }
   }, [signedAccountId, router]);
 
+  // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
+  const rpc = useMemo(
+    () => new providers.JsonRpcProvider({ url: "/api/rpc" }),
+    []
+  );
+
   // Fetch balances when signed in
   useEffect(() => {
     if (!signedAccountId) return;
-    const rpc = new providers.JsonRpcProvider({ url: "/api/rpc" });
     rpc
       .query({
         request_type: "view_account",
@@ -40,7 +45,7 @@ export default function Dashboard() {
         console.warn("NEAR balance fetch failed:", err);
         setNearBalance("—");
       });
-  }, [signedAccountId]);
+  }, [signedAccountId, rpc]);
 
   useEffect(() => {
     if (!signedAccountId) return;
