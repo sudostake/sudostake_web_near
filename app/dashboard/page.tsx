@@ -95,7 +95,7 @@ export default function Dashboard() {
       {summary}
       <main className="w-full max-w-2xl mx-auto mt-8">
         <h1 className="text-2xl font-bold text-center">Dashboard</h1>
-        <p className="mt-4 text-center text-gray-700">
+        <p className="mt-4 text-center text-secondary-text">
           Welcome, {signedAccountId}!
         </p>
       </main>

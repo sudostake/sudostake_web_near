@@ -38,12 +38,12 @@ export function Navigation() {
   }, [signedAccountId, signIn, signOut]);
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-gray-50">
+    <nav className="flex items-center justify-between p-4 bg-surface">
       <Link href="/" className="text-xl font-bold">
         SudoStake
       </Link>
       <button
-        className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+        className="px-4 py-2 bg-primary text-primary-text rounded disabled:opacity-50"
         onClick={action}
         disabled={label === "Loading..."}
       >
