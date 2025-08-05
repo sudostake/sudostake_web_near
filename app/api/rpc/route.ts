@@ -10,6 +10,18 @@ export async function POST(request: Request) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(rpcRequest),
   });
+  if (!rpcResponse.ok) {
+    let errorBody: unknown;
+    try {
+      errorBody = await rpcResponse.json();
+    } catch {
+      errorBody = { error: await rpcResponse.text() };
+    }
+    return NextResponse.json(
+      { error: "Upstream RPC error", details: errorBody },
+      { status: 502 }
+    );
+  }
   const data = await rpcResponse.json();
   return NextResponse.json(data);
 }
