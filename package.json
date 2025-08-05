@@ -17,6 +17,7 @@
     "@near-wallet-selector/my-near-wallet": "^9.2.0",
     "@near-wallet-selector/nightly": "^9.2.0",
     "@near-wallet-selector/react-hook": "^9.2.0",
+    "big.js": "^7.0.1",
     "near-api-js": "^5.0.0",
     "next": "15.4.4",
     "react": "^19.0.0",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/big.js": "^6.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
