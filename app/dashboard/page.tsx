@@ -10,6 +10,8 @@ import type { AccountView } from "near-api-js/lib/providers/provider";
 
 // NEP-141 USDC token contract on testnet
 const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
+// Number of decimals for USDC token (6 places)
+const USDC_DECIMALS = 6;
 
 export default function Dashboard() {
   const { signedAccountId, viewFunction } = useWalletSelector();
@@ -69,7 +71,7 @@ export default function Dashboard() {
           return;
         }
         const tokenRaw = raw;
-        const decimals = 6;
+        const decimals = USDC_DECIMALS;
         const human = new Big(tokenRaw)
           .div(10 ** decimals)
           .toFixed(decimals);
