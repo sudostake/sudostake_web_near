@@ -6,6 +6,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
+import type { AccountView } from "near-api-js/lib/providers/provider";
 
 export default function Dashboard() {
   const { signedAccountId, viewFunction } = useWalletSelector();
@@ -31,13 +32,10 @@ export default function Dashboard() {
         account_id: signedAccountId,
         finality: "final",
       })
-      .then((acct) =>
-        setNearBalance(
-          utils.format.formatNearAmount(
-            (acct as unknown as { amount: string }).amount
-          )
-        )
-      )
+    .then((value) => {
+        const acct = value as AccountView;
+        setNearBalance(utils.format.formatNearAmount(acct.amount));
+      })
       .catch((err) => {
         console.warn("NEAR balance fetch failed:", err);
         setNearBalance("—");
