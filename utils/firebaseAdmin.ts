@@ -9,9 +9,13 @@ if (!admin.apps.length) {
   try {
     serviceAccount = JSON.parse(serviceAccountJson);
   } catch (err: unknown) {
-    throw new Error(
-      `FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: ${(err as Error).message}`
-    );
+    if (err instanceof SyntaxError) {
+      throw new Error(
+        `FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: ${err.message}`
+      );
+    } else {
+      throw err;
+    }
   }
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
