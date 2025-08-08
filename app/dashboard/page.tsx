@@ -4,9 +4,14 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
+import { UserVaults } from "../components/vaults/UserVaults";
+
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
+
+// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
+const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
 
 // NEP-141 USDC token contract on testnet
 const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
@@ -98,6 +103,13 @@ export default function Dashboard() {
         <p className="mt-4 text-center text-secondary-text">
           Welcome, {signedAccountId}!
         </p>
+        {/* Vault listing for the connected user under the chosen factory */}
+        <div className="mt-6">
+          <UserVaults
+            owner={signedAccountId}
+            factoryId={FACTORY_ID}
+          />
+        </div>
       </main>
     </div>
   );
