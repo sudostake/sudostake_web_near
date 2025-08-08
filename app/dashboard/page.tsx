@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
 import { UserVaults } from "../components/vaults/UserVaults";
+
+// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
+const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
@@ -103,7 +106,7 @@ export default function Dashboard() {
         <div className="mt-6">
           <UserVaults
             owner={signedAccountId}
-            factoryId="nzaza.testnet"
+            factoryId={FACTORY_ID}
           />
         </div>
       </main>
