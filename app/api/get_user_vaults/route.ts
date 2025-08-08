@@ -1,11 +1,27 @@
 import { NextResponse, type NextRequest } from "next/server";
 import admin from "../../../utils/firebaseAdmin";
 
-// Maps allowed vault suffixes to their RPC URLs
-const FACTORY_CONTRACT_WHITELIST: Record<string, string> = {
+// Default whitelist mapping allowed vault suffixes to their RPC URLs
+const DEFAULT_FACTORY_CONTRACT_WHITELIST: Record<string, string> = {
   "nzaza.testnet": "https://rpc.testnet.fastnear.com",
   "sudostake.near": "https://rpc.mainnet.fastnear.com",
 };
+
+// Allow override via FACTORY_CONTRACT_WHITELIST environment variable (JSON)
+let FACTORY_CONTRACT_WHITELIST: Record<string, string> =
+  DEFAULT_FACTORY_CONTRACT_WHITELIST;
+if (process.env.FACTORY_CONTRACT_WHITELIST) {
+  try {
+    FACTORY_CONTRACT_WHITELIST = JSON.parse(
+      process.env.FACTORY_CONTRACT_WHITELIST
+    );
+  } catch (err) {
+    console.warn(
+      "Invalid FACTORY_CONTRACT_WHITELIST env var, using default:",
+      err
+    );
+  }
+}
 
 /**
  * GET /api/get_user_vaults?owner=<owner>&factory_id=<factoryId>
