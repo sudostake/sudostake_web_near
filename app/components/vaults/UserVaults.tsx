@@ -28,8 +28,8 @@ export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) 
       const data = await res.json();
       if (!res.ok) {
         const apiError =
-          typeof data.error === "string" && data.error.trim()
-            ? data.error
+          data.error
+            ? String(data.error)
             : `Failed to fetch vaults: ${res.status} ${res.statusText}`;
         throw new Error(apiError);
       }
