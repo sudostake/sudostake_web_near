@@ -8,9 +8,9 @@ if (!admin.apps.length) {
   let serviceAccount: any;
   try {
     serviceAccount = JSON.parse(serviceAccountJson);
-  } catch {
+  } catch (err: unknown) {
     throw new Error(
-      'Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. Please check that it is valid JSON.'
+      `FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: ${(err as Error).message}`
     );
   }
   admin.initializeApp({
