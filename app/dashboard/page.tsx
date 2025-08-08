@@ -6,11 +6,12 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
 import { UserVaults } from "../components/vaults/UserVaults";
 
-// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
-const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
+
+// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
+const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
 
 // NEP-141 USDC token contract on testnet
 const USDC_CONTRACT = "usdc.tkn.primitives.testnet";

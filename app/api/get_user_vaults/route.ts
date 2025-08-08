@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching user vaults:", error);
     return NextResponse.json(
-      { error: "Internal error" },
+      { error: "Failed to fetch user vaults from database" },
       { status: 500 }
     );
   }
