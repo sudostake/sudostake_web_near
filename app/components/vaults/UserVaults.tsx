@@ -26,7 +26,13 @@ export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) 
         )}`
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || res.statusText);
+      if (!res.ok) {
+        const apiError =
+          typeof data.error === "string" && data.error.trim()
+            ? data.error
+            : `Failed to fetch vaults: ${res.status} ${res.statusText}`;
+        throw new Error(apiError);
+      }
       setVaultIds(data);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
