@@ -1,11 +1,11 @@
-import admin from 'firebase-admin';
+import admin, { ServiceAccount } from 'firebase-admin';
 
 if (!admin.apps.length) {
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
   if (!serviceAccountJson) {
     throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set');
   }
-  let serviceAccount: any;
+  let serviceAccount: ServiceAccount;
   try {
     serviceAccount = JSON.parse(serviceAccountJson);
   } catch (err: unknown) {
