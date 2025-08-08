@@ -28,8 +28,8 @@ export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || res.statusText);
       setVaultIds(data);
-    } catch (err: any) {
-      setError(err.message || "Unknown error");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
     }
   }, [owner, factoryId]);
 
