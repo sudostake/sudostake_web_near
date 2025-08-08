@@ -43,10 +43,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching user vaults:", error);
     return NextResponse.json(
-      {
-        error: "Internal error",
-        details: error instanceof Error ? error.message : String(error),
-      },
+      { error: "Internal error" },
       { status: 500 }
     );
   }
