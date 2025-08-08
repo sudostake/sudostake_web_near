@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
+import { UserVaults } from "../components/vaults/UserVaults";
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
@@ -98,6 +99,13 @@ export default function Dashboard() {
         <p className="mt-4 text-center text-secondary-text">
           Welcome, {signedAccountId}!
         </p>
+        {/* Vault listing for the connected user under the chosen factory */}
+        <div className="mt-6">
+          <UserVaults
+            owner={signedAccountId}
+            factoryId="nzaza.testnet"
+          />
+        </div>
       </main>
     </div>
   );
