@@ -11,7 +11,8 @@ if (!admin.apps.length) {
   } catch (err: unknown) {
     if (err instanceof SyntaxError) {
       throw new Error(
-        `FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: ${err.message}`
+        `FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: ${err.message}. ` +
+          `Please ensure the value is valid JSON and that special characters are properly escaped (e.g., use double quotes for strings, escape newlines and backslashes).`
       );
     } else {
       throw err;
