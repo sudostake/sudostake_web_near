@@ -47,5 +47,12 @@ export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) 
   if (vaultIds === null) return <LoadingSpinner />;
   if (vaultIds.length === 0)
     return <EmptyState owner={owner} factoryId={factoryId} />;
-  return <VaultList vaultIds={vaultIds} onVaultClick={onVaultClick} />;
+  return (
+    <div>
+      <div className="text-sm text-secondary-text mb-2">
+        You have {vaultIds.length} vault{vaultIds.length === 1 ? '' : 's'}
+      </div>
+      <VaultList vaultIds={vaultIds} onVaultClick={onVaultClick} />
+    </div>
+  );
 }

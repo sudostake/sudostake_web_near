@@ -99,10 +99,6 @@ export default function Dashboard() {
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       {summary}
       <main className="w-full max-w-2xl mx-auto mt-8">
-        <h1 className="text-2xl font-bold text-center">Dashboard</h1>
-        <p className="mt-4 text-center text-secondary-text">
-          Welcome, {signedAccountId}!
-        </p>
         {/* Vault listing for the connected user under the chosen factory */}
         <div className="mt-6">
           <UserVaults

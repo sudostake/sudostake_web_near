@@ -1,6 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+// Logout icon (Arrow pointing out of a rectangle)
+function LogoutIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6A2.25 2.25 0 005.25 5.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+    </svg>
+  );
+}
 import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
@@ -38,7 +46,7 @@ export function Navigation() {
   }, [signedAccountId, signIn, signOut]);
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-surface">
+    <nav className="sticky top-4 z-10 mx-4 md:mx-auto md:max-w-2xl flex items-center justify-between bg-surface rounded-lg px-4 py-2 shadow">
       <Link href="/" className="text-xl font-bold">
         SudoStake
       </Link>
@@ -47,7 +55,7 @@ export function Navigation() {
         onClick={action}
         disabled={label === "Loading..."}
       >
-        {label}
+        {signedAccountId ? <LogoutIcon /> : label}
       </button>
     </nav>
   );
