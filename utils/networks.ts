@@ -10,6 +10,12 @@ export const RPC_ENDPOINTS: Record<Network, string> = {
   testnet: "https://rpc.testnet.fastnear.com",
 } as const;
 
+// Factory contract addresses per network
+export const FACTORY_CONTRACTS: Record<Network, string> = {
+  mainnet: "sudostake.near",
+  testnet: "nzaza.testnet",
+} as const;
+
 export function getActiveNetwork(): Network {
   if (typeof window !== "undefined") {
     const stored = window.localStorage
@@ -35,4 +41,14 @@ export function rpcPath(network: Network): string {
 
 export function rpcUpstream(network: Network): string {
   return RPC_ENDPOINTS[network];
+}
+
+// Get the factory contract for a given network
+export function factoryContract(network: Network): string {
+  return FACTORY_CONTRACTS[network];
+}
+
+// Convenience: get the factory id for the currently active network
+export function getActiveFactoryId(): string {
+  return factoryContract(getActiveNetwork());
 }

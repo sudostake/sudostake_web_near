@@ -17,9 +17,11 @@ export function EmptyState({ owner, factoryId, onCreate }: EmptyStateProps) {
         {factoryId ? ` on ${factoryId}` : ""}.
       </p>
       <p className="mt-2">Get started by creating a new vault!</p>
-      <div className="mt-4">
-        <CreateVaultButton onClick={onCreate} />
-      </div>
+      {onCreate && (
+        <div className="mt-4">
+          <CreateVaultButton onClick={onCreate} />
+        </div>
+      )}
     </div>
   );
 }

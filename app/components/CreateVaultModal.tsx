@@ -3,7 +3,7 @@
 import React from "react";
 import { Modal } from "./Modal";
 import { utils } from "near-api-js";
-import { VAULT_CREATION_FEE } from "@/utils/constants";
+import { VAULT_CREATION_FEE, MINT_VAULT_METHOD, DEFAULT_GAS } from "@/utils/constants";
 
 export function CreateVaultModal({
   open,
@@ -18,6 +18,8 @@ export function CreateVaultModal({
     console.log("mintVault placeholder", {
       feeYocto: VAULT_CREATION_FEE,
       feeNear,
+      method: MINT_VAULT_METHOD,
+      gas: DEFAULT_GAS,
     });
   };
 

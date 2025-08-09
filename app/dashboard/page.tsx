@@ -9,11 +9,8 @@ import { UserVaults } from "../components/vaults/UserVaults";
 
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
-import { getActiveNetwork, rpcPath } from "@/utils/networks";
+import { getActiveNetwork, rpcPath, factoryContract } from "@/utils/networks";
 import type { AccountView } from "near-api-js/lib/providers/provider";
-
-// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
-const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
 
 // NEP-141 USDC token contract on testnet
 const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
@@ -41,6 +38,7 @@ export default function Dashboard() {
     () => new providers.JsonRpcProvider({ url: rpcPath(activeNetwork) }),
     [activeNetwork]
   );
+  const factoryId = useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
 
   // Fetch balances when signed in
   useEffect(() => {
@@ -107,7 +105,7 @@ export default function Dashboard() {
         <div className="mt-4">
           <UserVaults
             owner={signedAccountId}
-            factoryId={FACTORY_ID}
+            factoryId={factoryId}
             onCreate={() => setShowCreate(true)}
           />
         </div>
