@@ -5,14 +5,16 @@ import { VaultList } from "./VaultList";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { ErrorMessage } from "./ErrorMessage";
 import { EmptyState } from "./EmptyState";
+import { CreateVaultButton } from "../CreateVaultButton";
 
 export type UserVaultsProps = {
   owner: string;
   factoryId: string;
   onVaultClick?: (vaultId: string) => void;
+  onCreate?: () => void;
 };
 
-export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) {
+export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVaultsProps) {
   const [vaultIds, setVaultIds] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,10 +48,14 @@ export function UserVaults({ owner, factoryId, onVaultClick }: UserVaultsProps) 
   if (error) return <ErrorMessage message={error} onRetry={fetchVaults} />;
   if (vaultIds === null) return <LoadingSpinner />;
   if (vaultIds.length === 0)
-    return <EmptyState owner={owner} factoryId={factoryId} />;
+    return <EmptyState owner={owner} factoryId={factoryId} onCreate={onCreate} />;
   return (
     <div>
-      <div className="text-sm text-secondary-text mb-2">
+      <div className="flex items-center justify-between mt-6">
+        <h2 className="text-lg font-semibold">Your Vaults</h2>
+        <CreateVaultButton onClick={onCreate} />
+      </div>
+      <div className="text-sm text-secondary-text mt-2 mb-2">
         You have {vaultIds.length} vault{vaultIds.length === 1 ? '' : 's'}
       </div>
       <VaultList vaultIds={vaultIds} onVaultClick={onVaultClick} />

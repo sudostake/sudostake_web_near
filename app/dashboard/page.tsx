@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
+import { CreateVaultModal } from "../components/CreateVaultModal";
 import { UserVaults } from "../components/vaults/UserVaults";
 
 import Big from "big.js";
@@ -25,6 +26,7 @@ export default function Dashboard() {
 
   const [nearBalance, setNearBalance] = useState<string>("—");
   const [usdcBalance, setUsdcBalance] = useState<string>("—");
+  const [showCreate, setShowCreate] = useState(false);
 
   // If user signs out (no account), redirect to landing
   useEffect(() => {
@@ -102,13 +104,15 @@ export default function Dashboard() {
       {summary}
       <main className="w-full max-w-2xl mx-auto mt-8">
         {/* Vault listing for the connected user under the chosen factory */}
-        <div className="mt-6">
+        <div className="mt-4">
           <UserVaults
             owner={signedAccountId}
             factoryId={FACTORY_ID}
+            onCreate={() => setShowCreate(true)}
           />
         </div>
       </main>
+      <CreateVaultModal open={showCreate} onClose={() => setShowCreate(false)} />
     </div>
   );
 }
