@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import admin from "../../../utils/firebaseAdmin";
+import { RPC_ENDPOINTS } from "@/utils/networks";
 
 // Default whitelist mapping allowed vault suffixes to their RPC URLs
 const DEFAULT_FACTORY_CONTRACT_WHITELIST: Record<string, string> = {
-  "nzaza.testnet": "https://rpc.testnet.fastnear.com",
-  "sudostake.near": "https://rpc.mainnet.fastnear.com",
+  "nzaza.testnet": RPC_ENDPOINTS.testnet,
+  "sudostake.near": RPC_ENDPOINTS.mainnet,
 };
 
 // Allow override via FACTORY_CONTRACT_WHITELIST environment variable (JSON)

@@ -8,6 +8,7 @@ import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
 import { WalletSelectorProvider } from "@near-wallet-selector/react-hook";
 import type { WalletSelectorParams, WalletModuleFactory } from "@near-wallet-selector/core";
+import { getActiveNetwork, rpcPath } from "../utils/networks";
 
 // WalletModuleFactory is invariant in its generic; we assert here to satisfy WalletSelectorParams
 const modules = [
@@ -18,10 +19,12 @@ const modules = [
   setupNightly(),
 ] as unknown as WalletModuleFactory[];
 
+const activeNetwork = getActiveNetwork();
+
 const walletSelectorConfig: WalletSelectorParams = {
-  network: "testnet", // "mainnet"
-  // Route through our proxy to avoid CORS on testnet RPC
-  fallbackRpcUrls: ["/api/rpc"],
+  network: activeNetwork,
+  // Route through our proxy to avoid CORS
+  fallbackRpcUrls: [rpcPath(activeNetwork)],
   // Optional: createAccessKeyFor: "hello.near-examples.testnet",
   modules,
 };

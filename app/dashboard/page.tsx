@@ -8,6 +8,7 @@ import { UserVaults } from "../components/vaults/UserVaults";
 
 import Big from "big.js";
 import { providers, utils } from "near-api-js";
+import { getActiveNetwork, rpcPath } from "@/utils/networks";
 import type { AccountView } from "near-api-js/lib/providers/provider";
 
 // Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
@@ -33,9 +34,10 @@ export default function Dashboard() {
   }, [signedAccountId, router]);
 
   // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
+  const activeNetwork = getActiveNetwork();
   const rpc = useMemo(
-    () => new providers.JsonRpcProvider({ url: "/api/rpc" }),
-    []
+    () => new providers.JsonRpcProvider({ url: rpcPath(activeNetwork) }),
+    [activeNetwork]
   );
 
   // Fetch balances when signed in
