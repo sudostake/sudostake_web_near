@@ -7,10 +7,12 @@ export function Modal({
   onClose,
   title,
   children,
+  disableBackdropClose,
 }: PropsWithChildren<{
   open: boolean;
   onClose: () => void;
   title?: string;
+  disableBackdropClose?: boolean;
 }>) {
   if (!open) return null;
   return (
@@ -21,7 +23,7 @@ export function Modal({
     >
       <div
         className="absolute inset-0 bg-black/50"
-        onClick={onClose}
+        onClick={disableBackdropClose ? undefined : onClose}
         aria-hidden
       />
       <div className="relative w-full max-w-md rounded-lg bg-surface shadow-lg">
@@ -40,4 +42,3 @@ export function Modal({
     </div>
   );
 }
-
