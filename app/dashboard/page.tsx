@@ -1,29 +1,19 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
+import { CreateVaultModal } from "../components/CreateVaultModal";
 import { UserVaults } from "../components/vaults/UserVaults";
-
-import Big from "big.js";
-import { providers, utils } from "near-api-js";
-import type { AccountView } from "near-api-js/lib/providers/provider";
-
-// Use NEXT_PUBLIC_FACTORY_ID to allow overriding per environment
-const FACTORY_ID = process.env.NEXT_PUBLIC_FACTORY_ID ?? "nzaza.testnet";
-
-// NEP-141 USDC token contract on testnet
-const USDC_CONTRACT = "usdc.tkn.primitives.testnet";
-// Number of decimals for USDC token (6 places)
-const USDC_DECIMALS = 6;
+import { getActiveNetwork, factoryContract } from "@/utils/networks";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
 
 export default function Dashboard() {
-  const { signedAccountId, viewFunction } = useWalletSelector();
+  const { signedAccountId } = useWalletSelector();
   const router = useRouter();
 
-  const [nearBalance, setNearBalance] = useState<string>("—");
-  const [usdcBalance, setUsdcBalance] = useState<string>("—");
+  const [showCreate, setShowCreate] = React.useState(false);
 
   // If user signs out (no account), redirect to landing
   useEffect(() => {
@@ -33,80 +23,38 @@ export default function Dashboard() {
   }, [signedAccountId, router]);
 
   // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
-  const rpc = useMemo(
-    () => new providers.JsonRpcProvider({ url: "/api/rpc" }),
-    []
-  );
+  const activeNetwork = getActiveNetwork();
+  const factoryId = useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
 
-  // Fetch balances when signed in
-  useEffect(() => {
-    if (!signedAccountId) return;
-    rpc
-      .query({
-        request_type: "view_account",
-        account_id: signedAccountId,
-        finality: "final",
-      })
-    .then((value) => {
-        // We assert AccountView here; consider adding a type guard to verify the response shape
-        const acct = value as AccountView;
-        setNearBalance(utils.format.formatNearAmount(acct.amount));
-      })
-      .catch((err) => {
-        console.warn("NEAR balance fetch failed:", err);
-        setNearBalance("—");
-      });
-  }, [signedAccountId, rpc]);
-
-  useEffect(() => {
-    if (!signedAccountId) return;
-    viewFunction({
-      contractId: USDC_CONTRACT,
-      method: "ft_balance_of",
-      args: { account_id: signedAccountId },
-    })
-      .then((raw) => {
-        // Ensure the viewFunction returns a string for ft_balance_of
-        if (typeof raw !== "string") {
-          console.warn(
-            `USDC balance expected string but got ${typeof raw}`,
-            raw
-          );
-          setUsdcBalance("—");
-          return;
-        }
-        const tokenRaw = raw;
-        const decimals = USDC_DECIMALS;
-        const human = new Big(tokenRaw)
-          .div(10 ** decimals)
-          .toFixed(decimals);
-        setUsdcBalance(human);
-      })
-      .catch((err) => {
-        console.warn("USDC balance fetch failed:", err);
-        setUsdcBalance("—");
-      });
-  }, [signedAccountId, viewFunction]);
+  const { balances } = useTokenBalances();
 
   if (!signedAccountId) {
     return null;
   }
 
   // Account summary component
-  const summary = <AccountSummary near={nearBalance} usdc={usdcBalance} />;
+  const summary = <AccountSummary near={balances.near} usdc={balances.usdc} />;
 
   return (
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       {summary}
       <main className="w-full max-w-2xl mx-auto mt-8">
         {/* Vault listing for the connected user under the chosen factory */}
-        <div className="mt-6">
+        <div className="mt-4">
           <UserVaults
             owner={signedAccountId}
-            factoryId={FACTORY_ID}
+            factoryId={factoryId}
+            onCreate={() => setShowCreate(true)}
           />
         </div>
       </main>
+      <CreateVaultModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onSuccess={() => {
+          if (typeof window !== "undefined") window.location.reload();
+        }}
+      />
     </div>
   );
 }
