@@ -48,7 +48,13 @@ export default function Dashboard() {
           />
         </div>
       </main>
-      <CreateVaultModal open={showCreate} onClose={() => setShowCreate(false)} />
+      <CreateVaultModal
+        open={showCreate}
+        onClose={() => setShowCreate(false)}
+        onSuccess={() => {
+          if (typeof window !== "undefined") window.location.reload();
+        }}
+      />
     </div>
   );
 }

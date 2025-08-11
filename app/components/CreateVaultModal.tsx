@@ -11,9 +11,11 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 export function CreateVaultModal({
   open,
   onClose,
+  onSuccess,
 }: {
   open: boolean;
   onClose: () => void;
+  onSuccess?: (vaultId: string) => void;
 }) {
   const { pending, createVault } = useCreateVault();
   const { indexVault, pending: indexing } = useIndexVault();
@@ -24,6 +26,7 @@ export function CreateVaultModal({
     try {
       const { vaultId, txHash } = await createVault({ factoryId });
       await indexVault({ factoryId, vault: vaultId, txHash });
+      if (onSuccess) onSuccess(vaultId);
       onClose();
     } catch (err) {
       console.warn("Create or index vault failed", err);
