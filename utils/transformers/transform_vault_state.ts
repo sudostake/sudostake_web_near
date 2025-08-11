@@ -63,7 +63,7 @@ export function transformVaultState(
   if (accepted_offer) {
     transformed.accepted_offer = {
       lender: accepted_offer.lender,
-      accepted_at: nsToTimestamp(accepted_offer.accepted_at as any),
+      accepted_at: nsToTimestamp(accepted_offer.accepted_at),
     };
   }
 

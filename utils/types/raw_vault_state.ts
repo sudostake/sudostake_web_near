@@ -9,10 +9,10 @@ export interface RawVaultState {
   };
   accepted_offer?: {
     lender: string;
-    accepted_at: number; // nanoseconds
+    // Nanoseconds since epoch. May come as bigint (from indexers), string (safe for big ints), or number.
+    accepted_at: string | number | bigint;
   };
   liquidation?: {
     liquidated: string;
   };
 }
-
