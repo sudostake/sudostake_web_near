@@ -40,12 +40,30 @@ export function transformVaultState(
     };
   }
 
+  // Helper: convert nanoseconds since epoch to Firestore Timestamp.
+  // - If provided as string/bigint, preserves full nanosecond precision.
+  // - If provided as number, falls back to millisecond precision using rounding.
+  const nsToTimestamp = (ns: string | number | bigint): Timestamp => {
+    const BILLION = BigInt(1000000000);
+    if (typeof ns === "bigint") {
+      const seconds = ns / BILLION;
+      const nanos = ns % BILLION;
+      return new Timestamp(Number(seconds), Number(nanos));
+    }
+    if (typeof ns === "string") {
+      const bi = BigInt(ns);
+      const seconds = bi / BILLION;
+      const nanos = bi % BILLION;
+      return new Timestamp(Number(seconds), Number(nanos));
+    }
+    // number path (potential precision loss if value exceeds MAX_SAFE_INTEGER)
+    return Timestamp.fromMillis(Math.round(ns / 1_000_000));
+  };
+
   if (accepted_offer) {
     transformed.accepted_offer = {
       lender: accepted_offer.lender,
-      accepted_at: Timestamp.fromMillis(
-        Math.floor(Number(accepted_offer.accepted_at) / 1_000_000)
-      ),
+      accepted_at: nsToTimestamp(accepted_offer.accepted_at as any),
     };
   }
 
@@ -57,4 +75,3 @@ export function transformVaultState(
 
   return transformed;
 }
-
