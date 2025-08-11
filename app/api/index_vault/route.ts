@@ -54,7 +54,8 @@ async function fetchRawVaultState(rpcUrl: string, accountId: string): Promise<Ra
   const rpcData = await rpcRes.json();
   const bytes: unknown = rpcData?.result?.result;
   if (!Array.isArray(bytes)) {
-    throw new Error("Unexpected RPC response format");
+    console.error("Unexpected RPC response format:", rpcData);
+    throw new Error(`Unexpected RPC response format: ${JSON.stringify(rpcData)}`);
   }
   const json = Buffer.from(Uint8Array.from(bytes)).toString("utf8");
   return JSON.parse(json) as RawVaultState;
@@ -127,16 +128,20 @@ export async function POST(req: NextRequest) {
   let rawState: RawVaultState;
   try {
     rawState = await fetchRawVaultState(rpcUrl, vault);
-  } catch {
-    return jsonError("Failed to fetch vault state from chain", 502);
+  } catch (error: unknown) {
+    console.error("Failed to fetch vault state from chain:", error);
+    const details = error instanceof Error ? error.message : error;
+    return jsonError("Failed to fetch vault state from chain", 502, details);
   }
 
   const transformed = transformVaultState(rawState);
 
   try {
     await persistIndexedVault(factoryId, vault, transformed, txHash);
-  } catch {
-    return jsonError("Failed to index vault", 500);
+  } catch (error: unknown) {
+    console.error("Failed to index vault:", error);
+    const details = error instanceof Error ? error.message : error;
+    return jsonError("Failed to index vault", 500, details);
   }
 
   return jsonOk();
