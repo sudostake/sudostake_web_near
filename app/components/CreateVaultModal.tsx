@@ -23,8 +23,6 @@ export function CreateVaultModal({
   const confirm = async () => {
     try {
       const { vaultId, txHash } = await createVault({ factoryId });
-      // TODO refresh the vault list after the indexing is completed
-      // With the latest created vault at the top.
       await indexVault({ factoryId, vault: vaultId, txHash });
       onClose();
     } catch (err) {
