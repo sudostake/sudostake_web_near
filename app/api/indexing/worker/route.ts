@@ -21,6 +21,11 @@ export const dynamic = "force-dynamic";
 // per request keeps latency predictable and avoids overloading the system
 // under typical workloads. Adjust this value if system resources or workload
 // characteristics change.
+// This value is also set with system limits in mind such as request timeouts
+// (often ~30 seconds in serverless environments) and memory constraints. Each
+// job is expected to complete in under ~1 second and use well below tens of MB
+// of memory, so processing 25 jobs should remain within typical limits. If
+// limits change or jobs become more resource intensive, revisit this value.
 const MAX_BATCH_JOBS = 25;
 
 function computeBackoffSeconds(attempts: number): number {
@@ -80,7 +85,8 @@ async function processOne(): Promise<ProcessResult> {
 
 async function processBatch(maxJobs: number) {
   const results: ProcessResult[] = [];
-  for (let i = 0; i < Math.max(1, Math.min(MAX_BATCH_JOBS, maxJobs)); i++) {
+  const jobsToProcess = Math.max(1, Math.min(MAX_BATCH_JOBS, maxJobs));
+  for (let i = 0; i < jobsToProcess; i++) {
     try {
       const res = await processOne();
       results.push(res);

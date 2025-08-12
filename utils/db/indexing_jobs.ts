@@ -53,8 +53,14 @@ export function serverNow(): FirebaseFirestore.FieldValue {
   return admin.firestore.FieldValue.serverTimestamp();
 }
 
-// Upper bound for error message length stored on a job document.
-// This helps avoid oversized documents and keeps error summaries concise.
+/**
+ * Upper bound for error message length stored on a job document.
+ * The limit of 5000 characters was chosen to avoid exceeding Firestore document
+ * size constraints and to ensure error summaries remain concise and manageable
+ * for review. If an error message exceeds this length, it will be truncated to
+ * 5000 characters before storage (see usage in markJobFailed). This prevents
+ * oversized documents and ensures consistent error handling.
+ */
 const MAX_ERROR_MESSAGE_LENGTH = 5000;
 
 /** A small helper to create a Firestore Timestamp for a date in the future. */
@@ -87,13 +93,14 @@ export async function claimNextJob(options?: {
           const fresh = await tx.get(snap.ref);
           if (!fresh.exists) return null;
           const job = fresh.data() as IndexingJob;
+          // Check attempt limit first as it's an inexpensive guard.
+          const attemptsOk = (job.attempts ?? 0) < maxAttempts;
+          if (!attemptsOk) return null;
           const leaseExpired = !job.lease_until || job.lease_until.toMillis() <= now.toMillis();
           const isPending = job.status === "pending";
           const isRetryableFailed =
             job.status === "failed" && job.next_run_at && job.next_run_at.toMillis() <= now.toMillis();
           const isStaleProcessing = job.status === "processing" && leaseExpired;
-          const attemptsOk = (job.attempts ?? 0) < maxAttempts;
-          if (!attemptsOk) return null;
           if (!(leaseExpired && (isPending || isRetryableFailed || isStaleProcessing))) return null;
 
           const leaseUntil = admin.firestore.Timestamp.fromMillis(now.toMillis() + leaseSeconds * 1000);
