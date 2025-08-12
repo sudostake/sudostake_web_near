@@ -87,9 +87,10 @@ export async function claimNextJob(options?: {
           const isPending = job.status === "pending";
           const isRetryableFailed =
             job.status === "failed" && job.next_run_at && job.next_run_at.toMillis() <= now.toMillis();
+          const isStaleProcessing = job.status === "processing" && leaseExpired;
           const attemptsOk = (job.attempts ?? 0) < maxAttempts;
           if (!attemptsOk) return null;
-          if (!(leaseExpired && (isPending || isRetryableFailed))) return null;
+          if (!(leaseExpired && (isPending || isRetryableFailed || isStaleProcessing))) return null;
 
           const leaseUntil = admin.firestore.Timestamp.fromMillis(now.toMillis() + leaseSeconds * 1000);
           tx.update(snap.ref, {
@@ -127,6 +128,20 @@ export async function claimNextJob(options?: {
   const claimedFailed = await tryClaim(failedDueSnap.docs);
   if (claimedFailed) return claimedFailed;
 
+  // Next, reclaim abandoned "processing" jobs with an expired lease (fast path)
+  const processingExpiredSnap = await col
+    .where("status", "==", "processing")
+    .where("lease_until", "<=", now)
+    .orderBy("lease_until", "asc")
+    .limit(10)
+    .get();
+  const claimedExpired = await tryClaim(processingExpiredSnap.docs);
+  if (claimedExpired) return claimedExpired;
+
+  // All processing jobs should have a lease_until; legacy docs can be fixed by
+  // running the backfill script (npm run repair:processing-leases). We rely on
+  // the fast-path query above for reclaiming.
+
   return null;
 }
 
@@ -153,4 +168,3 @@ export async function markJobFailed(
     updated_at: serverNow(),
   } satisfies Partial<IndexingJob>);
 }
-

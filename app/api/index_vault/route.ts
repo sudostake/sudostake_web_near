@@ -1,5 +1,4 @@
 import { type NextRequest } from "next/server";
-import admin from "@/utils/firebaseAdmin";
 import { jsonError, jsonOk, safeParseJson } from "@/utils/api/http";
 import type { RawVaultState } from "@/utils/types/raw_vault_state";
 import {
