@@ -105,12 +105,14 @@ async function processBatch(maxJobs: number) {
 
 export async function GET(req: NextRequest) {
   const max = Number(req.nextUrl.searchParams.get("max") ?? "1");
-  const res = await processBatch(Number.isFinite(max) ? max : 1);
+  const validMax = Number.isFinite(max) && Number.isInteger(max) && max > 0 ? max : 1;
+  const res = await processBatch(validMax);
   return jsonOk(res);
 }
 
 export async function POST(req: NextRequest) {
   const max = Number(req.nextUrl.searchParams.get("max") ?? "1");
-  const res = await processBatch(Number.isFinite(max) ? max : 1);
+  const validMax = Number.isFinite(max) && Number.isInteger(max) && max > 0 ? max : 1;
+  const res = await processBatch(validMax);
   return jsonOk(res);
 }

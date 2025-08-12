@@ -92,7 +92,9 @@ export async function claimNextJob(options?: {
         const result = await db.runTransaction(async (tx) => {
           const fresh = await tx.get(snap.ref);
           if (!fresh.exists) return null;
-          const job = fresh.data() as IndexingJob;
+          const data = fresh.data();
+          if (!data) return null;
+          const job = data as IndexingJob;
           // Check attempt limit first as it's an inexpensive guard.
           const attemptsOk = (job.attempts ?? 0) < maxAttempts;
           if (!attemptsOk) return null;
@@ -110,7 +112,9 @@ export async function claimNextJob(options?: {
             lease_until: leaseUntil,
             updated_at: serverNow(),
           });
-          return fresh as FirebaseFirestore.QueryDocumentSnapshot<IndexingJob>;
+          // Return the originally queried snapshot (up-to-date ref and id),
+          // which satisfies the QueryDocumentSnapshot type expected by callers.
+          return snap;
         });
         if (result) return result;
       } catch (e) {
