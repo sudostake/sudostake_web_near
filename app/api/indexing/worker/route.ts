@@ -11,6 +11,10 @@ import { jsonOk } from "@/utils/api/http";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// Upper bound on how many jobs we try to process per request. This prevents
+// excessive work per invocation and keeps latency predictable.
+const MAX_BATCH_JOBS = 25;
+
 function computeBackoffSeconds(attempts: number): number {
   // Exponential backoff with jitter: base 2^attempts seconds, cap at ~5 minutes
   const base = Math.min(300, Math.pow(2, Math.max(1, attempts)));
@@ -68,7 +72,7 @@ async function processOne(): Promise<ProcessResult> {
 
 async function processBatch(maxJobs: number) {
   const results: ProcessResult[] = [];
-  for (let i = 0; i < Math.max(1, Math.min(25, maxJobs)); i++) {
+  for (let i = 0; i < Math.max(1, Math.min(MAX_BATCH_JOBS, maxJobs)); i++) {
     try {
       const res = await processOne();
       results.push(res);

@@ -98,7 +98,7 @@ export async function claimNextJob(options?: {
             attempts: (job.attempts ?? 0) + 1,
             lease_until: leaseUntil,
             updated_at: serverNow(),
-          } satisfies Partial<IndexingJob>);
+          });
           return fresh as FirebaseFirestore.QueryDocumentSnapshot<IndexingJob>;
         });
         if (result) return result;
@@ -148,11 +148,11 @@ export async function claimNextJob(options?: {
 export async function markJobSucceeded(ref: DocumentReference<IndexingJob>) {
   await ref.update({
     status: "succeeded",
-    lease_until: admin.firestore.FieldValue.delete() as unknown as undefined,
-    next_run_at: admin.firestore.FieldValue.delete() as unknown as undefined,
-    last_error: admin.firestore.FieldValue.delete() as unknown as undefined,
+    lease_until: admin.firestore.FieldValue.delete(),
+    next_run_at: admin.firestore.FieldValue.delete(),
+    last_error: admin.firestore.FieldValue.delete(),
     updated_at: serverNow(),
-  } satisfies Partial<IndexingJob>);
+  });
 }
 
 export async function markJobFailed(
@@ -162,9 +162,9 @@ export async function markJobFailed(
 ) {
   await ref.update({
     status: "failed",
-    lease_until: admin.firestore.FieldValue.delete() as unknown as undefined,
+    lease_until: admin.firestore.FieldValue.delete(),
     next_run_at: nextRunAt,
     last_error: errorMessage.substring(0, 5000),
     updated_at: serverNow(),
-  } satisfies Partial<IndexingJob>);
+  });
 }

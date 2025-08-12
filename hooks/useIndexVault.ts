@@ -74,13 +74,19 @@ export function useIndexVault(): UseIndexVaultResult {
 
       if (!sent) {
         // Fallback to fetch with keepalive; don't await, swallow errors
-        fetch("/api/indexing/enqueue", {
+        interface FetchWithKeepAlive extends RequestInit {
+          keepalive?: boolean;
+        }
+
+        const fetchOptions: FetchWithKeepAlive = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body,
           signal: controller.signal,
-          keepalive: true as any, // TS lib may not include keepalive in some envs
-        })
+          keepalive: true,
+        };
+
+        fetch("/api/indexing/enqueue", fetchOptions)
           .catch(() => {})
           .finally(() => {
             aborters.current.delete(controller);
