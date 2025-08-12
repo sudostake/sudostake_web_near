@@ -20,6 +20,7 @@
     "@near-wallet-selector/nightly": "^9.2.0",
     "@near-wallet-selector/react-hook": "^9.2.0",
     "big.js": "^7.0.1",
+    "firebase": "^11.0.2",
     "firebase-admin": "^13.4.0",
     "near-api-js": "^5.0.0",
     "next": "15.4.4",
