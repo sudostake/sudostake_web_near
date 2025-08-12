@@ -13,6 +13,14 @@ export const dynamic = "force-dynamic";
 
 // Upper bound on how many jobs we try to process per request. This prevents
 // excessive work per invocation and keeps latency predictable.
+//
+// The value 25 was chosen as a balance between throughput and resource usage.
+// Processing more jobs per request can improve overall throughput, but may
+// increase memory and CPU usage, and can lead to longer response times or
+// timeouts if the batch is too large. Empirical testing showed that 25 jobs
+// per request keeps latency predictable and avoids overloading the system
+// under typical workloads. Adjust this value if system resources or workload
+// characteristics change.
 const MAX_BATCH_JOBS = 25;
 
 function computeBackoffSeconds(attempts: number): number {

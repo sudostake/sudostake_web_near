@@ -53,6 +53,10 @@ export function serverNow(): FirebaseFirestore.FieldValue {
   return admin.firestore.FieldValue.serverTimestamp();
 }
 
+// Upper bound for error message length stored on a job document.
+// This helps avoid oversized documents and keeps error summaries concise.
+const MAX_ERROR_MESSAGE_LENGTH = 5000;
+
 /** A small helper to create a Firestore Timestamp for a date in the future. */
 export function timestampFromDate(date: Date): FirebaseFirestore.Timestamp {
   return admin.firestore.Timestamp.fromDate(date);
@@ -164,7 +168,7 @@ export async function markJobFailed(
     status: "failed",
     lease_until: admin.firestore.FieldValue.delete(),
     next_run_at: nextRunAt,
-    last_error: errorMessage.substring(0, 5000),
+    last_error: errorMessage.substring(0, MAX_ERROR_MESSAGE_LENGTH),
     updated_at: serverNow(),
   });
 }
