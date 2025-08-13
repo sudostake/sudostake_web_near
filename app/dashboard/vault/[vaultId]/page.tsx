@@ -192,9 +192,15 @@ export default function VaultPage() {
                 type="button"
                 className="underline disabled:no-underline disabled:opacity-60"
                 disabled={balancesLoading}
-                onClick={() => {
-                  setAmount(availableStr === "—" ? "" : availableStr);
-                }}
+              onClick={() => {
+                if (availableStr === "—") {
+                  setAmount("");
+                } else {
+                  // Only allow numeric input (strip any formatting)
+                  const numeric = parseFloat(availableStr.replace(/[^0-9.]/g, ""));
+                  setAmount(isNaN(numeric) ? "" : numeric.toString());
+                }
+              }}
                 aria-label="Use maximum available"
               >
                 Max

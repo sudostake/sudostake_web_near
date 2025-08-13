@@ -43,8 +43,12 @@ export function useAccountBalance(
         const acct = result as AccountView;
         setBalance(utils.format.formatNearAmount(acct.amount));
       })
-      .catch((e: any) => {
-        setError(e?.message ?? String(e));
+      .catch((e: unknown) => {
+        if (typeof e === "object" && e !== null && "message" in e && typeof (e as any).message === "string") {
+          setError((e as { message: string }).message);
+        } else {
+          setError(String(e));
+        }
         setBalance("—");
       })
       .finally(() => setLoading(false));
