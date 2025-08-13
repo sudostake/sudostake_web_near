@@ -26,14 +26,16 @@ export default function Dashboard() {
   const activeNetwork = getActiveNetwork();
   const factoryId = useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
 
-  const { balances } = useTokenBalances();
+  const { balances, loading: balancesLoading, refetch: refetchBalances } = useTokenBalances();
 
   if (!signedAccountId) {
     return null;
   }
 
   // Account summary component
-  const summary = <AccountSummary near={balances.near} usdc={balances.usdc} />;
+  const summary = (
+    <AccountSummary near={balances.near} usdc={balances.usdc} loading={balancesLoading} />
+  );
 
   return (
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -52,7 +54,8 @@ export default function Dashboard() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSuccess={() => {
-          if (typeof window !== "undefined") window.location.reload();
+          // Refresh main account balances (NEAR/USDC) after vault creation
+          refetchBalances();
         }}
       />
     </div>

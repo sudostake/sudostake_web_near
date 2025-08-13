@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
+
 export type IndexVaultParams = {
   factoryId: string;
   vault: string;
-  txHash?: string;
+  txHash: string;
 };
 
 export type IndexVaultOptions = {
@@ -40,7 +42,7 @@ export function useIndexVault(): UseIndexVaultResult {
 
   const indexVault = useCallback(
     async ({ factoryId, vault, txHash }: IndexVaultParams, opts?: IndexVaultOptions) => {
-      const dedupeKey = opts?.dedupeKey ?? `${factoryId}:${vault}:${txHash ?? ""}`;
+      const dedupeKey = opts?.dedupeKey ?? `${factoryId}:${vault}:${txHash}`;
 
       if (inFlight.current.has(dedupeKey)) return; // already scheduled
 
@@ -72,12 +74,32 @@ export function useIndexVault(): UseIndexVaultResult {
         // ignore
       }
 
+      const kickOffDirectIndex = () => {
+        const directController = new AbortController();
+        if (externalSignal) {
+          if (externalSignal.aborted) return;
+          externalSignal.addEventListener("abort", () => directController.abort(), { once: true });
+        }
+        aborters.current.add(directController);
+        const directOptions: FetchWithKeepAlive = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          signal: directController.signal,
+          keepalive: true,
+        };
+        fetch("/api/index_vault", directOptions)
+          // TODO: Add client-side retry with backoff for direct indexing kickoff when appropriate.
+          .catch((err) => {
+            console.error("Direct indexing request failed", err);
+          })
+          .finally(() => {
+            aborters.current.delete(directController);
+          });
+      };
+
       if (!sent) {
         // Fallback to fetch with keepalive; don't await, swallow errors
-        interface FetchWithKeepAlive extends RequestInit {
-          keepalive?: boolean;
-        }
-
         const fetchOptions: FetchWithKeepAlive = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -87,14 +109,19 @@ export function useIndexVault(): UseIndexVaultResult {
         };
 
         fetch("/api/indexing/enqueue", fetchOptions)
-          .catch(() => {})
+          // TODO: Implement client-side retry with jittered backoff for enqueue failures.
+          .catch((err) => {
+            console.error("Enqueue indexing request failed", err);
+          })
           .finally(() => {
             aborters.current.delete(controller);
             inFlight.current.delete(dedupeKey);
           });
+        kickOffDirectIndex();
       } else {
         aborters.current.delete(controller);
         inFlight.current.delete(dedupeKey);
+        kickOffDirectIndex();
       }
     },
     []
