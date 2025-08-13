@@ -25,7 +25,28 @@ export function Modal({
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+
+    // Lock body scroll and prevent layout shift when scrollbar disappears
+    const body = typeof document !== "undefined" ? document.body : null;
+    const prevOverflow = body?.style.overflow ?? "";
+    const prevPaddingRight = body?.style.paddingRight ?? "";
+    let adjusted = false;
+    if (body) {
+      const scrollBarGap = window.innerWidth - document.documentElement.clientWidth;
+      if (scrollBarGap > 0) {
+        body.style.paddingRight = `${scrollBarGap}px`;
+        adjusted = true;
+      }
+      body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      if (body) {
+        body.style.overflow = prevOverflow;
+        if (adjusted) body.style.paddingRight = prevPaddingRight;
+      }
+    };
   }, [open, onClose]);
 
   if (!open) return null;

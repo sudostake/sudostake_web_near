@@ -5,9 +5,11 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 export function AccountSummary({
   near,
   usdc,
+  loading,
 }: {
   near: string;
   usdc: string;
+  loading?: boolean;
 }) {
   const { signedAccountId } = useWalletSelector();
 
@@ -19,11 +21,23 @@ export function AccountSummary({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="text-center">
           <div className="text-sm text-secondary-text">NEAR Balance</div>
-          <div className="text-xl font-medium">{near} Ⓝ</div>
+          <div className="text-xl font-medium min-h-7">
+            {loading || near === "—" ? (
+              <div className="h-7 w-32 mx-auto rounded bg-background animate-pulse" aria-hidden />
+            ) : (
+              <span>{near} Ⓝ</span>
+            )}
+          </div>
         </div>
         <div className="text-center">
           <div className="text-sm text-secondary-text">USDC (Testnet)</div>
-          <div className="text-xl font-medium">${usdc}</div>
+          <div className="text-xl font-medium min-h-7">
+            {loading || usdc === "—" ? (
+              <div className="h-7 w-32 mx-auto rounded bg-background animate-pulse" aria-hidden />
+            ) : (
+              <span>${usdc}</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
