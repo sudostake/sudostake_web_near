@@ -15,6 +15,7 @@ import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DetailsCard } from "./components/DetailsCard";
 import { ActivitySection } from "./components/ActivitySection";
+import { parseNumber } from "@/utils/format";
 
 type VaultData = {
   total?: number;
@@ -71,10 +72,10 @@ export default function VaultPage() {
   const modalSymbol = (data?.symbol ?? "NEAR").toUpperCase();
   const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
   const amountNum = Number(amount);
-  const depositAvailableNum = Number(availableStr.replace(/[^0-9.]/g, ""));
+  const depositAvailableNum = parseNumber(availableStr);
   const depositDisableContinue =
     !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(depositAvailableNum) || amountNum > depositAvailableNum;
-  const withdrawAvailableNum = Number(String(availBalance).replace(/[^0-9.]/g, ""));
+  const withdrawAvailableNum = parseNumber(availBalance);
   const withdrawDisableContinue =
     !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(withdrawAvailableNum) || amountNum > withdrawAvailableNum;
 
@@ -204,13 +205,8 @@ export default function VaultPage() {
                 className="underline disabled:no-underline disabled:opacity-60"
                 disabled={balancesLoading}
               onClick={() => {
-                if (availableStr === "—") {
-                  setAmount("");
-                } else {
-                  // Only allow numeric input (strip any formatting)
-                  const numeric = parseFloat(availableStr.replace(/[^0-9.]/g, ""));
-                  setAmount(isNaN(numeric) ? "" : numeric.toString());
-                }
+                const numeric = parseNumber(availableStr);
+                setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
               }}
                 aria-label="Use maximum available"
               >
@@ -285,12 +281,8 @@ export default function VaultPage() {
                 className="underline disabled:no-underline disabled:opacity-60"
                 disabled={availLoading}
                 onClick={() => {
-                  if (!availBalance || availBalance === "—") {
-                    setAmount("");
-                  } else {
-                    const numeric = parseFloat(availBalance.replace(/[^0-9.]/g, ""));
-                    setAmount(isNaN(numeric) ? "" : numeric.toString());
-                  }
+                  const numeric = parseNumber(availBalance);
+                  setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
                 }}
                 aria-label="Use maximum available"
               >
