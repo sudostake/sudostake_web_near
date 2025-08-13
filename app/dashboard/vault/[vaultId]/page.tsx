@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getActiveFactoryId } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { Modal } from "@/app/components/Modal";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useDeposit } from "@/hooks/useDeposit";
@@ -37,6 +38,8 @@ export default function VaultPage() {
   const factoryId = useMemo(() => getActiveFactoryId(), []);
 
   const { data, loading, error, refetch } = useVault<VaultData>(factoryId, vaultId);
+  const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
+    useAccountBalance(vaultId);
   const { balances, loading: balancesLoading } = useTokenBalances();
   const { deposit, pending: depositing, error: depositError } = useDeposit();
   const { indexVault } = useIndexVault();
@@ -63,6 +66,9 @@ export default function VaultPage() {
         <div className="min-w-0">
           <div className="text-sm text-secondary-text">Vault</div>
           <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
+          <div className="text-sm text-secondary-text">
+            Contract Balance: {vaultNearLoading ? "…" : vaultNear} NEAR
+          </div>
         </div>
       </div>
     </header>
@@ -175,6 +181,7 @@ export default function VaultPage() {
                   console.warn("Deposit failed", err);
                 } finally {
                   resetDeposit();
+                  refetchVaultNear();
                 }
               }}
               >
