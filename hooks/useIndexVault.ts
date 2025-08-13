@@ -89,7 +89,10 @@ export function useIndexVault(): UseIndexVaultResult {
           keepalive: true,
         };
         fetch("/api/index_vault", directOptions)
-          .catch(() => {})
+          // TODO: Add client-side retry with backoff for direct indexing kickoff when appropriate.
+          .catch((err) => {
+            console.error("Direct indexing request failed", err);
+          })
           .finally(() => {
             aborters.current.delete(directController);
           });
@@ -106,7 +109,10 @@ export function useIndexVault(): UseIndexVaultResult {
         };
 
         fetch("/api/indexing/enqueue", fetchOptions)
-          .catch(() => {})
+          // TODO: Implement client-side retry with jittered backoff for enqueue failures.
+          .catch((err) => {
+            console.error("Enqueue indexing request failed", err);
+          })
           .finally(() => {
             aborters.current.delete(controller);
             inFlight.current.delete(dedupeKey);
