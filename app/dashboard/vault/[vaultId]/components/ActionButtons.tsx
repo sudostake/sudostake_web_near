@@ -4,10 +4,11 @@ import React from "react";
 
 export interface ActionButtonsProps {
   onDeposit: () => void;
+  onWithdraw: () => void;
   disabled: boolean;
 }
 
-export function ActionButtons({ onDeposit, disabled }: ActionButtonsProps) {
+export function ActionButtons({ onDeposit, onWithdraw, disabled }: ActionButtonsProps) {
   return (
     <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       <button
@@ -20,6 +21,7 @@ export function ActionButtons({ onDeposit, disabled }: ActionButtonsProps) {
       </button>
       <button
         type="button"
+        onClick={onWithdraw}
         disabled={disabled}
         className="rounded border py-3 px-4 text-center bg-surface hover:bg-surface/90 disabled:opacity-60 disabled:cursor-not-allowed"
       >

@@ -10,10 +10,12 @@ import { Modal } from "@/app/components/Modal";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useDeposit } from "@/hooks/useDeposit";
 import { useIndexVault } from "@/hooks/useIndexVault";
+import { useWithdraw } from "@/hooks/useWithdraw";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DetailsCard } from "./components/DetailsCard";
 import { ActivitySection } from "./components/ActivitySection";
+import { parseNumber } from "@/utils/format";
 
 type VaultData = {
   total?: number;
@@ -47,6 +49,7 @@ export default function VaultPage() {
     useAccountBalance(vaultId);
   const { balances, loading: balancesLoading } = useTokenBalances();
   const { deposit, pending: depositing, error: depositError } = useDeposit();
+  const { withdraw, pending: withdrawing, error: withdrawError } = useWithdraw();
   const { indexVault } = useIndexVault();
 
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
@@ -54,18 +57,27 @@ export default function VaultPage() {
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [amount, setAmount] = useState<string>("");
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
   const handleDeposit = () => setDepositOpen(true);
+  const handleWithdraw = () => setWithdrawOpen(true);
   const resetDeposit = () => {
     setAmount("");
     setDepositOpen(false);
   };
+  const resetWithdraw = () => {
+    setAmount("");
+    setWithdrawOpen(false);
+  };
 
   const modalSymbol = (data?.symbol ?? "NEAR").toUpperCase();
   const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
-  const availableNum = Number(availableStr.replace(/[^0-9.]/g, ""));
   const amountNum = Number(amount);
-  const disableContinue =
-    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(availableNum) || amountNum > availableNum;
+  const depositAvailableNum = parseNumber(availableStr);
+  const depositDisableContinue =
+    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(depositAvailableNum) || amountNum > depositAvailableNum;
+  const withdrawAvailableNum = parseNumber(availBalance);
+  const withdrawDisableContinue =
+    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(withdrawAvailableNum) || amountNum > withdrawAvailableNum;
 
   const Header = (
     <header className="sticky top-0 z-10 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
@@ -113,7 +125,7 @@ export default function VaultPage() {
           apy={apy}
         />
 
-        <ActionButtons onDeposit={handleDeposit} disabled={loading || Boolean(error)} />
+        <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
 
         <DetailsCard vaultId={vaultId} owner={owner} factoryId={factoryId} />
 
@@ -145,7 +157,7 @@ export default function VaultPage() {
               <button
                 type="button"
                 className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={disableContinue || depositing}
+                disabled={depositDisableContinue || depositing}
               onClick={async () => {
                 try {
                   const { txHash } = await deposit({ vault: vaultId, amount });
@@ -193,14 +205,85 @@ export default function VaultPage() {
                 className="underline disabled:no-underline disabled:opacity-60"
                 disabled={balancesLoading}
               onClick={() => {
-                if (availableStr === "—") {
-                  setAmount("");
-                } else {
-                  // Only allow numeric input (strip any formatting)
-                  const numeric = parseFloat(availableStr.replace(/[^0-9.]/g, ""));
-                  setAmount(isNaN(numeric) ? "" : numeric.toString());
-                }
+                const numeric = parseNumber(availableStr);
+                setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
               }}
+                aria-label="Use maximum available"
+              >
+                Max
+              </button>
+            </div>
+          </div>
+        </Modal>
+        <Modal
+          open={withdrawOpen}
+          onClose={resetWithdraw}
+          title="Withdraw from vault"
+          disableBackdropClose={withdrawing}
+          footer={
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
+                onClick={resetWithdraw}
+                disabled={withdrawing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={withdrawDisableContinue || withdrawing}
+                onClick={async () => {
+                  try {
+                    const { txHash } = await withdraw({ vault: vaultId, amount });
+                    await indexVault({ factoryId, vault: vaultId, txHash });
+                  } catch (err) {
+                    console.warn("Withdraw failed", err);
+                  } finally {
+                    resetWithdraw();
+                    refetchVaultNear();
+                    refetchAvail();
+                  }
+                }}
+              >
+                {withdrawing ? "Withdrawing..." : "Continue"}
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div className="text-sm text-secondary-text">
+              Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
+            </div>
+            <label className="block text-sm">
+              <span className="text-secondary-text">Amount</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                inputMode="decimal"
+                placeholder="0.0"
+                className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </label>
+            {withdrawError && (
+              <div className="text-xs text-red-500">{withdrawError}</div>
+            )}
+            <div className="flex items-center justify-between text-xs text-secondary-text">
+              <div>
+                Max you can withdraw: {availLoading ? "…" : availBalance} {modalSymbol}
+              </div>
+              <button
+                type="button"
+                className="underline disabled:no-underline disabled:opacity-60"
+                disabled={availLoading}
+                onClick={() => {
+                  const numeric = parseNumber(availBalance);
+                  setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
+                }}
                 aria-label="Use maximum available"
               >
                 Max
