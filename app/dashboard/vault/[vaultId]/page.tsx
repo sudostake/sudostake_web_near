@@ -5,6 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import { getActiveFactoryId } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
 import { Modal } from "@/app/components/Modal";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useDeposit } from "@/hooks/useDeposit";
+import { useIndexVault } from "@/hooks/useIndexVault";
 
 type VaultData = {
   total?: number;
@@ -34,8 +37,10 @@ export default function VaultPage() {
   const factoryId = useMemo(() => getActiveFactoryId(), []);
 
   const { data, loading, error, refetch } = useVault<VaultData>(factoryId, vaultId);
+  const { balances, loading: balancesLoading } = useTokenBalances();
+  const { deposit, pending: depositing, error: depositError } = useDeposit();
+  const { indexVault } = useIndexVault();
 
-  // TODO: Implement deposit flow (open modal or navigate to deposit route)
   const [depositOpen, setDepositOpen] = useState(false);
   const [amount, setAmount] = useState<string>("");
   const handleDeposit = () => setDepositOpen(true);
@@ -43,6 +48,13 @@ export default function VaultPage() {
     setAmount("");
     setDepositOpen(false);
   };
+
+  const modalSymbol = (data?.symbol ?? "NEAR").toUpperCase();
+  const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
+  const availableNum = Number(availableStr.replace(/[^0-9.]/g, ""));
+  const amountNum = Number(amount);
+  const disableContinue =
+    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(availableNum) || amountNum > availableNum;
 
   const Header = (
     <header className="sticky top-0 z-10 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
@@ -140,25 +152,33 @@ export default function VaultPage() {
           open={depositOpen}
           onClose={resetDeposit}
           title="Deposit to vault"
+          disableBackdropClose={depositing}
           footer={
             <div className="flex items-center justify-end gap-2">
               <button
                 type="button"
                 className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
                 onClick={resetDeposit}
+                disabled={depositing}
               >
                 Cancel
               </button>
               <button
                 type="button"
                 className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={!amount}
-                onClick={() => {
-                  console.log("Deposit submitted", { vaultId, factoryId, amount });
+                disabled={disableContinue || depositing}
+              onClick={async () => {
+                try {
+                  const { txHash } = await deposit({ vault: vaultId, amount });
+                  await indexVault({ factoryId, vault: vaultId, txHash });
+                } catch (err) {
+                  console.warn("Deposit failed", err);
+                } finally {
                   resetDeposit();
-                }}
+                }
+              }}
               >
-                Continue
+                {depositing ? "Depositing..." : "Continue"}
               </button>
             </div>
           }
@@ -180,8 +200,24 @@ export default function VaultPage() {
                 onChange={(e) => setAmount(e.target.value)}
               />
             </label>
-            <div className="text-xs text-secondary-text">
-              This is a demo. The real deposit flow will be wired to the contract.
+            {depositError && (
+              <div className="text-xs text-red-500">{depositError}</div>
+            )}
+            <div className="flex items-center justify-between text-xs text-secondary-text">
+              <div>
+                Max you can deposit: {balancesLoading ? "…" : availableStr} {modalSymbol}
+              </div>
+              <button
+                type="button"
+                className="underline disabled:no-underline disabled:opacity-60"
+                disabled={balancesLoading}
+                onClick={() => {
+                  setAmount(availableStr === "—" ? "" : availableStr);
+                }}
+                aria-label="Use maximum available"
+              >
+                Max
+              </button>
             </div>
           </div>
         </Modal>
