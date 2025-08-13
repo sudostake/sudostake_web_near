@@ -28,10 +28,11 @@ export async function POST(request: Request) {
   });
   if (!rpcResponse.ok) {
     let errorBody: unknown;
+    const responseClone = rpcResponse.clone();
     try {
       errorBody = await rpcResponse.json();
     } catch {
-      errorBody = { error: await rpcResponse.text() };
+      errorBody = { error: await responseClone.text() };
     }
     return NextResponse.json(
       { error: "Upstream RPC error", details: errorBody },
