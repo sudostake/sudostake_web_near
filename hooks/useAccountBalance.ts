@@ -39,7 +39,8 @@ export function useAccountBalance(
         account_id: accountId,
         finality: "final",
       })
-      .then((acct: AccountView) => {
+      .then((result) => {
+        const acct = result as AccountView;
         setBalance(utils.format.formatNearAmount(acct.amount));
       })
       .catch((e: any) => {

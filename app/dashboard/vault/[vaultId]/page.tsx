@@ -5,10 +5,15 @@ import { useParams, useRouter } from "next/navigation";
 import { getActiveFactoryId } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { Modal } from "@/app/components/Modal";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { useDeposit } from "@/hooks/useDeposit";
 import { useIndexVault } from "@/hooks/useIndexVault";
+import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
+import { ActionButtons } from "./components/ActionButtons";
+import { DetailsCard } from "./components/DetailsCard";
+import { ActivitySection } from "./components/ActivitySection";
 
 type VaultData = {
   total?: number;
@@ -43,6 +48,9 @@ export default function VaultPage() {
   const { balances, loading: balancesLoading } = useTokenBalances();
   const { deposit, pending: depositing, error: depositError } = useDeposit();
   const { indexVault } = useIndexVault();
+
+  const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
+    useAvailableBalance(vaultId);
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [amount, setAmount] = useState<string>("");
@@ -93,58 +101,23 @@ export default function VaultPage() {
       </div>
     );
   } else {
-    const total = data?.total ?? 0;
-    const symbol = data?.symbol ?? "NEAR";
     const apy = data?.apy ?? null;
     const owner = data?.owner ?? null;
 
     Body = (
       <div className="space-y-4 p-4">
-        <section className="rounded bg-surface p-4">
-          <div className="text-secondary-text text-xs">Total balance</div>
-          <div className="mt-1 text-2xl font-semibold">
-            {total} {symbol}
-          </div>
-          {apy !== null && (
-            <div className="mt-2 text-xs text-secondary-text">APY ~ {apy}%</div>
-          )}
-        </section>
+        <AvailableBalanceCard
+          balance={availBalance}
+          loading={availLoading}
+          symbol={data?.symbol}
+          apy={apy}
+        />
 
-        <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-3 px-4 text-center font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-            onClick={handleDeposit}
-            disabled={loading || Boolean(error)}
-            aria-disabled={loading || Boolean(error) || undefined}
-          >
-            Deposit
-          </button>
-          <button type="button" className="rounded border py-3 px-4 text-center bg-surface hover:bg-surface/90 disabled:opacity-60 disabled:cursor-not-allowed" disabled={loading || Boolean(error)} aria-disabled={loading || Boolean(error) || undefined}>Withdraw</button>
-          <button type="button" className="rounded border py-3 px-4 text-center bg-surface hover:bg-surface/90 disabled:opacity-60 disabled:cursor-not-allowed" disabled={loading || Boolean(error)} aria-disabled={loading || Boolean(error) || undefined}>Transfer</button>
-        </section>
+        <ActionButtons onDeposit={handleDeposit} disabled={loading || Boolean(error)} />
 
-        <section className="rounded bg-surface p-4">
-          <h2 className="font-medium">Details</h2>
-          <div className="mt-2 text-sm text-secondary-text space-y-1">
-            <div>
-              <span className="text-foreground/80">Vault ID:</span> <span className="break-all" title={vaultId}>{vaultId}</span>
-            </div>
-            {owner && (
-              <div>
-                <span className="text-foreground/80">Owner:</span> <span className="break-all" title={owner}>{owner}</span>
-              </div>
-            )}
-            <div>
-              <span className="text-foreground/80">Factory:</span> <span className="break-all" title={factoryId}>{factoryId}</span>
-            </div>
-          </div>
-        </section>
+        <DetailsCard vaultId={vaultId} owner={owner} factoryId={factoryId} />
 
-        <section className="rounded bg-surface p-4">
-          <h2 className="font-medium">Activity</h2>
-          <div className="mt-2 text-sm text-secondary-text">No recent activity.</div>
-        </section>
+        <ActivitySection />
       </div>
     );
   }
@@ -182,6 +155,7 @@ export default function VaultPage() {
                 } finally {
                   resetDeposit();
                   refetchVaultNear();
+                  refetchAvail();
                 }
               }}
               >
