@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
+
 export type IndexVaultParams = {
   factoryId: string;
   vault: string;
@@ -79,7 +81,6 @@ export function useIndexVault(): UseIndexVaultResult {
           externalSignal.addEventListener("abort", () => directController.abort(), { once: true });
         }
         aborters.current.add(directController);
-        interface FetchWithKeepAlive extends RequestInit { keepalive?: boolean }
         const directOptions: FetchWithKeepAlive = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,10 +97,6 @@ export function useIndexVault(): UseIndexVaultResult {
 
       if (!sent) {
         // Fallback to fetch with keepalive; don't await, swallow errors
-        interface FetchWithKeepAlive extends RequestInit {
-          keepalive?: boolean;
-        }
-
         const fetchOptions: FetchWithKeepAlive = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
