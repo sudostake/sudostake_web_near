@@ -29,6 +29,31 @@ export function Navigation() {
   const [label, setLabel] = useState<string>("Loading...");
   const { signedAccountId, signIn, signOut } = useWalletSelector();
 
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const ENTER_THRESHOLD = 72;
+    const EXIT_THRESHOLD = 24;
+    let rafId: number | null = null;
+    const onScroll = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        const y = window.scrollY;
+        setCompact((prev) => {
+          if (!prev && y > ENTER_THRESHOLD) return true;
+          if (prev && y < EXIT_THRESHOLD) return false;
+          return prev;
+        });
+      });
+    };
+    setCompact(window.scrollY > ENTER_THRESHOLD);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
   useEffect(() => {
     if (signedAccountId) {
       // user is signed in: clicking will sign out
@@ -46,7 +71,19 @@ export function Navigation() {
   }, [signedAccountId, signIn, signOut]);
 
   return (
-    <nav className="sticky top-4 z-10 mx-4 md:mx-auto md:max-w-2xl flex items-center justify-between bg-surface rounded-lg px-4 py-2 shadow">
+    <nav
+      className={[
+        // Keep a consistent bottom border to avoid a white flash during snapping
+        "sticky z-20 flex items-center justify-between px-4 py-2 transition-all duration-200 border-b border-white/10",
+        compact
+          ? [
+              "top-0 mx-0 w-full rounded-none backdrop-blur",
+              // Explicit overlays to avoid white undertone in dark mode
+              "bg-white/60 dark:bg-black/40",
+            ].join(" ")
+          : "top-4 mx-4 md:mx-auto md:max-w-2xl rounded-lg bg-surface shadow-none",
+      ].join(" ")}
+    >
       <Link href="/" className="text-xl font-bold">
         SudoStake
       </Link>

@@ -80,14 +80,21 @@ export default function VaultPage() {
     !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(withdrawAvailableNum) || amountNum > withdrawAvailableNum;
 
   const Header = (
-    <header className="sticky top-0 z-10 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
+    <header className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
       <div className="flex items-center gap-3">
         <BackButton onClick={() => router.back()} />
         <div className="min-w-0">
           <div className="text-sm text-secondary-text">Vault</div>
           <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
-          <div className="text-sm text-secondary-text">
-            Contract Balance: {vaultNearLoading ? "…" : vaultNear} NEAR
+          <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
+            <span className="shrink-0">Contract Balance:</span>
+            <span
+              className="truncate"
+              title={`${vaultNearLoading ? "…" : vaultNear} NEAR`}
+            >
+              {vaultNearLoading ? "…" : vaultNear}
+            </span>
+            <span className="text-secondary-text shrink-0">NEAR</span>
           </div>
         </div>
       </div>
