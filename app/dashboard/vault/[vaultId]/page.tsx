@@ -1,0 +1,191 @@
+"use client";
+
+import React, { useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { getActiveFactoryId } from "@/utils/networks";
+import { useVault } from "@/hooks/useVault";
+import { Modal } from "@/app/components/Modal";
+
+type VaultData = {
+  total?: number;
+  symbol?: string;
+  apy?: number | null;
+  owner?: string | null;
+};
+
+function BackButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Back"
+      className="inline-flex items-center justify-center h-10 w-10 rounded bg-surface hover:bg-surface/90"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    </button>
+  );
+}
+
+export default function VaultPage() {
+  const router = useRouter();
+  const { vaultId } = useParams<{ vaultId: string }>();
+  const factoryId = useMemo(() => getActiveFactoryId(), []);
+
+  const { data, loading, error, refetch } = useVault<VaultData>(factoryId, vaultId);
+
+  // TODO: Implement deposit flow (open modal or navigate to deposit route)
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [amount, setAmount] = useState<string>("");
+  const handleDeposit = () => setDepositOpen(true);
+  const resetDeposit = () => {
+    setAmount("");
+    setDepositOpen(false);
+  };
+
+  const Header = (
+    <header className="sticky top-0 z-10 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
+      <div className="flex items-center gap-3">
+        <BackButton onClick={() => router.back()} />
+        <div className="min-w-0">
+          <div className="text-sm text-secondary-text">Vault</div>
+          <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
+        </div>
+      </div>
+    </header>
+  );
+
+  let Body: React.ReactNode;
+  if (error) {
+    Body = (
+      <div className="p-4 text-center text-sm text-red-500" role="alert" aria-live="polite">
+        Failed to load vault.
+        <div className="mt-1 text-xs opacity-80">{error}</div>
+        <button className="underline mt-2" onClick={refetch}>Retry</button>
+      </div>
+    );
+  } else if (loading) {
+    Body = (
+      <div className="animate-pulse space-y-3 p-4" aria-live="polite" aria-busy="true">
+        <div className="h-6 bg-surface rounded w-1/3" />
+        <div className="h-24 bg-surface rounded" />
+        <div className="h-6 bg-surface rounded w-1/2" />
+        <div className="h-32 bg-surface rounded" />
+      </div>
+    );
+  } else {
+    const total = data?.total ?? 0;
+    const symbol = data?.symbol ?? "NEAR";
+    const apy = data?.apy ?? null;
+    const owner = data?.owner ?? null;
+
+    Body = (
+      <div className="space-y-4 p-4">
+        <section className="rounded bg-surface p-4">
+          <div className="text-secondary-text text-xs">Total balance</div>
+          <div className="mt-1 text-2xl font-semibold">
+            {total} {symbol}
+          </div>
+          {apy !== null && (
+            <div className="mt-2 text-xs text-secondary-text">APY ~ {apy}%</div>
+          )}
+        </section>
+
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <button
+            type="button"
+            className="rounded bg-primary text-primary-text py-3 px-4 text-center font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handleDeposit}
+            disabled={loading || Boolean(error)}
+            aria-disabled={loading || Boolean(error) || undefined}
+          >
+            Deposit
+          </button>
+          <button type="button" className="rounded border py-3 px-4 text-center bg-surface hover:bg-surface/90 disabled:opacity-60 disabled:cursor-not-allowed" disabled={loading || Boolean(error)} aria-disabled={loading || Boolean(error) || undefined}>Withdraw</button>
+          <button type="button" className="rounded border py-3 px-4 text-center bg-surface hover:bg-surface/90 disabled:opacity-60 disabled:cursor-not-allowed" disabled={loading || Boolean(error)} aria-disabled={loading || Boolean(error) || undefined}>Transfer</button>
+        </section>
+
+        <section className="rounded bg-surface p-4">
+          <h2 className="font-medium">Details</h2>
+          <div className="mt-2 text-sm text-secondary-text space-y-1">
+            <div>
+              <span className="text-foreground/80">Vault ID:</span> <span className="break-all" title={vaultId}>{vaultId}</span>
+            </div>
+            {owner && (
+              <div>
+                <span className="text-foreground/80">Owner:</span> <span className="break-all" title={owner}>{owner}</span>
+              </div>
+            )}
+            <div>
+              <span className="text-foreground/80">Factory:</span> <span className="break-all" title={factoryId}>{factoryId}</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded bg-surface p-4">
+          <h2 className="font-medium">Activity</h2>
+          <div className="mt-2 text-sm text-secondary-text">No recent activity.</div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
+      <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
+        {Header}
+        {Body}
+        <Modal
+          open={depositOpen}
+          onClose={resetDeposit}
+          title="Deposit to vault"
+          footer={
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
+                onClick={resetDeposit}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
+                disabled={!amount}
+                onClick={() => {
+                  console.log("Deposit submitted", { vaultId, factoryId, amount });
+                  resetDeposit();
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          }
+        >
+          <div className="space-y-3">
+            <div className="text-sm text-secondary-text">
+              Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
+            </div>
+            <label className="block text-sm">
+              <span className="text-secondary-text">Amount</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                inputMode="decimal"
+                placeholder="0.0"
+                className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+              />
+            </label>
+            <div className="text-xs text-secondary-text">
+              This is a demo. The real deposit flow will be wired to the contract.
+            </div>
+          </div>
+        </Modal>
+      </main>
+    </div>
+  );
+}
