@@ -7,11 +7,8 @@ import { Summary } from "./Summary";
 type Props = {
   factoryId?: string | null;
   vaultId?: string | null;
-  // Optional: allow parent to open the deposit modal as part of onboarding
   onDeposit?: () => void;
-  // Optional: allow parent to start delegating flow when user has funds
   onDelegate?: () => void;
-  // Available balance (human formatted string) and loading state to determine onboarding CTA
   availableBalance?: string | null;
   availableLoading?: boolean;
 };
@@ -35,7 +32,6 @@ export function DelegationsCard({ factoryId, vaultId, onDeposit, onDelegate, ava
         </div>
       )}
 
-      {/* Delegations Summary (wired from useVaultDelegations) */}
       <Summary
         loading={loading}
         entries={data?.summary}
@@ -48,5 +44,3 @@ export function DelegationsCard({ factoryId, vaultId, onDeposit, onDelegate, ava
     </section>
   );
 }
-
-// OnboardingEmptyState moved into Summary component
