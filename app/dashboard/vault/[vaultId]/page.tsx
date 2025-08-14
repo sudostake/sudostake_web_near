@@ -13,8 +13,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { useWithdraw } from "@/hooks/useWithdraw";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
-import { DetailsCard } from "./components/DetailsCard";
-import { ActivitySection } from "./components/ActivitySection";
+import { DelegationsCard } from "./components/DelegationsCard";
 import { parseNumber } from "@/utils/format";
 
 type VaultData = {
@@ -121,7 +120,6 @@ export default function VaultPage() {
     );
   } else {
     const apy = data?.apy ?? null;
-    const owner = data?.owner ?? null;
 
     Body = (
       <div className="space-y-4 p-4">
@@ -134,9 +132,14 @@ export default function VaultPage() {
 
         <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
 
-        <DetailsCard vaultId={vaultId} owner={owner} factoryId={factoryId} />
-
-        <ActivitySection />
+        <DelegationsCard
+          factoryId={factoryId}
+          vaultId={vaultId}
+          onDeposit={handleDeposit}
+          onDelegate={() => { console.log("Start delegating clicked"); }}
+          availableBalance={availBalance}
+          availableLoading={availLoading}
+        />
       </div>
     );
   }
