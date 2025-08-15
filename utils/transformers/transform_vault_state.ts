@@ -21,7 +21,7 @@ import type { TransformedVaultState } from "@/utils/types/transformed_vault_stat
  */
 export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {
   // Consume only the subset we care about from the full consolidated on-chain view type.
-  const { owner, liquidity_request, accepted_offer, liquidation } = vault_state as VaultViewState;
+  const { owner, liquidity_request, accepted_offer, liquidation } = vault_state;
 
   let state: "pending" | "active" | "idle" = "idle";
   if (liquidity_request) {
@@ -40,7 +40,13 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const interest = (liquidity_request as Record<string, unknown>)["interest"] as string | undefined;
     const collateral = (liquidity_request as Record<string, unknown>)["collateral"] as string | undefined;
     const duration = (liquidity_request as Record<string, unknown>)["duration"] as number | undefined;
-    if (token && amount && interest && collateral && typeof duration === "number") {
+    if (
+      typeof token === "string" && token.length > 0 &&
+      typeof amount === "string" && amount.length > 0 &&
+      typeof interest === "string" && interest.length > 0 &&
+      typeof collateral === "string" && collateral.length > 0 &&
+      typeof duration === "number"
+    ) {
       transformed.liquidity_request = { token, amount, interest, collateral, duration };
     }
   }
