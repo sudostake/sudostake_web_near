@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
 import { jsonError, jsonOk, safeParseJson } from "@/utils/api/http";
-import type { RawVaultState } from "@/utils/types/raw_vault_state";
+import type { VaultViewState } from "@/utils/types/vault_view_state";
 import {
-  fetchRawVaultState,
+  fetchVaultViewState,
   getRpcUrl,
   persistIndexedVault,
   validateFactoryAndVault,
@@ -64,9 +64,9 @@ export async function POST(req: NextRequest) {
 
   const { factoryId, vault, txHash, rpcUrl } = validated.data;
 
-  let rawState: RawVaultState;
+  let rawState: VaultViewState;
   try {
-    rawState = await fetchRawVaultState(rpcUrl, vault);
+    rawState = await fetchVaultViewState(rpcUrl, vault);
   } catch (error: unknown) {
     console.error("Failed to fetch vault state from chain:", error);
     const details = error instanceof Error ? error.message : error;

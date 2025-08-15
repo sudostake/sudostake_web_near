@@ -1,6 +1,14 @@
+// Consolidated on-chain view type
+// --------------------------------
 // TypeScript representation of the VaultViewState returned by the on-chain
 // `get_vault_state` view method. This mirrors the Rust struct shape but keeps
 // fields flexible where contract evolution may differ across versions.
+//
+// Note on subsets: Historically we also had a RawVaultState type, which was a
+// strict subset of VaultViewState covering only the fields our indexer and
+// transformers consumed. To reduce ambiguity and duplication, we now expose a
+// single consolidated VaultViewState and have transformers read only the subset
+// they need from this type.
 
 export type AccountId = string;
 
@@ -23,4 +31,3 @@ export interface VaultViewState {
   liquidation?: Record<string, unknown> | null;
   current_epoch: number;
 }
-

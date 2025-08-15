@@ -1,5 +1,5 @@
 import { FACTORY_CONTRACT_WHITELIST, isValidAccountId } from "@/utils/api/factory";
-import type { RawVaultState } from "@/utils/types/raw_vault_state";
+import type { VaultViewState } from "@/utils/types/vault_view_state";
 import { transformVaultState } from "@/utils/transformers/transform_vault_state";
 import type { VaultDocument } from "@/utils/types/vault_document";
 import admin from "@/utils/firebaseAdmin";
@@ -37,7 +37,7 @@ function buildRpcRequest(accountId: string, finality: "final" | "optimistic" = "
   };
 }
 
-export async function fetchRawVaultState(rpcUrl: string, accountId: string): Promise<RawVaultState> {
+export async function fetchVaultViewState(rpcUrl: string, accountId: string): Promise<VaultViewState> {
   const maxAttempts = 6;
   const baseDelayMs = 300;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -78,7 +78,7 @@ export async function fetchRawVaultState(rpcUrl: string, accountId: string): Pro
       const bytes: unknown = rpcData?.result?.result;
       if (Array.isArray(bytes)) {
         const json = Buffer.from(Uint8Array.from(bytes)).toString("utf8");
-        return JSON.parse(json) as RawVaultState;
+        return JSON.parse(json) as VaultViewState;
       }
       console.error("Unexpected RPC response format:", rpcData);
       throw new Error(`Unexpected RPC response format`);
@@ -90,10 +90,10 @@ export async function fetchRawVaultState(rpcUrl: string, accountId: string): Pro
 export async function persistIndexedVault(
   factoryId: string,
   vault: string,
-  rawState: RawVaultState,
+  viewState: VaultViewState,
   txHash?: string
 ) {
-  const transformed = transformVaultState(rawState);
+  const transformed = transformVaultState(viewState);
   const docRef = vaultDoc(factoryId, vault);
   const toWrite: VaultDocument = {
     ...transformed,
