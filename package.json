@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:account": "npx tsc -p tsconfig.json --noEmit false --outDir tmp_build && node scripts/test_isValidAccountId.js",
-    "test:transform": "npx tsc -p tsconfig.json --noEmit false --outDir tmp_build && node scripts/test_transform_vault_state.js"
+    "test:account": "npx tsc -p tsconfig.json --module commonjs --noEmit false --outDir tmp_build && node scripts/test_isValidAccountId.js",
+    "test:transform": "npx tsc -p tsconfig.json --module commonjs --noEmit false --outDir tmp_build && node scripts/test_transform_vault_state.js"
   },
   "dependencies": {
     "@near-wallet-selector/bitte-wallet": "^9.2.0",

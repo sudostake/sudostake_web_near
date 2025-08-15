@@ -1,6 +1,22 @@
 import { Timestamp } from "firebase-admin/firestore";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
+import { getField } from "../object";
+
+// Validation helper for liquidity request fields
+const isValidLiquidityRequest = (
+  token?: string,
+  amount?: string,
+  interest?: string,
+  collateral?: string,
+  duration?: number,
+): boolean => (
+  typeof token === "string" && token.length > 0 &&
+  typeof amount === "string" && amount.length > 0 &&
+  typeof interest === "string" && interest.length > 0 &&
+  typeof collateral === "string" && collateral.length > 0 &&
+  typeof duration === "number"
+);
 
 /**
  * Transforms the consolidated on-chain VaultViewState into a Firestore-compatible object.
@@ -33,14 +49,6 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     state,
   };
 
-  // Small helper to safely access fields on loosely-typed view objects
-  const getField = <T>(obj: unknown, key: string): T | undefined => {
-    if (obj && typeof obj === "object") {
-      return (obj as Record<string, unknown>)[key] as T | undefined;
-    }
-    return undefined;
-  };
-
   if (liquidity_request) {
     // These fields are the subset we care about from the contract's liquidity_request
     const token = getField<string>(liquidity_request, "token");
@@ -48,19 +56,6 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const interest = getField<string>(liquidity_request, "interest");
     const collateral = getField<string>(liquidity_request, "collateral");
     const duration = getField<number>(liquidity_request, "duration");
-    const isValidLiquidityRequest = (
-      token?: string,
-      amount?: string,
-      interest?: string,
-      collateral?: string,
-      duration?: number,
-    ): boolean => (
-      typeof token === "string" && token.length > 0 &&
-      typeof amount === "string" && amount.length > 0 &&
-      typeof interest === "string" && interest.length > 0 &&
-      typeof collateral === "string" && collateral.length > 0 &&
-      typeof duration === "number"
-    );
 
     if (isValidLiquidityRequest(token, amount, interest, collateral, duration)) {
       transformed.liquidity_request = {
