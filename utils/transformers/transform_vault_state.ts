@@ -46,11 +46,11 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const duration = getField<number>(liquidity_request, "duration", isNumber);
 
     if (
-      typeof token === "string" &&
-      typeof amount === "string" &&
-      typeof interest === "string" &&
-      typeof collateral === "string" &&
-      typeof duration === "number"
+      token !== undefined &&
+      amount !== undefined &&
+      interest !== undefined &&
+      collateral !== undefined &&
+      duration !== undefined
     ) {
       transformed.liquidity_request = {
         token,
@@ -85,7 +85,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   if (accepted_offer) {
     const lender = getField<string>(accepted_offer, "lender", isString);
     const accepted_at = getField<string | number | bigint>(accepted_offer, "accepted_at", isAcceptedAt);
-    if (lender && accepted_at !== undefined) {
+    if (lender !== undefined && accepted_at !== undefined) {
       transformed.accepted_offer = {
         lender,
         accepted_at: nsToTimestamp(accepted_at),
@@ -95,7 +95,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
 
   if (liquidation) {
     const liquidated = getField<string>(liquidation, "liquidated", isString);
-    if (liquidated) transformed.liquidation = { liquidated };
+    if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }
 
   return transformed;
