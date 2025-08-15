@@ -3,20 +3,7 @@ import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
 import { getField } from "../object";
 
-// Validation helper for liquidity request fields
-const isValidLiquidityRequest = (
-  token?: string,
-  amount?: string,
-  interest?: string,
-  collateral?: string,
-  duration?: number,
-): boolean => (
-  typeof token === "string" && token.length > 0 &&
-  typeof amount === "string" && amount.length > 0 &&
-  typeof interest === "string" && interest.length > 0 &&
-  typeof collateral === "string" && collateral.length > 0 &&
-  typeof duration === "number"
-);
+// Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
 /**
  * Transforms the consolidated on-chain VaultViewState into a Firestore-compatible object.
@@ -57,13 +44,19 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const collateral = getField<string>(liquidity_request, "collateral");
     const duration = getField<number>(liquidity_request, "duration");
 
-    if (isValidLiquidityRequest(token, amount, interest, collateral, duration)) {
+    if (
+      typeof token === "string" && token.length > 0 &&
+      typeof amount === "string" && amount.length > 0 &&
+      typeof interest === "string" && interest.length > 0 &&
+      typeof collateral === "string" && collateral.length > 0 &&
+      typeof duration === "number"
+    ) {
       transformed.liquidity_request = {
-        token: token!,
-        amount: amount!,
-        interest: interest!,
-        collateral: collateral!,
-        duration: duration!,
+        token,
+        amount,
+        interest,
+        collateral,
+        duration,
       };
     }
   }
