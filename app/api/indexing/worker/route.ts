@@ -5,7 +5,7 @@ import {
   markJobSucceeded,
   timestampFromDate,
 } from "@/utils/db/indexing_jobs";
-import { getRpcUrl, fetchRawVaultState, persistIndexedVault } from "@/utils/indexing/service";
+import { getRpcUrl, fetchVaultViewState, persistIndexedVault } from "@/utils/indexing/service";
 import { jsonOk } from "@/utils/api/http";
 
 export const runtime = "nodejs";
@@ -70,8 +70,8 @@ async function processOne(): Promise<ProcessResult> {
   }
 
   try {
-    const raw = await fetchRawVaultState(rpcUrl, job.vault);
-    await persistIndexedVault(job.factory_id, job.vault, raw, job.tx_hash);
+    const view = await fetchVaultViewState(rpcUrl, job.vault);
+    await persistIndexedVault(job.factory_id, job.vault, view, job.tx_hash);
     await markJobSucceeded(claimed.ref);
     return { picked: true as const, job: job.id, result: "succeeded" as const };
   } catch (e: unknown) {

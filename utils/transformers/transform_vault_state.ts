@@ -1,9 +1,18 @@
 import { Timestamp } from "firebase-admin/firestore";
-import type { RawVaultState } from "@/utils/types/raw_vault_state";
+import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
+import { getField } from "../object";
+import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
+
+// Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
 /**
- * Transforms raw vault state into a Firestore-compatible object.
+ * Transforms the consolidated on-chain VaultViewState into a Firestore-compatible object.
+ *
+ * We intentionally consume only a subset of VaultViewState (the same fields that
+ * used to be described by the former RawVaultState). Consolidating around
+ * VaultViewState removes type duplication and ambiguity while keeping this
+ * transformer responsible for extracting and shaping just what we need.
  *
  * Transformations:
  * - Leaves `duration` as seconds (numeric) — allows future expiration logic via `accepted_at + duration`
@@ -14,9 +23,8 @@ import type { TransformedVaultState } from "@/utils/types/transformed_vault_stat
  *    - "pending" → liquidity request without accepted offer
  *    - "active" → liquidity request with accepted offer
  */
-export function transformVaultState(
-  vault_state: RawVaultState
-): TransformedVaultState {
+export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {
+  // Consume only the subset we care about from the full consolidated on-chain view type.
   const { owner, liquidity_request, accepted_offer, liquidation } = vault_state;
 
   let state: "pending" | "active" | "idle" = "idle";
@@ -30,14 +38,28 @@ export function transformVaultState(
   };
 
   if (liquidity_request) {
-    const { token, amount, interest, collateral, duration } = liquidity_request;
-    transformed.liquidity_request = {
-      token,
-      amount,
-      interest,
-      collateral,
-      duration,
-    };
+    // These fields are the subset we care about from the contract's liquidity_request
+    const token = getField<string>(liquidity_request, "token", isNonEmptyString);
+    const amount = getField<string>(liquidity_request, "amount", isNonEmptyString);
+    const interest = getField<string>(liquidity_request, "interest", isNonEmptyString);
+    const collateral = getField<string>(liquidity_request, "collateral", isNonEmptyString);
+    const duration = getField<number>(liquidity_request, "duration", isNumber);
+
+    if (
+      token !== undefined &&
+      amount !== undefined &&
+      interest !== undefined &&
+      collateral !== undefined &&
+      duration !== undefined
+    ) {
+      transformed.liquidity_request = {
+        token,
+        amount,
+        interest,
+        collateral,
+        duration,
+      };
+    }
   }
 
   // Helper: convert nanoseconds since epoch to Firestore Timestamp.
@@ -61,16 +83,19 @@ export function transformVaultState(
   };
 
   if (accepted_offer) {
-    transformed.accepted_offer = {
-      lender: accepted_offer.lender,
-      accepted_at: nsToTimestamp(accepted_offer.accepted_at),
-    };
+    const lender = getField<string>(accepted_offer, "lender", isString);
+    const accepted_at = getField<string | number | bigint>(accepted_offer, "accepted_at", isAcceptedAt);
+    if (lender !== undefined && accepted_at !== undefined) {
+      transformed.accepted_offer = {
+        lender,
+        accepted_at: nsToTimestamp(accepted_at),
+      };
+    }
   }
 
   if (liquidation) {
-    transformed.liquidation = {
-      liquidated: liquidation.liquidated,
-    };
+    const liquidated = getField<string>(liquidation, "liquidated", isString);
+    if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }
 
   return transformed;
