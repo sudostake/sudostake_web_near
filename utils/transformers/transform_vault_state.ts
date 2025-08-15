@@ -48,14 +48,28 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const interest = getField<string>(liquidity_request, "interest");
     const collateral = getField<string>(liquidity_request, "collateral");
     const duration = getField<number>(liquidity_request, "duration");
-    if (
+    const isValidLiquidityRequest = (
+      token?: string,
+      amount?: string,
+      interest?: string,
+      collateral?: string,
+      duration?: number,
+    ): boolean => (
       typeof token === "string" && token.length > 0 &&
       typeof amount === "string" && amount.length > 0 &&
       typeof interest === "string" && interest.length > 0 &&
       typeof collateral === "string" && collateral.length > 0 &&
       typeof duration === "number"
-    ) {
-      transformed.liquidity_request = { token, amount, interest, collateral, duration };
+    );
+
+    if (isValidLiquidityRequest(token, amount, interest, collateral, duration)) {
+      transformed.liquidity_request = {
+        token: token!,
+        amount: amount!,
+        interest: interest!,
+        collateral: collateral!,
+        duration: duration!,
+      };
     }
   }
 
