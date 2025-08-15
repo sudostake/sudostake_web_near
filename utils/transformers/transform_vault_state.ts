@@ -33,13 +33,21 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     state,
   };
 
+  // Small helper to safely access fields on loosely-typed view objects
+  const getField = <T>(obj: unknown, key: string): T | undefined => {
+    if (obj && typeof obj === "object") {
+      return (obj as Record<string, unknown>)[key] as T | undefined;
+    }
+    return undefined;
+  };
+
   if (liquidity_request) {
     // These fields are the subset we care about from the contract's liquidity_request
-    const token = (liquidity_request as Record<string, unknown>)["token"] as string | undefined;
-    const amount = (liquidity_request as Record<string, unknown>)["amount"] as string | undefined;
-    const interest = (liquidity_request as Record<string, unknown>)["interest"] as string | undefined;
-    const collateral = (liquidity_request as Record<string, unknown>)["collateral"] as string | undefined;
-    const duration = (liquidity_request as Record<string, unknown>)["duration"] as number | undefined;
+    const token = getField<string>(liquidity_request, "token");
+    const amount = getField<string>(liquidity_request, "amount");
+    const interest = getField<string>(liquidity_request, "interest");
+    const collateral = getField<string>(liquidity_request, "collateral");
+    const duration = getField<number>(liquidity_request, "duration");
     if (
       typeof token === "string" && token.length > 0 &&
       typeof amount === "string" && amount.length > 0 &&
@@ -72,12 +80,8 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   };
 
   if (accepted_offer) {
-    const lender = (accepted_offer as Record<string, unknown>)["lender"] as string | undefined;
-    const accepted_at = (accepted_offer as Record<string, unknown>)["accepted_at"] as
-      | string
-      | number
-      | bigint
-      | undefined;
+    const lender = getField<string>(accepted_offer, "lender");
+    const accepted_at = getField<string | number | bigint>(accepted_offer, "accepted_at");
     if (lender && accepted_at !== undefined) {
       transformed.accepted_offer = {
         lender,
@@ -87,7 +91,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   }
 
   if (liquidation) {
-    const liquidated = (liquidation as Record<string, unknown>)["liquidated"] as string | undefined;
+    const liquidated = getField<string>(liquidation, "liquidated");
     if (liquidated) transformed.liquidation = { liquidated };
   }
 
