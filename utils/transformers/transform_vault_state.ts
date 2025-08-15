@@ -2,6 +2,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
 import { getField } from "../object";
+import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
 
 // Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
@@ -38,17 +39,17 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
 
   if (liquidity_request) {
     // These fields are the subset we care about from the contract's liquidity_request
-    const token = getField<string>(liquidity_request, "token");
-    const amount = getField<string>(liquidity_request, "amount");
-    const interest = getField<string>(liquidity_request, "interest");
-    const collateral = getField<string>(liquidity_request, "collateral");
-    const duration = getField<number>(liquidity_request, "duration");
+    const token = getField<string>(liquidity_request, "token", isNonEmptyString);
+    const amount = getField<string>(liquidity_request, "amount", isNonEmptyString);
+    const interest = getField<string>(liquidity_request, "interest", isNonEmptyString);
+    const collateral = getField<string>(liquidity_request, "collateral", isNonEmptyString);
+    const duration = getField<number>(liquidity_request, "duration", isNumber);
 
     if (
-      typeof token === "string" && token.length > 0 &&
-      typeof amount === "string" && amount.length > 0 &&
-      typeof interest === "string" && interest.length > 0 &&
-      typeof collateral === "string" && collateral.length > 0 &&
+      typeof token === "string" &&
+      typeof amount === "string" &&
+      typeof interest === "string" &&
+      typeof collateral === "string" &&
       typeof duration === "number"
     ) {
       transformed.liquidity_request = {
@@ -82,8 +83,8 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   };
 
   if (accepted_offer) {
-    const lender = getField<string>(accepted_offer, "lender");
-    const accepted_at = getField<string | number | bigint>(accepted_offer, "accepted_at");
+    const lender = getField<string>(accepted_offer, "lender", isString);
+    const accepted_at = getField<string | number | bigint>(accepted_offer, "accepted_at", isAcceptedAt);
     if (lender && accepted_at !== undefined) {
       transformed.accepted_offer = {
         lender,
@@ -93,7 +94,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   }
 
   if (liquidation) {
-    const liquidated = getField<string>(liquidation, "liquidated");
+    const liquidated = getField<string>(liquidation, "liquidated", isString);
     if (liquidated) transformed.liquidation = { liquidated };
   }
 
