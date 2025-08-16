@@ -46,7 +46,7 @@ export function DelegateDialog({
       .then((list: string[]) => {
         if (!aborted) setDefaultValidators(list);
       })
-      .catch(() => {})
+      .catch((err) => console.warn("Failed to fetch validators", err))
       .finally(() => {
         if (!aborted) setLoadingDefaults(false);
       });
@@ -95,8 +95,8 @@ export function DelegateDialog({
       const { txHash } = await delegate({ vault: vaultId, validator, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       onSuccess?.();
-    } catch {
-      // ignore, error displayed
+    } catch (err) {
+      console.warn("Delegate failed", err);
     } finally {
       resetAndClose();
     }
