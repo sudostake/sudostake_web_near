@@ -12,6 +12,8 @@ const DEFAULT_VALIDATORS: Record<Network, string[]> = {
     "kiln.pool.f863973.m0",
     "aurora.pool.f863973.m0",
   ],
+  // Mainnet validators are intentionally left empty for now.
+  // TODO: Configure mainnet validators separately when available.
   mainnet: [],
 };
 
