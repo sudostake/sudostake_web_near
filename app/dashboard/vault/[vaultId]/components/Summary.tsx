@@ -10,11 +10,22 @@ type Props = {
   entries?: DelegationSummaryEntry[];
   onDeposit?: () => void;
   onDelegate?: () => void;
+  onUndelegate?: (validator: string) => void;
+  onUnclaimUnstaked?: (validator: string) => void;
   availableBalance?: string | null;
   availableLoading?: boolean;
 };
 
-export function Summary({ loading, entries, onDeposit, onDelegate, availableBalance, availableLoading }: Props) {
+export function Summary({
+  loading,
+  entries,
+  onDeposit,
+  onDelegate,
+  onUndelegate,
+  onUnclaimUnstaked,
+  availableBalance,
+  availableLoading,
+}: Props) {
   return (
     <div className="px-4 py-3">
       <div className="text-sm text-secondary-text mb-2">Summary</div>
@@ -25,7 +36,12 @@ export function Summary({ loading, entries, onDeposit, onDelegate, availableBala
           <div className="h-5 rounded bg-background/60 w-1/3" />
         </div>
       ) : entries && entries.length > 0 ? (
-        <DelegationsSummary entries={entries} onDelegate={onDelegate} />
+        <DelegationsSummary
+          entries={entries}
+          onDelegate={onDelegate}
+          onUndelegate={onUndelegate}
+          onUnclaimUnstaked={onUnclaimUnstaked}
+        />
       ) : (
         <OnboardingEmptyState
           onDeposit={onDeposit}

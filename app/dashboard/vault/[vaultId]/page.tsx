@@ -55,6 +55,11 @@ export default function VaultPage() {
   const handleDeposit = () => setDepositOpen(true);
   const handleWithdraw = () => setWithdrawOpen(true);
   const handleDelegate = () => setDelegateOpen(true);
+  const handleUndelegate = (validator: string) => {
+    try {
+      window?.alert?.(`Undelegate from ${validator} is not implemented yet.`);
+    } catch {}
+  };
   const resetDeposit = () => setDepositOpen(false);
   const resetWithdraw = () => setWithdrawOpen(false);
   const resetDelegate = () => setDelegateOpen(false);
@@ -129,6 +134,7 @@ export default function VaultPage() {
           refetch={refetchDeleg}
           onDeposit={handleDeposit}
           onDelegate={handleDelegate}
+          onUndelegate={handleUndelegate}
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
