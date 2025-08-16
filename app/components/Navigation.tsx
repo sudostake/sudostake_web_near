@@ -73,27 +73,27 @@ export function Navigation() {
   return (
     <nav
       className={[
-        // Keep a consistent bottom border to avoid a white flash during snapping
-        "sticky z-20 flex items-center justify-between px-4 py-2 transition-all duration-200 border-b border-white/10",
-        compact
-          ? [
-              "top-0 mx-0 w-full rounded-none backdrop-blur",
-              // Explicit overlays to avoid white undertone in dark mode
-              "bg-white/60 dark:bg-black/40",
-            ].join(" ")
-          : "top-4 mx-4 md:mx-auto md:max-w-2xl rounded-lg bg-surface shadow-none",
+        "sticky top-0 z-20 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
       ].join(" ")}
+      style={{ willChange: "padding, background-color, backdrop-filter, box-shadow" }}
     >
-      <Link href="/" className="text-xl font-bold">
-        SudoStake
-      </Link>
-      <button
-        className="px-4 py-2 bg-primary text-primary-text rounded disabled:opacity-50"
-        onClick={action}
-        disabled={label === "Loading..."}
+      <div
+        className={[
+          "flex items-center justify-between px-4 md:mx-auto md:max-w-2xl transition-all duration-300",
+          compact ? "py-2 shadow-sm" : "py-3 shadow-none",
+        ].join(" ")}
       >
-        {signedAccountId ? <LogoutIcon /> : label}
-      </button>
+        <Link href="/" className="text-xl font-bold">
+          SudoStake
+        </Link>
+        <button
+          className="px-4 py-2 bg-primary text-primary-text rounded disabled:opacity-50"
+          onClick={action}
+          disabled={label === "Loading..."}
+        >
+          {signedAccountId ? <LogoutIcon /> : label}
+        </button>
+      </div>
     </nav>
   );
 }
