@@ -31,6 +31,7 @@ export function UndelegateDialog({
 }) {
   const [amount, setAmount] = useState<string>("");
   const { undelegate, pending, error } = useUndelegate();
+  const [localError, setLocalError] = useState<string | null>(null);
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
@@ -61,14 +62,16 @@ export function UndelegateDialog({
   };
 
   const confirm = async () => {
+    setLocalError(null);
     try {
       const { txHash } = await undelegate({ vault: vaultId, validator, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       onSuccess?.();
-    } catch (e) {
-      console.warn("Undelegate failed", e);
-    } finally {
       resetAndClose();
+    } catch (e: unknown) {
+      console.warn("Undelegate failed", e);
+      const msg = e instanceof Error ? e.message : "Undelegate failed. Please try again.";
+      setLocalError(msg);
     }
   };
 
@@ -119,7 +122,9 @@ export function UndelegateDialog({
             onChange={(e) => setAmount(e.target.value)}
           />
         </label>
-        {error && <div className="text-xs text-red-500">{error}</div>}
+        {(localError || error) && (
+          <div className="text-xs text-red-500">{localError ?? error}</div>
+        )}
         <div className="flex items-center justify-between text-xs text-secondary-text">
           <div>Max available: {stakedLoading ? "…" : stakedBalance} NEAR</div>
           <button
