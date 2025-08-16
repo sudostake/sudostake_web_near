@@ -8,7 +8,7 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { useCreateVault } from "@/hooks/useCreateVault";
 import { useIndexVault } from "@/hooks/useIndexVault";
 
-export function CreateVaultModal({
+export function CreateVaultDialog({
   open,
   onClose,
   onSuccess,

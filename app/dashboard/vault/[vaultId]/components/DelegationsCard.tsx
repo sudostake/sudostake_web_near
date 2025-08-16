@@ -1,21 +1,33 @@
 "use client";
 
 import React from "react";
-import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { Summary } from "./Summary";
 
 type Props = {
-  factoryId?: string | null;
-  vaultId?: string | null;
+  loading: boolean;
+  error: string | null;
+  summary?: DelegationSummaryEntry[];
+  refetch: () => void;
   onDeposit?: () => void;
   onDelegate?: () => void;
   availableBalance?: string | null;
   availableLoading?: boolean;
 };
 
-export function DelegationsCard({ factoryId, vaultId, onDeposit, onDelegate, availableBalance, availableLoading }: Props) {
-  const { data, loading, error, refetch } = useVaultDelegations(factoryId, vaultId);
-
+/**
+ * Renders the vault's delegation summary and controls.
+ */
+export function DelegationsCard({
+  loading,
+  error,
+  summary,
+  refetch,
+  onDeposit,
+  onDelegate,
+  availableBalance,
+  availableLoading,
+}: Props) {
   return (
     <section className="rounded border bg-surface">
       <header className="flex items-center justify-between px-4 py-3 border-b">
@@ -34,7 +46,7 @@ export function DelegationsCard({ factoryId, vaultId, onDeposit, onDelegate, ava
 
       <Summary
         loading={loading}
-        entries={data?.summary}
+        entries={summary}
         onDeposit={onDeposit}
         onDelegate={onDelegate}
         availableBalance={availableBalance}

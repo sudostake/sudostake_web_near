@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
-import { CreateVaultModal } from "../components/CreateVaultModal";
+import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
 import { getActiveNetwork, factoryContract } from "@/utils/networks";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
@@ -50,7 +50,7 @@ export default function Dashboard() {
           />
         </div>
       </main>
-      <CreateVaultModal
+      <CreateVaultDialog
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSuccess={() => {

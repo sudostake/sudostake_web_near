@@ -6,15 +6,13 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
-import { Modal } from "@/app/components/Modal";
-import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { useDeposit } from "@/hooks/useDeposit";
-import { useIndexVault } from "@/hooks/useIndexVault";
-import { useWithdraw } from "@/hooks/useWithdraw";
+import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
+import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
+import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
-import { parseNumber } from "@/utils/format";
+import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 
 type VaultData = {
   total?: number;
@@ -34,7 +32,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
-    </button>
+	</button>
   );
 }
 
@@ -46,37 +44,28 @@ export default function VaultPage() {
   const { data, loading, error, refetch } = useVault<VaultData>(factoryId, vaultId);
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
-  const { balances, loading: balancesLoading } = useTokenBalances();
-  const { deposit, pending: depositing, error: depositError } = useDeposit();
-  const { withdraw, pending: withdrawing, error: withdrawError } = useWithdraw();
-  const { indexVault } = useIndexVault();
+  
 
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
     useAvailableBalance(vaultId);
 
   const [depositOpen, setDepositOpen] = useState(false);
-  const [amount, setAmount] = useState<string>("");
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [delegateOpen, setDelegateOpen] = useState(false);
   const handleDeposit = () => setDepositOpen(true);
   const handleWithdraw = () => setWithdrawOpen(true);
-  const resetDeposit = () => {
-    setAmount("");
-    setDepositOpen(false);
-  };
-  const resetWithdraw = () => {
-    setAmount("");
-    setWithdrawOpen(false);
-  };
+  const handleDelegate = () => setDelegateOpen(true);
+  const resetDeposit = () => setDepositOpen(false);
+  const resetWithdraw = () => setWithdrawOpen(false);
+  const resetDelegate = () => setDelegateOpen(false);
 
-  const modalSymbol = (data?.symbol ?? "NEAR").toUpperCase();
-  const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
-  const amountNum = Number(amount);
-  const depositAvailableNum = parseNumber(availableStr);
-  const depositDisableContinue =
-    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(depositAvailableNum) || amountNum > depositAvailableNum;
-  const withdrawAvailableNum = parseNumber(availBalance);
-  const withdrawDisableContinue =
-    !amount || Number.isNaN(amountNum) || amountNum <= 0 || Number.isNaN(withdrawAvailableNum) || amountNum > withdrawAvailableNum;
+  // Delegations hook (refreshable on delegate)
+  const {
+    data: delegData,
+    loading: delegLoading,
+    error: delegError,
+    refetch: refetchDeleg,
+  } = useVaultDelegations(factoryId, vaultId);
 
   const Header = (
     <header className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
@@ -132,11 +121,14 @@ export default function VaultPage() {
 
         <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
 
+        {/* Delegations list & controls */}
         <DelegationsCard
-          factoryId={factoryId}
-          vaultId={vaultId}
+          loading={delegLoading}
+          error={delegError}
+          summary={delegData?.summary}
+          refetch={refetchDeleg}
           onDeposit={handleDeposit}
-          onDelegate={() => { console.log("Start delegating clicked"); }}
+          onDelegate={handleDelegate}
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
@@ -149,158 +141,40 @@ export default function VaultPage() {
       <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
         {Header}
         {Body}
-        <Modal
+        <DepositDialog
           open={depositOpen}
           onClose={resetDeposit}
-          title="Deposit to vault"
-          disableBackdropClose={depositing}
-          footer={
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-                onClick={resetDeposit}
-                disabled={depositing}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={depositDisableContinue || depositing}
-              onClick={async () => {
-                try {
-                  const { txHash } = await deposit({ vault: vaultId, amount });
-                  await indexVault({ factoryId, vault: vaultId, txHash });
-                } catch (err) {
-                  console.warn("Deposit failed", err);
-                } finally {
-                  resetDeposit();
-                  refetchVaultNear();
-                  refetchAvail();
-                }
-              }}
-              >
-                {depositing ? "Depositing..." : "Continue"}
-              </button>
-            </div>
-          }
-        >
-          <div className="space-y-3">
-            <div className="text-sm text-secondary-text">
-              Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-            </div>
-            <label className="block text-sm">
-              <span className="text-secondary-text">Amount</span>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                inputMode="decimal"
-                placeholder="0.0"
-                className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </label>
-            {depositError && (
-              <div className="text-xs text-red-500">{depositError}</div>
-            )}
-            <div className="flex items-center justify-between text-xs text-secondary-text">
-              <div>
-                Max you can deposit: {balancesLoading ? "…" : availableStr} {modalSymbol}
-              </div>
-              <button
-                type="button"
-                className="underline disabled:no-underline disabled:opacity-60"
-                disabled={balancesLoading}
-              onClick={() => {
-                const numeric = parseNumber(availableStr);
-                setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-              }}
-                aria-label="Use maximum available"
-              >
-                Max
-              </button>
-            </div>
-          </div>
-        </Modal>
-        <Modal
+          vaultId={vaultId}
+          symbol={data?.symbol}
+          onSuccess={() => {
+            refetchVaultNear();
+            refetchAvail();
+            // Refresh delegations after deposit? optional
+          }}
+        />
+        <WithdrawDialog
           open={withdrawOpen}
           onClose={resetWithdraw}
-          title="Withdraw from vault"
-          disableBackdropClose={withdrawing}
-          footer={
-            <div className="flex items-center justify-end gap-2">
-              <button
-                type="button"
-                className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-                onClick={resetWithdraw}
-                disabled={withdrawing}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-                disabled={withdrawDisableContinue || withdrawing}
-                onClick={async () => {
-                  try {
-                    const { txHash } = await withdraw({ vault: vaultId, amount });
-                    await indexVault({ factoryId, vault: vaultId, txHash });
-                  } catch (err) {
-                    console.warn("Withdraw failed", err);
-                  } finally {
-                    resetWithdraw();
-                    refetchVaultNear();
-                    refetchAvail();
-                  }
-                }}
-              >
-                {withdrawing ? "Withdrawing..." : "Continue"}
-              </button>
-            </div>
-          }
-        >
-          <div className="space-y-3">
-            <div className="text-sm text-secondary-text">
-              Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-            </div>
-            <label className="block text-sm">
-              <span className="text-secondary-text">Amount</span>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                inputMode="decimal"
-                placeholder="0.0"
-                className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-            </label>
-            {withdrawError && (
-              <div className="text-xs text-red-500">{withdrawError}</div>
-            )}
-            <div className="flex items-center justify-between text-xs text-secondary-text">
-              <div>
-                Max you can withdraw: {availLoading ? "…" : availBalance} {modalSymbol}
-              </div>
-              <button
-                type="button"
-                className="underline disabled:no-underline disabled:opacity-60"
-                disabled={availLoading}
-                onClick={() => {
-                  const numeric = parseNumber(availBalance);
-                  setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-                }}
-                aria-label="Use maximum available"
-              >
-                Max
-              </button>
-            </div>
-          </div>
-        </Modal>
+          vaultId={vaultId}
+          symbol={data?.symbol}
+          onSuccess={() => {
+            refetchVaultNear();
+            refetchAvail();
+            // Refresh delegations after withdrawal? optional
+          }}
+        />
+        <DelegateDialog
+          open={delegateOpen}
+          onClose={resetDelegate}
+          vaultId={vaultId}
+          availableBalance={availBalance}
+          availableLoading={availLoading}
+          onSuccess={() => {
+            refetchAvail();
+            // Refresh delegations after delegation
+            refetchDeleg();
+          }}
+        />
       </main>
     </div>
   );
