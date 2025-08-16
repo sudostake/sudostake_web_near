@@ -5,7 +5,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { utils } from "near-api-js";
 import Big from "big.js";
-import { DEFAULT_GAS } from "@/utils/constants";
+import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
 
 export type WithdrawParams = {
   vault: string;
@@ -96,7 +96,7 @@ export function useWithdraw(): UseWithdrawResult {
                   to,
                 },
                 gas: DEFAULT_GAS,
-                deposit: "1",
+                deposit: ONE_YOCTO,
               },
             },
           ],

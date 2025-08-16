@@ -4,7 +4,7 @@ import { useCallback, useState } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { utils } from "near-api-js";
-import { DEFAULT_GAS } from "@/utils/constants";
+import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
 
 /**
  * Parameters for delegating NEAR tokens from a vault contract to a validator.
@@ -71,7 +71,7 @@ export function useDelegate(): UseDelegateResult {
                 methodName: "delegate",
                 args: { validator, amount: rawAmount },
                 gas: DEFAULT_GAS,
-                deposit: "1",
+                deposit: ONE_YOCTO,
               },
             },
           ],
