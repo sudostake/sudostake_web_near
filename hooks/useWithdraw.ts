@@ -6,6 +6,7 @@ import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { utils } from "near-api-js";
 import Big from "big.js";
 import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
+import { getFriendlyErrorMessage } from "@/utils/errors";
 
 export type WithdrawParams = {
   vault: string;
@@ -106,7 +107,7 @@ export function useWithdraw(): UseWithdrawResult {
         setSuccess(true);
         return { txHash };
       } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(getFriendlyErrorMessage(e));
         setSuccess(false);
         throw e;
       } finally {

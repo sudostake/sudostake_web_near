@@ -5,6 +5,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { utils } from "near-api-js";
 import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
+import { getFriendlyErrorMessage } from "@/utils/errors";
 
 /**
  * Parameters for undelegating NEAR tokens from a vault contract for a validator.
@@ -81,7 +82,7 @@ export function useUndelegate(): UseUndelegateResult {
         setSuccess(true);
         return { txHash };
       } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : String(e));
+        setError(getFriendlyErrorMessage(e));
         setSuccess(false);
         throw e;
       } finally {
