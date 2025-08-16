@@ -1,10 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 /**
  * Returns the default validators for delegation (e.g. testnet defaults).
  * This endpoint allows the UI to fetch an updatable list of default validators.
  */
-import { NextRequest } from "next/server";
 import type { Network } from "@/utils/networks";
 
 // Default validators by network (allows updating per network)

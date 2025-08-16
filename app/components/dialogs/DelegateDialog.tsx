@@ -170,7 +170,9 @@ export function DelegateDialog({
             type="button"
             className="underline disabled:no-underline disabled:opacity-60"
             disabled={availableLoading}
-            onClick={() => setAmount(maxAmount.toString())}
+            onClick={() => {
+              if (maxAmount > 0) setAmount(maxAmount.toString());
+            }}
           >
             Max
           </button>
