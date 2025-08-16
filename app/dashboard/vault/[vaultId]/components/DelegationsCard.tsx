@@ -11,6 +11,8 @@ type Props = {
   refetch: () => void;
   onDeposit?: () => void;
   onDelegate?: () => void;
+  onUndelegate?: (validator: string) => void;
+  onUnclaimUnstaked?: (validator: string) => void;
   availableBalance?: string | null;
   availableLoading?: boolean;
 };
@@ -25,6 +27,8 @@ export function DelegationsCard({
   refetch,
   onDeposit,
   onDelegate,
+  onUndelegate,
+  onUnclaimUnstaked,
   availableBalance,
   availableLoading,
 }: Props) {
@@ -49,6 +53,8 @@ export function DelegationsCard({
         entries={summary}
         onDeposit={onDeposit}
         onDelegate={onDelegate}
+        onUndelegate={onUndelegate}
+        onUnclaimUnstaked={onUnclaimUnstaked}
         availableBalance={availableBalance}
         availableLoading={availableLoading}
       />

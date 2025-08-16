@@ -8,47 +8,47 @@ import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
 import { getFriendlyErrorMessage } from "@/utils/errors";
 
 /**
- * Parameters for delegating NEAR tokens from a vault contract to a validator.
+ * Parameters for undelegating NEAR tokens from a vault contract for a validator.
  */
-export type DelegateParams = {
-  /** The vault account ID from which to delegate. */
+export type UndelegateParams = {
+  /** The vault account ID from which to undelegate. */
   vault: string;
-  /** Validator account ID to delegate to. */
+  /** Validator account ID to undelegate from. */
   validator: string;
-  /** Amount to delegate in NEAR (user-friendly format, e.g. "1.23"). */
+  /** Amount to undelegate in NEAR (user-friendly format, e.g. "1.23"). */
   amount: string;
 };
 
 /**
- * Result of a successful delegate operation.
+ * Result of a successful undelegate operation.
  */
-export type DelegateResult = {
-  /** Transaction hash of the delegate call. */
+export type UndelegateResult = {
+  /** Transaction hash of the undelegate call. */
   txHash: string;
 };
 
 /**
- * Hook for delegating NEAR tokens from the user's vault to a staking pool validator.
+ * Hook for undelegating NEAR tokens from the user's vault to a staking pool validator.
  */
-export type UseDelegateResult = {
-  /** Initiates the delegate; returns transaction details when complete. */
-  delegate: (params: DelegateParams) => Promise<DelegateResult>;
-  /** True while the delegate transaction is in flight. */
+export type UseUndelegateResult = {
+  /** Initiates the undelegate; returns transaction details when complete. */
+  undelegate: (params: UndelegateParams) => Promise<UndelegateResult>;
+  /** True while the undelegate transaction is in flight. */
   pending: boolean;
-  /** Error message if the last delegate failed. */
+  /** Error message if the last undelegate failed. */
   error: string | null;
-  /** True if the last delegate succeeded. */
+  /** True if the last undelegate succeeded. */
   success: boolean;
 };
 
-export function useDelegate(): UseDelegateResult {
+export function useUndelegate(): UseUndelegateResult {
   const { signedAccountId, wallet } = useWalletSelector();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const delegate = useCallback(
-    async ({ vault, validator, amount }: DelegateParams) => {
+  const undelegate = useCallback(
+    async ({ vault, validator, amount }: UndelegateParams) => {
       if (!signedAccountId) {
         throw new Error("Wallet not signed in");
       }
@@ -61,7 +61,7 @@ export function useDelegate(): UseDelegateResult {
       try {
         const rawAmount = utils.format.parseNearAmount(amount);
         if (!rawAmount) {
-          throw new Error("Invalid delegate amount");
+          throw new Error("Invalid undelegate amount");
         }
         const outcomeRaw = await wallet.signAndSendTransaction({
           receiverId: vault,
@@ -69,7 +69,7 @@ export function useDelegate(): UseDelegateResult {
             {
               type: "FunctionCall",
               params: {
-                methodName: "delegate",
+                methodName: "undelegate",
                 args: { validator, amount: rawAmount },
                 gas: DEFAULT_GAS,
                 deposit: ONE_YOCTO,
@@ -92,5 +92,5 @@ export function useDelegate(): UseDelegateResult {
     [signedAccountId, wallet]
   );
 
-  return { delegate, pending, error, success };
+  return { undelegate, pending, error, success };
 }

@@ -22,7 +22,17 @@ function summaryStatus(entry: DelegationSummaryEntry): string | null {
   return null;
 }
 
-function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
+function SummaryItem({
+  entry,
+  onDelegate,
+  onUndelegate,
+  onUnclaimUnstaked,
+}: {
+  entry: DelegationSummaryEntry;
+  onDelegate?: () => void;
+  onUndelegate?: (validator: string) => void;
+  onUnclaimUnstaked?: (validator: string) => void;
+}) {
   const status = summaryStatus(entry);
   return (
     <li className="py-2" key={entry.validator}>
@@ -42,17 +52,58 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           </span>
         )}
       </div>
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
+          onClick={onDelegate}
+          disabled={!onDelegate}
+        >
+          Delegate more
+        </button>
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
+          onClick={() => onUndelegate?.(entry.validator)}
+          disabled={!onUndelegate}
+        >
+          Undelegate
+        </button>
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
+          onClick={() => onUnclaimUnstaked?.(entry.validator)}
+          disabled={!onUnclaimUnstaked}
+        >
+          Claim
+        </button>
+      </div>
     </li>
   );
 }
 
-export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
+export function DelegationsSummary({
+  entries,
+  onDelegate,
+  onUndelegate,
+  onUnclaimUnstaked,
+}: {
+  entries: DelegationSummaryEntry[];
+  onDelegate?: () => void;
+  onUndelegate?: (validator: string) => void;
+  onUnclaimUnstaked?: (validator: string) => void;
+}) {
   return (
     <ul className="divide-y">
       {entries.map((entry) => (
-        <SummaryItem key={entry.validator} entry={entry} />
+        <SummaryItem
+          key={entry.validator}
+          entry={entry}
+          onDelegate={onDelegate}
+          onUndelegate={onUndelegate}
+          onUnclaimUnstaked={onUnclaimUnstaked}
+        />
       ))}
     </ul>
   );
 }
-

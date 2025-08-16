@@ -33,6 +33,7 @@ export function DelegateDialog({
   const factoryId = getActiveFactoryId();
   const { data, loading: loadValidators } = useVaultDelegations(factoryId, vaultId);
   const { delegate, pending, error } = useDelegate();
+  const [localError, setLocalError] = useState<string | null>(null);
   const { indexVault } = useIndexVault();
 
   // Fetch default validator list from server, passing current network
@@ -98,14 +99,16 @@ export function DelegateDialog({
   };
 
   const confirm = async () => {
+    setLocalError(null);
     try {
       const { txHash } = await delegate({ vault: vaultId, validator, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       onSuccess?.();
-    } catch (err) {
-      console.warn("Delegate failed", err);
-    } finally {
       resetAndClose();
+    } catch (err: unknown) {
+      console.warn("Delegate failed", err);
+      const msg = err instanceof Error ? err.message : "Delegate failed. Please try again.";
+      setLocalError(msg);
     }
   };
 
@@ -168,7 +171,9 @@ export function DelegateDialog({
             onChange={(e) => setAmount(e.target.value)}
           />
         </label>
-        {error && <div className="text-xs text-red-500">{error}</div>}
+        {(localError || error) && (
+          <div className="text-xs text-red-500">{localError ?? error}</div>
+        )}
         <div className="flex items-center justify-between text-xs text-secondary-text">
           <div>
             Max available: {availableLoading ? "…" : availableBalance} NEAR
