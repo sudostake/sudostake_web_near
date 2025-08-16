@@ -54,6 +54,12 @@ export function UndelegateDialog({
     setAmount("");
     onClose();
   };
+  
+  const handleMaxClick = () => {
+    if (maxAvailable > 0) {
+      setAmount(maxAvailable.toString());
+    }
+  };
 
   const confirm = async () => {
     try {
@@ -121,7 +127,7 @@ export function UndelegateDialog({
             type="button"
             className="underline disabled:no-underline disabled:opacity-60"
             disabled={stakedLoading}
-            onClick={() => { if (maxAvailable > 0) setAmount(maxAvailable.toString()); }}
+            onClick={handleMaxClick}
           >
             Max
           </button>

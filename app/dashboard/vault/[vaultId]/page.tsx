@@ -191,7 +191,7 @@ export default function VaultPage() {
           open={undelegateOpen}
           onClose={resetUndelegate}
           vaultId={vaultId}
-          validator={undelegateValidator!}
+          validator={undelegateValidator ?? ""}
           stakedBalance={delegData?.summary?.find((e) => e.validator === undelegateValidator)?.staked_balance}
           stakedLoading={delegLoading}
           onSuccess={() => {
