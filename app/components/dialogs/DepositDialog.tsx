@@ -7,6 +7,7 @@ import { useDeposit } from "@/hooks/useDeposit";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
+import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
 
 export function DepositDialog({
   open,
@@ -103,25 +104,18 @@ export function DepositDialog({
         {depositError && (
           <div className="text-xs text-red-500">{depositError}</div>
         )}
-        <div className="flex items-center justify-between text-xs text-secondary-text">
-          <div>
-            Max you can deposit: {balancesLoading ? "…" : availableStr} {modalSymbol}
-          </div>
-          <button
-            type="button"
-            className="underline disabled:no-underline disabled:opacity-60"
-            disabled={balancesLoading}
-            onClick={() => {
-              const numeric = parseNumber(availableStr);
-              setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-            }}
-            aria-label="Use maximum available"
-          >
-            Max
-          </button>
-        </div>
+        <MaxAvailable
+          loading={balancesLoading}
+          label="Max you can deposit"
+          balance={availableStr}
+          suffix={modalSymbol}
+          buttonAriaLabel="Use maximum available"
+          onClick={() => {
+            const numeric = parseNumber(availableStr);
+            setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
+          }}
+        />
       </div>
     </Modal>
   );
 }
-

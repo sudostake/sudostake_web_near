@@ -8,6 +8,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { getActiveNetwork } from "@/utils/networks";
+import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
 
 // Default validators endpoint (network-aware)
 const DEFAULT_VALIDATORS_ROUTE = "/api/validators";
@@ -174,21 +175,14 @@ export function DelegateDialog({
         {(localError || error) && (
           <div className="text-xs text-red-500">{localError ?? error}</div>
         )}
-        <div className="flex items-center justify-between text-xs text-secondary-text">
-          <div>
-            Max available: {availableLoading ? "…" : availableBalance} NEAR
-          </div>
-          <button
-            type="button"
-            className="underline disabled:no-underline disabled:opacity-60"
-            disabled={availableLoading}
-            onClick={() => {
-              if (maxAmount > 0) setAmount(maxAmount.toString());
-            }}
-          >
-            Max
-          </button>
-        </div>
+        <MaxAvailable
+          loading={availableLoading}
+          balance={availableBalance}
+          suffix="NEAR"
+          onClick={() => {
+            if (maxAmount > 0) setAmount(maxAmount.toString());
+          }}
+        />
       </div>
     </Modal>
   );
