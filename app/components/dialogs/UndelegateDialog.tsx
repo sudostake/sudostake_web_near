@@ -54,7 +54,6 @@ export function UndelegateDialog({
     setAmount("");
     onClose();
   };
-  
   const handleMaxClick = () => {
     if (maxAvailable > 0) {
       setAmount(maxAvailable.toString());
