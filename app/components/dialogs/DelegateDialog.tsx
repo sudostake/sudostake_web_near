@@ -42,9 +42,16 @@ export function DelegateDialog({
     let aborted = false;
     const network = getActiveNetwork();
     fetch(`${DEFAULT_VALIDATORS_ROUTE}?network=${network}`)
-      .then((res) => res.json())
-      .then((list: string[]) => {
-        if (!aborted) setDefaultValidators(list);
+      .then(async (res) => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch validators: ${res.status} ${res.statusText}`);
+        }
+        const data = await res.json();
+        if (Array.isArray(data) && data.every((item) => typeof item === "string")) {
+          if (!aborted) setDefaultValidators(data as string[]);
+        } else {
+          throw new Error("Invalid validator list format");
+        }
       })
       .catch((err) => console.warn("Failed to fetch validators", err))
       .finally(() => {
