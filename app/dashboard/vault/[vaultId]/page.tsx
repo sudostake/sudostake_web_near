@@ -9,6 +9,7 @@ import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
+import { ClaimUnstakedDialog } from "@/app/components/dialogs/ClaimUnstakedDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
@@ -68,6 +69,16 @@ export default function VaultPage() {
   const resetUndelegate = () => {
     setUndelegateValidator(null);
     setUndelegateOpen(false);
+  };
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [claimValidator, setClaimValidator] = useState<string | null>(null);
+  const handleUnclaimUnstaked = (validator: string) => {
+    setClaimValidator(validator);
+    setClaimOpen(true);
+  };
+  const resetClaim = () => {
+    setClaimValidator(null);
+    setClaimOpen(false);
   };
 
   // Delegations hook (refreshable on delegate)
@@ -141,6 +152,7 @@ export default function VaultPage() {
           onDeposit={handleDeposit}
           onDelegate={handleDelegate}
           onUndelegate={handleUndelegate}
+          onUnclaimUnstaked={handleUnclaimUnstaked}
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
@@ -194,6 +206,16 @@ export default function VaultPage() {
           validator={undelegateValidator ?? ""}
           stakedBalance={delegData?.summary?.find((e) => e.validator === undelegateValidator)?.staked_balance}
           stakedLoading={delegLoading}
+          onSuccess={() => {
+            refetchAvail();
+            refetchDeleg();
+          }}
+        />
+        <ClaimUnstakedDialog
+          open={claimOpen}
+          onClose={resetClaim}
+          vaultId={vaultId}
+          validator={claimValidator ?? ""}
           onSuccess={() => {
             refetchAvail();
             refetchDeleg();

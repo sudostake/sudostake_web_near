@@ -73,7 +73,7 @@ function SummaryItem({
           type="button"
           className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
           onClick={() => onUnclaimUnstaked?.(entry.validator)}
-          disabled={!onUnclaimUnstaked}
+          disabled={!onUnclaimUnstaked || !entry.can_withdraw}
         >
           Claim
         </button>

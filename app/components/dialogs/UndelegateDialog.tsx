@@ -6,6 +6,7 @@ import { useUndelegate } from "@/hooks/useUndelegate";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
+import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
 
 /**
  * Dialog for undelegating NEAR tokens from a vault contract for a specific validator.
@@ -125,17 +126,11 @@ export function UndelegateDialog({
         {(localError || error) && (
           <div className="text-xs text-red-500">{localError ?? error}</div>
         )}
-        <div className="flex items-center justify-between text-xs text-secondary-text">
-          <div>Max available: {stakedLoading ? "…" : stakedBalance} NEAR</div>
-          <button
-            type="button"
-            className="underline disabled:no-underline disabled:opacity-60"
-            disabled={stakedLoading}
-            onClick={handleMaxClick}
-          >
-            Max
-          </button>
-        </div>
+        <MaxAvailable
+          loading={stakedLoading}
+          balance={stakedBalance}
+          onClick={handleMaxClick}
+        />
       </div>
     </Modal>
   );
