@@ -5,6 +5,7 @@ import { Modal } from "@/app/components/dialogs/Modal";
 import { useClaimUnstaked } from "@/hooks/useClaimUnstaked";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 /**
  * Dialog for claiming unstaked NEAR tokens from a vault contract for a validator.
@@ -50,7 +51,7 @@ export function ClaimUnstakedDialog({
     <Modal
       open={open}
       onClose={resetAndClose}
-      title="Claim unstaked NEAR"
+      title={`Claim unstaked ${NATIVE_TOKEN}`}
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">

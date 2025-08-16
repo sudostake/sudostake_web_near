@@ -8,6 +8,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 export function WithdrawDialog({
   open,
@@ -28,7 +29,7 @@ export function WithdrawDialog({
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
-  const modalSymbol = (symbol ?? "NEAR").toUpperCase();
+  const modalSymbol = (symbol ?? NATIVE_TOKEN).toUpperCase();
   const amountNum = Number(amount);
   const withdrawAvailableNum = parseNumber(availBalance);
   const disableContinue =

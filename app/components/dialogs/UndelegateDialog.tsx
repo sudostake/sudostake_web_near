@@ -7,6 +7,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 /**
  * Dialog for undelegating NEAR tokens from a vault contract for a specific validator.
@@ -111,7 +112,7 @@ export function UndelegateDialog({
           Validator: <span className="font-mono text-foreground" title={validator}>{validator}</span>
         </div>
         <label className="block text-sm">
-          <span className="text-secondary-text">Amount (NEAR)</span>
+          <span className="text-secondary-text">Amount ({NATIVE_TOKEN})</span>
           <input
             type="number"
             min="0"

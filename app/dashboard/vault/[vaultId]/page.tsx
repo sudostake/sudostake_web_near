@@ -15,6 +15,7 @@ import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 type VaultData = {
   total?: number;
@@ -100,11 +101,11 @@ export default function VaultPage() {
             <span className="shrink-0">Contract Balance:</span>
             <span
               className="truncate"
-              title={`${vaultNearLoading ? "…" : vaultNear} NEAR`}
+            title={`${vaultNearLoading ? "…" : vaultNear} ${NATIVE_TOKEN}`}
             >
               {vaultNearLoading ? "…" : vaultNear}
             </span>
-            <span className="text-secondary-text shrink-0">NEAR</span>
+            <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { NATIVE_TOKEN, NATIVE_TOKEN_SYMBOL } from "@/utils/constants";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 export function AccountSummary({
@@ -20,16 +21,16 @@ export function AccountSummary({
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="text-center">
-          <div className="text-sm text-secondary-text">NEAR Balance</div>
+          <div className="text-sm text-secondary-text">{NATIVE_TOKEN} Balance</div>
           <div className="text-xl font-medium min-h-7 flex items-baseline justify-center gap-1 min-w-0">
             {loading || near === "—" ? (
               <div className="h-7 w-32 mx-auto rounded bg-background animate-pulse" aria-hidden />
             ) : (
               <>
-                <span className="truncate" title={`${near} NEAR`}>
+                <span className="truncate" title={`${near} ${NATIVE_TOKEN}`}>
                   {near}
                 </span>
-                <span className="text-base text-secondary-text shrink-0">Ⓝ</span>
+                <span className="text-base text-secondary-text shrink-0">{NATIVE_TOKEN_SYMBOL}</span>
               </>
             )}
           </div>

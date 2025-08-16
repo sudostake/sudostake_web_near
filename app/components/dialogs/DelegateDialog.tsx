@@ -9,6 +9,7 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { getActiveNetwork } from "@/utils/networks";
 import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 // Default validators endpoint (network-aware)
 const DEFAULT_VALIDATORS_ROUTE = "/api/validators";
@@ -160,7 +161,7 @@ export function DelegateDialog({
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-secondary-text">Amount (NEAR)</span>
+          <span className="text-secondary-text">Amount ({NATIVE_TOKEN})</span>
           <input
             type="number"
             min="0"

@@ -8,6 +8,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 export function DepositDialog({
   open,
@@ -28,7 +29,7 @@ export function DepositDialog({
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
-  const modalSymbol = (symbol ?? "NEAR").toUpperCase();
+  const modalSymbol = (symbol ?? NATIVE_TOKEN).toUpperCase();
   const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
 
   const amountNum = Number(amount);
