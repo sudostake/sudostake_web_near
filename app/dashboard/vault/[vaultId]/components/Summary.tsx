@@ -25,7 +25,7 @@ export function Summary({ loading, entries, onDeposit, onDelegate, availableBala
           <div className="h-5 rounded bg-background/60 w-1/3" />
         </div>
       ) : entries && entries.length > 0 ? (
-        <DelegationsSummary entries={entries} />
+        <DelegationsSummary entries={entries} onDelegate={onDelegate} />
       ) : (
         <OnboardingEmptyState
           onDeposit={onDeposit}
@@ -90,4 +90,3 @@ function OnboardingEmptyState({
     </div>
   );
 }
-

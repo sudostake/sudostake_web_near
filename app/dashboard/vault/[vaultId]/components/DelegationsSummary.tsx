@@ -22,7 +22,7 @@ function summaryStatus(entry: DelegationSummaryEntry): string | null {
   return null;
 }
 
-function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
+function SummaryItem({ entry, onDelegate }: { entry: DelegationSummaryEntry; onDelegate?: () => void }) {
   const status = summaryStatus(entry);
   return (
     <li className="py-2" key={entry.validator}>
@@ -42,17 +42,44 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           </span>
         )}
       </div>
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
+          onClick={onDelegate}
+          disabled={!onDelegate}
+        >
+          Delegate more
+        </button>
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2"
+          onClick={() => {
+            console.log("Undelegate clicked for", entry.validator);
+          }}
+        >
+          Undelegate
+        </button>
+        <button
+          type="button"
+          className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2"
+          onClick={() => {
+            console.log("Claim clicked for", entry.validator);
+          }}
+        >
+          Claim
+        </button>
+      </div>
     </li>
   );
 }
 
-export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
+export function DelegationsSummary({ entries, onDelegate }: { entries: DelegationSummaryEntry[]; onDelegate?: () => void }) {
   return (
     <ul className="divide-y">
       {entries.map((entry) => (
-        <SummaryItem key={entry.validator} entry={entry} />
+        <SummaryItem key={entry.validator} entry={entry} onDelegate={onDelegate} />
       ))}
     </ul>
   );
 }
-
