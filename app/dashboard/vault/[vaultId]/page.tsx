@@ -7,10 +7,12 @@ import { useVault } from "@/hooks/useVault";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
+import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
+import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 
 type VaultData = {
   total?: number;
@@ -30,7 +32,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
-    </button>
+	</button>
   );
 }
 
@@ -49,10 +51,21 @@ export default function VaultPage() {
 
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [delegateOpen, setDelegateOpen] = useState(false);
   const handleDeposit = () => setDepositOpen(true);
   const handleWithdraw = () => setWithdrawOpen(true);
+  const handleDelegate = () => setDelegateOpen(true);
   const resetDeposit = () => setDepositOpen(false);
   const resetWithdraw = () => setWithdrawOpen(false);
+  const resetDelegate = () => setDelegateOpen(false);
+
+  // Delegations hook (refreshable on delegate)
+  const {
+    data: delegData,
+    loading: delegLoading,
+    error: delegError,
+    refetch: refetchDeleg,
+  } = useVaultDelegations(factoryId, vaultId);
 
   const Header = (
     <header className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
@@ -108,11 +121,14 @@ export default function VaultPage() {
 
         <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
 
+        {/* Delegations list & controls */}
         <DelegationsCard
-          factoryId={factoryId}
-          vaultId={vaultId}
+          loading={delegLoading}
+          error={delegError}
+          summary={delegData?.summary}
+          refetch={refetchDeleg}
           onDeposit={handleDeposit}
-          onDelegate={() => { console.log("Start delegating clicked"); }}
+          onDelegate={handleDelegate}
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
@@ -133,6 +149,7 @@ export default function VaultPage() {
           onSuccess={() => {
             refetchVaultNear();
             refetchAvail();
+            // Refresh delegations after deposit? optional
           }}
         />
         <WithdrawDialog
@@ -143,6 +160,19 @@ export default function VaultPage() {
           onSuccess={() => {
             refetchVaultNear();
             refetchAvail();
+            // Refresh delegations after withdrawal? optional
+          }}
+        />
+        <DelegateDialog
+          open={delegateOpen}
+          onClose={resetDelegate}
+          vaultId={vaultId}
+          availableBalance={availBalance}
+          availableLoading={availLoading}
+          onSuccess={() => {
+            refetchAvail();
+            // Refresh delegations after delegation
+            refetchDeleg();
           }}
         />
       </main>
