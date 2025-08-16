@@ -8,6 +8,7 @@ import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
+import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
@@ -52,17 +53,22 @@ export default function VaultPage() {
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [delegateOpen, setDelegateOpen] = useState(false);
+  const [undelegateOpen, setUndelegateOpen] = useState(false);
+  const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
   const handleDeposit = () => setDepositOpen(true);
   const handleWithdraw = () => setWithdrawOpen(true);
   const handleDelegate = () => setDelegateOpen(true);
   const handleUndelegate = (validator: string) => {
-    try {
-      window?.alert?.(`Undelegate from ${validator} is not implemented yet.`);
-    } catch {}
+    setUndelegateValidator(validator);
+    setUndelegateOpen(true);
   };
   const resetDeposit = () => setDepositOpen(false);
   const resetWithdraw = () => setWithdrawOpen(false);
   const resetDelegate = () => setDelegateOpen(false);
+  const resetUndelegate = () => {
+    setUndelegateValidator(null);
+    setUndelegateOpen(false);
+  };
 
   // Delegations hook (refreshable on delegate)
   const {
@@ -158,7 +164,7 @@ export default function VaultPage() {
             // Refresh delegations after deposit? optional
           }}
         />
-        <WithdrawDialog
+    <WithdrawDialog
           open={withdrawOpen}
           onClose={resetWithdraw}
           vaultId={vaultId}
@@ -178,6 +184,18 @@ export default function VaultPage() {
           onSuccess={() => {
             refetchAvail();
             // Refresh delegations after delegation
+            refetchDeleg();
+          }}
+        />
+        <UndelegateDialog
+          open={undelegateOpen}
+          onClose={resetUndelegate}
+          vaultId={vaultId}
+          validator={undelegateValidator!}
+          stakedBalance={delegData?.summary?.find((e) => e.validator === undelegateValidator)?.staked_balance}
+          stakedLoading={delegLoading}
+          onSuccess={() => {
+            refetchAvail();
             refetchDeleg();
           }}
         />
