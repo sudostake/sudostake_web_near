@@ -48,9 +48,9 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVau
             placeholder="Search vaults"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full sm:w-64 rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+            className="flex-1 min-w-0 sm:w-64 rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
           />
-          <CreateVaultButton onClick={onCreate} />
+          <CreateVaultButton className="shrink-0" onClick={onCreate} />
         </div>
       </div>
       {query && filtered.length === 0 ? (
