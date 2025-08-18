@@ -34,6 +34,8 @@ function SummaryItem({
   onUnclaimUnstaked?: (validator: string) => void;
 }) {
   const status = summaryStatus(entry);
+  const stakedParsed = parseNumber(entry.staked_balance);
+  const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
   return (
     <li className="py-2" key={entry.validator}>
       <div className="flex items-center justify-between">
@@ -65,7 +67,7 @@ function SummaryItem({
           type="button"
           className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
           onClick={() => onUndelegate?.(entry.validator)}
-          disabled={!onUndelegate}
+          disabled={!onUndelegate || stakedNum <= 0}
         >
           Undelegate
         </button>
