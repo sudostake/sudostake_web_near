@@ -4,6 +4,13 @@ import React from "react";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 
+// Enum representing the delegation summary status for a validator entry
+export enum DelegationStatus {
+  Withdrawable = "withdrawable",
+  Unstaking = "unstaking",
+  Active = "active",
+}
+
 function truncateAccount(id: string, max = 24) {
   if (id.length <= max) return id;
   const head = id.slice(0, Math.ceil(max / 2) - 2);
@@ -11,14 +18,14 @@ function truncateAccount(id: string, max = 24) {
   return `${head}…${tail}`;
 }
 
-function summaryStatus(entry: DelegationSummaryEntry): string | null {
+function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
   const unstakedParsed = parseNumber(entry.unstaked_balance);
   const stakedParsed = parseNumber(entry.staked_balance);
   const unstakedNum = Number.isNaN(unstakedParsed) ? 0 : unstakedParsed;
   const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
-  if (unstakedNum > 0 && entry.can_withdraw) return "withdrawable";
-  if (unstakedNum > 0) return "unstaking";
-  if (stakedNum > 0) return "active";
+  if (unstakedNum > 0 && entry.can_withdraw) return DelegationStatus.Withdrawable;
+  if (unstakedNum > 0) return DelegationStatus.Unstaking;
+  if (stakedNum > 0) return DelegationStatus.Active;
   return null;
 }
 
@@ -75,7 +82,7 @@ function SummaryItem({
           type="button"
           className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 disabled:opacity-60"
           onClick={() => onUnclaimUnstaked?.(entry.validator)}
-          disabled={!onUnclaimUnstaked || !entry.can_withdraw}
+          disabled={!onUnclaimUnstaked || status !== DelegationStatus.Withdrawable}
         >
           Claim
         </button>
