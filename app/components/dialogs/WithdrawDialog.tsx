@@ -7,6 +7,8 @@ import { useWithdraw } from "@/hooks/useWithdraw";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
+import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 export function WithdrawDialog({
   open,
@@ -27,7 +29,7 @@ export function WithdrawDialog({
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
-  const modalSymbol = (symbol ?? "NEAR").toUpperCase();
+  const modalSymbol = (symbol ?? NATIVE_TOKEN).toUpperCase();
   const amountNum = Number(amount);
   const withdrawAvailableNum = parseNumber(availBalance);
   const disableContinue =
@@ -101,25 +103,18 @@ export function WithdrawDialog({
         {withdrawError && (
           <div className="text-xs text-red-500">{withdrawError}</div>
         )}
-        <div className="flex items-center justify-between text-xs text-secondary-text">
-          <div>
-            Max you can withdraw: {availLoading ? "…" : availBalance} {modalSymbol}
-          </div>
-          <button
-            type="button"
-            className="underline disabled:no-underline disabled:opacity-60"
-            disabled={availLoading}
-            onClick={() => {
-              const numeric = parseNumber(availBalance);
-              setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-            }}
-            aria-label="Use maximum available"
-          >
-            Max
-          </button>
-        </div>
+        <MaxAvailable
+          loading={availLoading}
+          label="Max you can withdraw"
+          balance={availBalance}
+          suffix={modalSymbol}
+          buttonAriaLabel="Use maximum available"
+          onClick={() => {
+            const numeric = parseNumber(availBalance);
+            setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
+          }}
+        />
       </div>
     </Modal>
   );
 }
-

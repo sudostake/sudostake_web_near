@@ -13,7 +13,7 @@ export function CreateVaultButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-text rounded hover:opacity-90 ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-text rounded hover:opacity-90 whitespace-nowrap shrink-0 ${className}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -24,7 +24,7 @@ export function CreateVaultButton({
       >
         <path d="M12 4.5a1 1 0 011 1V11h5.5a1 1 0 110 2H13v5.5a1 1 0 11-2 0V13H5.5a1 1 0 110-2H11V5.5a1 1 0 011-1z" />
       </svg>
-      <span>Create New Vault</span>
+      <span className="whitespace-nowrap">Create New Vault</span>
     </button>
   );
 }

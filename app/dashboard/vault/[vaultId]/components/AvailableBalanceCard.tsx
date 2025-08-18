@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 export interface AvailableBalanceCardProps {
   balance: string;
@@ -11,7 +12,7 @@ export interface AvailableBalanceCardProps {
 
 export function AvailableBalanceCard({
   balance,
-  symbol = "NEAR",
+  symbol = NATIVE_TOKEN,
   apy,
   loading,
 }: AvailableBalanceCardProps) {

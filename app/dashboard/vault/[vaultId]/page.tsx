@@ -9,11 +9,13 @@ import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
+import { ClaimUnstakedDialog } from "@/app/components/dialogs/ClaimUnstakedDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import { NATIVE_TOKEN } from "@/utils/constants";
 
 type VaultData = {
   total?: number;
@@ -69,6 +71,16 @@ export default function VaultPage() {
     setUndelegateValidator(null);
     setUndelegateOpen(false);
   };
+  const [claimOpen, setClaimOpen] = useState(false);
+  const [claimValidator, setClaimValidator] = useState<string | null>(null);
+  const handleUnclaimUnstaked = (validator: string) => {
+    setClaimValidator(validator);
+    setClaimOpen(true);
+  };
+  const resetClaim = () => {
+    setClaimValidator(null);
+    setClaimOpen(false);
+  };
 
   // Delegations hook (refreshable on delegate)
   const {
@@ -89,11 +101,11 @@ export default function VaultPage() {
             <span className="shrink-0">Contract Balance:</span>
             <span
               className="truncate"
-              title={`${vaultNearLoading ? "…" : vaultNear} NEAR`}
+            title={`${vaultNearLoading ? "…" : vaultNear} ${NATIVE_TOKEN}`}
             >
               {vaultNearLoading ? "…" : vaultNear}
             </span>
-            <span className="text-secondary-text shrink-0">NEAR</span>
+            <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
           </div>
         </div>
       </div>
@@ -141,6 +153,7 @@ export default function VaultPage() {
           onDeposit={handleDeposit}
           onDelegate={handleDelegate}
           onUndelegate={handleUndelegate}
+          onUnclaimUnstaked={handleUnclaimUnstaked}
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
@@ -194,6 +207,16 @@ export default function VaultPage() {
           validator={undelegateValidator ?? ""}
           stakedBalance={delegData?.summary?.find((e) => e.validator === undelegateValidator)?.staked_balance}
           stakedLoading={delegLoading}
+          onSuccess={() => {
+            refetchAvail();
+            refetchDeleg();
+          }}
+        />
+        <ClaimUnstakedDialog
+          open={claimOpen}
+          onClose={resetClaim}
+          vaultId={vaultId}
+          validator={claimValidator ?? ""}
           onSuccess={() => {
             refetchAvail();
             refetchDeleg();
