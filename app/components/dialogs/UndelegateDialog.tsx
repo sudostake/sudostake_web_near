@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useUndelegate } from "@/hooks/useUndelegate";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
-import { parseNumber } from "@/utils/format";
-import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
-import { NATIVE_TOKEN } from "@/utils/constants";
+import Big from "big.js";
+import { MaxAvailable } from "@/app/components/MaxAvailable";
+import { Balance } from "@/utils/balance";
 
 /**
  * Dialog for undelegating NEAR tokens from a vault contract for a specific validator.
@@ -17,18 +17,18 @@ export function UndelegateDialog({
   onClose,
   vaultId,
   validator,
-  stakedBalance,
-  stakedLoading,
+  balance,
+  loading,
   onSuccess,
 }: {
   open: boolean;
   onClose: () => void;
   vaultId: string;
   validator: string;
-  /** Staked balance available to undelegate (human-friendly NEAR string). */
-  stakedBalance?: string | null;
-  /** True while staked balance is loading. */
-  stakedLoading?: boolean;
+  /** Balance abstraction with raw and display values. */
+  balance: Balance;
+  /** True while balance is loading. */
+  loading?: boolean;
   onSuccess?: () => void;
 }) {
   const [amount, setAmount] = useState<string>("");
@@ -43,24 +43,20 @@ export function UndelegateDialog({
     }
   }, [open]);
 
-  const max = parseNumber(stakedBalance);
-  const maxAvailable = Number.isNaN(max) ? 0 : max;
-  const amountNum = Number(amount);
-  const disableContinue =
-    !validator ||
-    !amount ||
-    Number.isNaN(amountNum) ||
-    amountNum <= 0 ||
-    amountNum > maxAvailable;
+  // Use Balance display for max and comparisons
+  const disableContinue = useMemo(() => {
+    try {
+      const a = new Big(amount || "0");
+      const m = new Big(balance.toDisplay());
+      return a.lte(0) || a.gt(m);
+    } catch {
+      return true;
+    }
+  }, [amount, balance]);
 
   const resetAndClose = () => {
     setAmount("");
     onClose();
-  };
-  const handleMaxClick = () => {
-    if (maxAvailable > 0) {
-      setAmount(maxAvailable.toString());
-    }
   };
 
   const confirm = async () => {
@@ -112,7 +108,7 @@ export function UndelegateDialog({
           Validator: <span className="font-mono text-foreground" title={validator}>{validator}</span>
         </div>
         <label className="block text-sm">
-          <span className="text-secondary-text">Amount ({NATIVE_TOKEN})</span>
+          <span className="text-secondary-text">Amount ({balance.symbol})</span>
           <input
             type="number"
             min="0"
@@ -128,9 +124,9 @@ export function UndelegateDialog({
           <div className="text-xs text-red-500">{localError ?? error}</div>
         )}
         <MaxAvailable
-          loading={stakedLoading}
-          balance={stakedBalance}
-          onClick={handleMaxClick}
+          loading={loading}
+          balance={balance}
+          onClick={() => setAmount(balance.toDisplay())}
         />
       </div>
     </Modal>

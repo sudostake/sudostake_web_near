@@ -5,11 +5,10 @@ import { Modal } from "@/app/components/dialogs/Modal";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { useDelegate } from "@/hooks/useDelegate";
 import { useIndexVault } from "@/hooks/useIndexVault";
-import { getActiveFactoryId } from "@/utils/networks";
-import { parseNumber } from "@/utils/format";
-import { getActiveNetwork } from "@/utils/networks";
-import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
-import { NATIVE_TOKEN } from "@/utils/constants";
+import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
+import Big from "big.js";
+import { MaxAvailable } from "@/app/components/MaxAvailable";
+import { Balance } from "@/utils/balance";
 
 // Default validators endpoint (network-aware)
 const DEFAULT_VALIDATORS_ROUTE = "/api/validators";
@@ -18,15 +17,17 @@ export function DelegateDialog({
   open,
   onClose,
   vaultId,
-  availableBalance,
-  availableLoading,
+  balance,
+  loading,
   onSuccess,
 }: {
   open: boolean;
   onClose: () => void;
   vaultId: string;
-  availableBalance?: string | null;
-  availableLoading?: boolean;
+  /** Balance abstraction with raw and display values. */
+  balance: Balance;
+  /** True while balance is loading. */
+  loading?: boolean;
   onSuccess?: () => void;
 }) {
   // Selected validator
@@ -71,9 +72,10 @@ export function DelegateDialog({
     const unique = Array.from(new Set([...defaultValidators, ...dynamic]));
     return unique.sort();
   }, [data, defaultValidators]);
+  
   // Map validator to existing staked balance
   const stakedMap = useMemo(() => {
-    const m = new Map<string, string>();
+    const m = new Map<string, Balance>();
     data?.summary?.forEach((entry) => m.set(entry.validator, entry.staked_balance));
     return m;
   }, [data]);
@@ -85,15 +87,17 @@ export function DelegateDialog({
     }
   }, [mergedValidators]);
 
-  const numeric = parseNumber(availableBalance);
-  const maxAmount = Number.isNaN(numeric) ? 0 : numeric;
-  const amountNum = Number(amount);
-  const disableContinue =
-    !validator ||
-    !amount ||
-    Number.isNaN(amountNum) ||
-    amountNum <= 0 ||
-    amountNum > maxAmount;
+  const disableContinue = useMemo(() => {
+    if (!validator || !amount) return true;
+    try {
+      const a = new Big(amount);
+      const m = new Big(balance.toDisplay());
+      // amount must be bounded by [0, max]
+      return a.lt(0) || a.gt(m);
+    } catch {
+      return true;
+    }
+  }, [validator, amount, balance]);
 
   const resetAndClose = () => {
     setAmount("");
@@ -153,15 +157,18 @@ export function DelegateDialog({
             onChange={(e) => setValidator(e.target.value)}
           >
             {(loadValidators || loadingDefaults) && <option disabled>Loading...</option>}
-            {mergedValidators.map((v) => (
-              <option key={v} value={v}>
-                {v} ({stakedMap.get(v) ?? "0 NEAR"})
-              </option>
-            ))}
+            {mergedValidators.map((v) => {
+              const bal = stakedMap.get(v);
+              return (
+                <option key={v} value={v}>
+                  {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
+                </option>
+              );
+            })}
           </select>
         </label>
         <label className="block text-sm">
-          <span className="text-secondary-text">Amount ({NATIVE_TOKEN})</span>
+          <span className="text-secondary-text">Amount ({balance.symbol})</span>
           <input
             type="number"
             min="0"
@@ -177,12 +184,9 @@ export function DelegateDialog({
           <div className="text-xs text-red-500">{localError ?? error}</div>
         )}
         <MaxAvailable
-          loading={availableLoading}
-          balance={availableBalance}
-          suffix="NEAR"
-          onClick={() => {
-            if (maxAmount > 0) setAmount(maxAmount.toString());
-          }}
+          loading={loading}
+          balance={balance}
+          onClick={() => setAmount(balance.toDisplay())}
         />
       </div>
     </Modal>
