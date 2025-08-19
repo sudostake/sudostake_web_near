@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Big from "big.js";
+import { Balance } from "@/utils/balance";
+import { NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
 import { callViewFunction, networkFromFactoryId } from "@/utils/api/rpcClient";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 
@@ -16,8 +18,9 @@ type StakingPoolAccountView = {
 
 export type DelegationSummaryEntry = {
   validator: string;
-  staked_balance: string; // formatted human string, e.g. "1.23456 NEAR"
-  unstaked_balance: string; // formatted human string
+  /** Staked and unstaked balances with raw & display. */
+  staked_balance: Balance;
+  unstaked_balance: Balance;
   can_withdraw: boolean;
   unstaked_at?: number; // epoch height of the (latest) unstake
   current_epoch?: number;
@@ -39,24 +42,22 @@ export type UseVaultDelegationsResult = {
   refetch: () => void;
 };
 
-function formatYoctoNearToNear(
-  value: string | number | null | undefined,
-  fractionDigits = FRACTION_DIGITS
-): string {
-  try {
-    const v = new Big(String(value ?? "0"));
-    const near = v.div(new Big(10).pow(24));
-    return `${near.toFixed(fractionDigits)} NEAR`;
-  } catch {
-    return `0.${"0".repeat(fractionDigits)} NEAR`;
-  }
-}
 
 /**
- * Fetch vault delegations, computing the set of unique validators by combining
- * active validators with validators that have unstake entries. For each
- * validator, also fetches the staking pool view `get_account` to summarize
- * balances and withdrawability.
+ * React hook for fetching vault delegations and building a concise summary.
+ *
+ * This combines
+ * 1) The contract's active validators list, and
+ * 2) The UnorderedMap of unstake_entries (one entry per validator: {amount, epoch_height}).
+ *
+ * For each unique validator, it invokes the staking pool's view_account to retrieve
+ * staked and unstaked balances, wraps them in Balance objects, and computes withdrawability.
+ *
+ * Returns:
+ * - data: { validators, current_epoch, summary[], active_validators, unstake_entries }
+ * - loading, error, refetch()
+ *
+ * Where summary[] is an array of DelegationSummaryEntry { validator, staked_balance, unstaked_balance, can_withdraw, unstaked_at?, current_epoch? }
  */
 export function useVaultDelegations(
   factoryId?: string | null,
@@ -91,17 +92,18 @@ export function useVaultDelegations(
         const active_validators = Array.isArray(state?.active_validators) ? state.active_validators : [];
         const unstake_entries = Array.isArray(state?.unstake_entries) ? state.unstake_entries : [];
 
-        // Build a map of validator -> UnstakeEntry[] and collect validators that have entries
-        // Keep a narrow type for the fields we actually use from unstake entries
-        type UnstakeEntryLike = { epoch_height?: number | string };
-        const unstakeByValidator = new Map<string, UnstakeEntryLike[]>();
+        // Build a map of validator -> UnstakeEntry[] based on on-chain unstake entries
+        type UnstakeEntry = { amount: string; epoch_height: number };
+        // Each validator maps to exactly one UnstakeEntry on-chain
+        const unstakeByValidator = new Map<string, UnstakeEntry>();
         for (const pair of unstake_entries) {
           if (!Array.isArray(pair) || pair.length !== 2) continue;
           const [validator, entry] = pair as [string, Record<string, unknown>];
-          const arr = unstakeByValidator.get(validator) ?? [];
-          // We only care about epoch_height, so cast to the narrowed shape
-          arr.push(entry as UnstakeEntryLike);
-          unstakeByValidator.set(validator, arr);
+          // UnorderedMap<validator, UnstakeEntry> ensures a single entry per validator
+          unstakeByValidator.set(
+            validator,
+            entry as UnstakeEntry
+          );
         }
 
         const unstake_validators = new Set<string>(unstakeByValidator.keys());
@@ -121,22 +123,16 @@ export function useVaultDelegations(
             const can_withdraw = Boolean(res?.can_withdraw);
             let unstaked_at: number | undefined;
             if (!can_withdraw) {
-              const entries = unstakeByValidator.get(validator) ?? [];
-              // Choose the latest epoch_height if multiple entries exist
-              let maxEpoch: number | undefined = undefined;
-              for (const e of entries) {
-                const ep = Number(e.epoch_height);
-                if (Number.isFinite(ep)) {
-                  if (maxEpoch === undefined || ep > maxEpoch) maxEpoch = ep;
-                }
+              const entry = unstakeByValidator.get(validator);
+              if (entry && Number.isFinite(entry.epoch_height)) {
+                unstaked_at = entry.epoch_height;
               }
-              if (maxEpoch !== undefined) unstaked_at = maxEpoch;
             }
 
             return {
               validator,
-              staked_balance: formatYoctoNearToNear(res?.staked_balance, FRACTION_DIGITS),
-              unstaked_balance: formatYoctoNearToNear(res?.unstaked_balance, FRACTION_DIGITS),
+              staked_balance: new Balance(res?.staked_balance ?? "0", NATIVE_DECIMALS, NATIVE_TOKEN),
+              unstaked_balance: new Balance(res?.unstaked_balance ?? "0", NATIVE_DECIMALS, NATIVE_TOKEN),
               can_withdraw,
               ...(unstaked_at !== undefined ? { unstaked_at } : {}),
               ...(current_epoch !== null ? { current_epoch } : {}),
@@ -145,8 +141,8 @@ export function useVaultDelegations(
             // On failure, include a minimal entry and continue
             return {
               validator,
-              staked_balance: formatYoctoNearToNear("0", FRACTION_DIGITS),
-              unstaked_balance: formatYoctoNearToNear("0", FRACTION_DIGITS),
+              staked_balance: new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN),
+              unstaked_balance: new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN),
               can_withdraw: false,
               ...(current_epoch !== null ? { current_epoch } : {}),
             };

@@ -7,20 +7,17 @@ import { useWithdraw } from "@/hooks/useWithdraw";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
-import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
-import { NATIVE_TOKEN } from "@/utils/constants";
+import { MaxAvailable } from "@/app/components/MaxAvailable";
 
 export function WithdrawDialog({
   open,
   onClose,
   vaultId,
-  symbol,
   onSuccess,
 }: {
   open: boolean;
   onClose: () => void;
   vaultId: string;
-  symbol?: string;
   onSuccess?: () => void;
 }) {
   const [amount, setAmount] = useState<string>("");
@@ -29,9 +26,8 @@ export function WithdrawDialog({
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
-  const modalSymbol = (symbol ?? NATIVE_TOKEN).toUpperCase();
   const amountNum = Number(amount);
-  const withdrawAvailableNum = parseNumber(availBalance);
+  const withdrawAvailableNum = parseNumber(availBalance.toDisplay());
   const disableContinue =
     !amount ||
     Number.isNaN(amountNum) ||
@@ -46,9 +42,11 @@ export function WithdrawDialog({
 
   const confirm = async () => {
     try {
+      // Submit human-friendly display amount and let hook parse it
       const { txHash } = await withdraw({ vault: vaultId, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
+
     } catch (err) {
       console.warn("Withdraw failed", err);
     } finally {
@@ -107,12 +105,8 @@ export function WithdrawDialog({
           loading={availLoading}
           label="Max you can withdraw"
           balance={availBalance}
-          suffix={modalSymbol}
           buttonAriaLabel="Use maximum available"
-          onClick={() => {
-            const numeric = parseNumber(availBalance);
-            setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-          }}
+          onClick={() => setAmount(availBalance.toDisplay())}
         />
       </div>
     </Modal>

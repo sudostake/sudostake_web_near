@@ -19,8 +19,8 @@ function truncateAccount(id: string, max = 24) {
 }
 
 function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
-  const unstakedParsed = parseNumber(entry.unstaked_balance);
-  const stakedParsed = parseNumber(entry.staked_balance);
+  const unstakedParsed = parseNumber(entry.unstaked_balance.toDisplay());
+  const stakedParsed = parseNumber(entry.staked_balance.toDisplay());
   const unstakedNum = Number.isNaN(unstakedParsed) ? 0 : unstakedParsed;
   const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
   if (unstakedNum > 0 && entry.can_withdraw) return DelegationStatus.Withdrawable;
@@ -41,7 +41,7 @@ function SummaryItem({
   onUnclaimUnstaked?: (validator: string) => void;
 }) {
   const status = summaryStatus(entry);
-  const stakedParsed = parseNumber(entry.staked_balance);
+  const stakedParsed = parseNumber(entry.staked_balance.toDisplay());
   const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
   return (
     <li className="py-2" key={entry.validator}>
@@ -52,9 +52,9 @@ function SummaryItem({
         )}
       </div>
       <div className="mt-1 text-xs text-secondary-text">
-        <span>staked: {entry.staked_balance}</span>
+        <span>staked: {entry.staked_balance.toDisplay()}</span>
         <span className="mx-2 opacity-50">•</span>
-        <span>unstaked: {entry.unstaked_balance}</span>
+        <span>unstaked: {entry.unstaked_balance.toDisplay()}</span>
         {entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
           <span className="ml-2 opacity-80">
             (epoch {entry.current_epoch} / unstaked at {entry.unstaked_at})

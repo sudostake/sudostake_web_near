@@ -6,14 +6,14 @@ import type { AccountView } from "near-api-js/lib/providers/provider";
 import Big from "big.js";
 import { getActiveNetwork, rpcPath } from "@/utils/networks";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
-
-// Default to testnet USDC which the app currently targets.
-const USDC_CONTRACT_TESTNET = "usdc.tkn.primitives.testnet";
-const USDC_DECIMALS = 6;
+import { USDC_DECIMALS, NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
+import { Balance } from "@/utils/balance";
+// Symbol for USDC token
+const USDC_TOKEN = "USDC";
 
 export type TokenBalances = {
-  near: string;
-  usdc: string;
+  near: Balance;
+  usdc: Balance;
 };
 
 export function useTokenBalances(): {
@@ -23,7 +23,10 @@ export function useTokenBalances(): {
   refetch: () => void;
 } {
   const { signedAccountId, viewFunction } = useWalletSelector();
-  const [balances, setBalances] = useState<TokenBalances>({ near: "—", usdc: "—" });
+  const [balances, setBalances] = useState<TokenBalances>({
+    near: new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN),
+    usdc: new Balance("0", USDC_DECIMALS, USDC_TOKEN),
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,26 +46,37 @@ export function useTokenBalances(): {
         account_id: signedAccountId,
         finality: "final",
       })) as AccountView;
-      const near = utils.format.formatNearAmount(acct.amount);
+      const rawNear = acct.amount;
+      const displayNear = utils.format.formatNearAmount(rawNear);
 
-      let usdc = "—";
+      let rawUsdc = "0";
+      let displayUsdc = "—";
       try {
-        const raw = await viewFunction({
-          contractId: USDC_CONTRACT_TESTNET,
+        const rawBalance = await viewFunction({
+          contractId: "usdc.tkn.primitives.testnet",
           method: "ft_balance_of",
           args: { account_id: signedAccountId },
         });
-        if (typeof raw === "string") {
-          usdc = new Big(raw).div(10 ** USDC_DECIMALS).toFixed(USDC_DECIMALS);
+        if (typeof rawBalance === "string") {
+          rawUsdc = rawBalance;
+          displayUsdc = new Big(rawBalance)
+            .div(10 ** USDC_DECIMALS)
+            .toFixed(USDC_DECIMALS);
         }
-      } catch (e) {
-        // Ignore USDC error but keep it visible in the hook error if nothing else fails
+      } catch {
+        // ignore USDC errors
       }
 
-      setBalances({ near, usdc });
+      setBalances({
+        near: new Balance(rawNear, NATIVE_DECIMALS, NATIVE_TOKEN),
+        usdc: new Balance(rawUsdc, USDC_DECIMALS, USDC_TOKEN),
+      });
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
-      setBalances({ near: "—", usdc: "—" });
+      setBalances({
+        near: new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN),
+        usdc: new Balance("0", USDC_DECIMALS, USDC_TOKEN),
+      });
     } finally {
       setLoading(false);
     }
@@ -76,4 +90,3 @@ export function useTokenBalances(): {
 
   return { balances, loading, error, refetch: load };
 }
-

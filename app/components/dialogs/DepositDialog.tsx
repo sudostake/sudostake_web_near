@@ -7,8 +7,8 @@ import { useDeposit } from "@/hooks/useDeposit";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
-import { MaxAvailable } from "@/app/components/dialogs/MaxAvailable";
-import { NATIVE_TOKEN } from "@/utils/constants";
+import { MaxAvailable } from "@/app/components/MaxAvailable";
+import { Balance } from "@/utils/balance";
 
 export function DepositDialog({
   open,
@@ -20,7 +20,7 @@ export function DepositDialog({
   open: boolean;
   onClose: () => void;
   vaultId: string;
-  symbol?: string;
+  symbol: string;
   onSuccess?: () => void;
 }) {
   const [amount, setAmount] = useState<string>("");
@@ -29,17 +29,11 @@ export function DepositDialog({
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
 
-  const modalSymbol = (symbol ?? NATIVE_TOKEN).toUpperCase();
-  const availableStr = modalSymbol === "USDC" ? balances.usdc : balances.near;
-
-  const amountNum = Number(amount);
-  const depositAvailableNum = parseNumber(availableStr);
-  const disableContinue =
-    !amount ||
-    Number.isNaN(amountNum) ||
-    amountNum <= 0 ||
-    Number.isNaN(depositAvailableNum) ||
-    amountNum > depositAvailableNum;
+  const balanceObj = (symbol?.toUpperCase() === "USDC" ? balances.usdc : balances.near);
+  const availableDisplay = balanceObj.toDisplay();
+  const availableNumber = parseNumber(balanceObj.toDisplay());
+  const amountNumber = parseNumber(amount);
+  const disableContinue = amountNumber <= 0 || amountNumber > availableNumber;
 
   const resetAndClose = () => {
     setAmount("");
@@ -48,7 +42,10 @@ export function DepositDialog({
 
   const confirm = async () => {
     try {
-      const { txHash } = await deposit({ vault: vaultId, amount });
+      // If user selected max, submit raw minimal-unit amount instead of display string
+      const finalAmount = amount === balanceObj.toDisplay() ? balanceObj.minimal : amount;
+
+      const { txHash } = await deposit({ vault: vaultId, amount: finalAmount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
     } catch (err) {
@@ -108,13 +105,9 @@ export function DepositDialog({
         <MaxAvailable
           loading={balancesLoading}
           label="Max you can deposit"
-          balance={availableStr}
-          suffix={modalSymbol}
+          balance={balanceObj}
           buttonAriaLabel="Use maximum available"
-          onClick={() => {
-            const numeric = parseNumber(availableStr);
-            setAmount(Number.isNaN(numeric) ? "" : numeric.toString());
-          }}
+          onClick={() => setAmount(balanceObj.toDisplay())}
         />
       </div>
     </Modal>
