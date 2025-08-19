@@ -46,7 +46,7 @@ export function WithdrawDialog({
       const { txHash } = await withdraw({ vault: vaultId, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
-      console.log(amount);
+
     } catch (err) {
       console.warn("Withdraw failed", err);
     } finally {

@@ -16,9 +16,11 @@ export class Balance {
     public symbol: string
   ) {}
 
-  /** Human-friendly display string. */
+  /**
+   * Human-friendly display string using the configured decimals.
+   */
   toDisplay(): string {
-    return formatNearAmount(this.raw, 24);
+    return formatNearAmount(this.raw, this.decimals);
   }
 
   /** Raw minimal-unit string. */
