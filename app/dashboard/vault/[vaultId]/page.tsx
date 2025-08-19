@@ -15,14 +15,9 @@ import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
-import { NATIVE_TOKEN } from "@/utils/constants";
+import { Balance } from "@/utils/balance";
+import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
 
-type VaultData = {
-  total?: number;
-  symbol?: string;
-  apy?: number | null;
-  owner?: string | null;
-};
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -44,7 +39,7 @@ export default function VaultPage() {
   const { vaultId } = useParams<{ vaultId: string }>();
   const factoryId = useMemo(() => getActiveFactoryId(), []);
 
-  const { data, loading, error, refetch } = useVault<VaultData>(factoryId, vaultId);
+  const { loading, error, refetch } = useVault(factoryId, vaultId);
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
   
@@ -112,7 +107,7 @@ export default function VaultPage() {
     </header>
   );
 
-  let Body: React.ReactNode;
+let Body: React.ReactNode;
   if (error) {
     Body = (
       <div className="p-4 text-center text-sm text-red-500" role="alert" aria-live="polite">
@@ -131,15 +126,11 @@ export default function VaultPage() {
       </div>
     );
   } else {
-    const apy = data?.apy ?? null;
-
     Body = (
       <div className="space-y-4 p-4">
         <AvailableBalanceCard
           balance={availBalance}
           loading={availLoading}
-          symbol={data?.symbol}
-          apy={apy}
         />
 
         <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
@@ -170,18 +161,17 @@ export default function VaultPage() {
           open={depositOpen}
           onClose={resetDeposit}
           vaultId={vaultId}
-          symbol={data?.symbol}
+          symbol={NATIVE_TOKEN}
           onSuccess={() => {
             refetchVaultNear();
             refetchAvail();
             // Refresh delegations after deposit? optional
           }}
         />
-    <WithdrawDialog
+        <WithdrawDialog
           open={withdrawOpen}
           onClose={resetWithdraw}
           vaultId={vaultId}
-          symbol={data?.symbol}
           onSuccess={() => {
             refetchVaultNear();
             refetchAvail();
@@ -192,8 +182,8 @@ export default function VaultPage() {
           open={delegateOpen}
           onClose={resetDelegate}
           vaultId={vaultId}
-          availableBalance={availBalance}
-          availableLoading={availLoading}
+          balance={availBalance}
+          loading={availLoading}
           onSuccess={() => {
             refetchAvail();
             // Refresh delegations after delegation
@@ -205,8 +195,15 @@ export default function VaultPage() {
           onClose={resetUndelegate}
           vaultId={vaultId}
           validator={undelegateValidator ?? ""}
-          stakedBalance={delegData?.summary?.find((e) => e.validator === undelegateValidator)?.staked_balance}
-          stakedLoading={delegLoading}
+          balance={
+            new Balance(
+              delegData?.summary?.find((e) => e.validator === undelegateValidator)
+                ?.staked_balance.minimal ?? "0",
+              NATIVE_DECIMALS,
+              NATIVE_TOKEN
+            )
+          }
+          loading={delegLoading}
           onSuccess={() => {
             refetchAvail();
             refetchDeleg();

@@ -14,3 +14,7 @@ export const MINT_VAULT_METHOD = "mint_vault";
 export const DEFAULT_GAS = "300000000000000";
 /** Deposit of 1 yoctoNEAR required for proof-of-intent on certain calls. */
 export const ONE_YOCTO = "1";
+/** Number of decimal places for USDC (NEP-141 token). */
+export const USDC_DECIMALS = 6;
+/** Number of decimal places for NEAR native token. */
+export const NATIVE_DECIMALS = 24;

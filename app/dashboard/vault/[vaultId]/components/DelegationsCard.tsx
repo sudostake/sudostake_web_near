@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
+import { Balance } from "@/utils/balance";
 import { Summary } from "./Summary";
 
 type Props = {
@@ -13,7 +14,7 @@ type Props = {
   onDelegate?: () => void;
   onUndelegate?: (validator: string) => void;
   onUnclaimUnstaked?: (validator: string) => void;
-  availableBalance?: string | null;
+  availableBalance?: Balance | null;
   availableLoading?: boolean;
 };
 

@@ -4,6 +4,7 @@ import React from "react";
 import { DelegationsSummary } from "./DelegationsSummary";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
+import { Balance } from "@/utils/balance";
 
 type Props = {
   loading: boolean;
@@ -12,7 +13,7 @@ type Props = {
   onDelegate?: () => void;
   onUndelegate?: (validator: string) => void;
   onUnclaimUnstaked?: (validator: string) => void;
-  availableBalance?: string | null;
+  availableBalance?: Balance | null;
   availableLoading?: boolean;
 };
 
@@ -62,10 +63,10 @@ function OnboardingEmptyState({
 }: {
   onDeposit?: () => void;
   onDelegate?: () => void;
-  availableBalance?: string | null;
+  availableBalance?: Balance | null;
   availableLoading?: boolean;
 }) {
-  const parsed = parseNumber(availableBalance);
+  const parsed = parseNumber(availableBalance?.toDisplay() ?? "");
   const available = Number.isNaN(parsed) ? 0 : parsed;
   const showDelegateCta = !availableLoading && available > 0;
   return (

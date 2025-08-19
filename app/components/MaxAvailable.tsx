@@ -1,14 +1,16 @@
+
 "use client";
 
 import React from "react";
+import { Balance } from "@/utils/balance";
 
 export interface MaxAvailableProps {
   /** True while the balance is loading. */
   loading?: boolean;
   /** Label prefix before the balance, e.g. "Max available". */
   label?: string;
-  /** Human-friendly balance string without suffix. */
-  balance?: string | null;
+  /** Balance abstraction with raw and display values. */
+  balance: Balance;
   /** Optional suffix to display after the balance, e.g. token symbol. */
   suffix?: string;
   /** Click handler to set the maximum amount. */
@@ -31,7 +33,7 @@ export function MaxAvailable({
   return (
     <div className="flex items-center justify-between text-xs text-secondary-text">
       <div>
-        {label}: {loading ? "…" : balance}
+        {label}: {loading ? "…" : balance.toDisplay()}
         {suffix ? ` ${suffix}` : ""}
       </div>
       <button
