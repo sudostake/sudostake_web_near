@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { getFirebaseDb } from "@/utils/firebaseClient";
 
-export type UseVaultResult<T = unknown> = {
-  data: T | null;
+import type { VaultDocument } from "@/utils/types/vault_document";
+
+export type UseVaultResult = {
+  data: VaultDocument | null;
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -15,11 +17,11 @@ export type UseVaultResult<T = unknown> = {
  * Subscribe to a single vault document within the factory collection.
  * Mobile-friendly consumers can render skeletons while loading.
  */
-export function useVault<T = unknown>(
+export function useVault(
   factoryId?: string | null,
   vaultId?: string | null
-): UseVaultResult<T> {
-  const [data, setData] = useState<T | null>(null);
+): UseVaultResult {
+  const [data, setData] = useState<VaultDocument | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState<number>(0);
@@ -42,7 +44,7 @@ export function useVault<T = unknown>(
     const unsub = onSnapshot(
       ref,
       (snap) => {
-        setData((snap.data() as T) ?? null);
+        setData((snap.data() as VaultDocument) ?? null);
         setLoading(false);
       },
       (err) => {
