@@ -14,6 +14,7 @@ import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
+import { LiquidityRequestsCard } from "./components/LiquidityRequestsCard";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
@@ -148,6 +149,8 @@ let Body: React.ReactNode;
           availableBalance={availBalance}
           availableLoading={availLoading}
         />
+
+        <LiquidityRequestsCard />
       </div>
     );
   }
