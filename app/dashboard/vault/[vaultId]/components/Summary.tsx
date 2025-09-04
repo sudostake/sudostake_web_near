@@ -2,6 +2,7 @@
 
 import React from "react";
 import { DelegationsSummary } from "./DelegationsSummary";
+import { useDelegationsActions } from "./DelegationsActionsContext";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
@@ -9,10 +10,6 @@ import { Balance } from "@/utils/balance";
 type Props = {
   loading: boolean;
   entries?: DelegationSummaryEntry[];
-  onDeposit?: () => void;
-  onDelegate?: () => void;
-  onUndelegate?: (validator: string) => void;
-  onUnclaimUnstaked?: (validator: string) => void;
   availableBalance?: Balance | null;
   availableLoading?: boolean;
 };
@@ -20,10 +17,6 @@ type Props = {
 export function Summary({
   loading,
   entries,
-  onDeposit,
-  onDelegate,
-  onUndelegate,
-  onUnclaimUnstaked,
   availableBalance,
   availableLoading,
 }: Props) {
@@ -37,16 +30,9 @@ export function Summary({
           <div className="h-5 rounded bg-background/60 w-1/3" />
         </div>
       ) : entries && entries.length > 0 ? (
-        <DelegationsSummary
-          entries={entries}
-          onDelegate={onDelegate}
-          onUndelegate={onUndelegate}
-          onUnclaimUnstaked={onUnclaimUnstaked}
-        />
+        <DelegationsSummary entries={entries} />
       ) : (
         <OnboardingEmptyState
-          onDeposit={onDeposit}
-          onDelegate={onDelegate}
           availableBalance={availableBalance}
           availableLoading={availableLoading}
         />
@@ -56,16 +42,13 @@ export function Summary({
 }
 
 function OnboardingEmptyState({
-  onDeposit,
-  onDelegate,
   availableBalance,
   availableLoading,
 }: {
-  onDeposit?: () => void;
-  onDelegate?: () => void;
   availableBalance?: Balance | null;
   availableLoading?: boolean;
 }) {
+  const { onDeposit, onDelegate } = useDelegationsActions();
   const parsed = parseNumber(availableBalance?.toDisplay() ?? "");
   const available = Number.isNaN(parsed) ? 0 : parsed;
   const showDelegateCta = !availableLoading && available > 0;
@@ -88,7 +71,7 @@ function OnboardingEmptyState({
           <button
             type="button"
             className="rounded bg-primary text-primary-text py-1.5 px-3 text-sm disabled:opacity-60"
-            onClick={onDelegate}
+            onClick={() => onDelegate?.()}
             disabled={!onDelegate}
           >
             Get started with delegating

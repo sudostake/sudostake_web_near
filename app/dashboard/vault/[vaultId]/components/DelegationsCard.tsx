@@ -10,10 +10,6 @@ type Props = {
   error: string | null;
   summary?: DelegationSummaryEntry[];
   refetch: () => void;
-  onDeposit?: () => void;
-  onDelegate?: () => void;
-  onUndelegate?: (validator: string) => void;
-  onUnclaimUnstaked?: (validator: string) => void;
   availableBalance?: Balance | null;
   availableLoading?: boolean;
 };
@@ -26,10 +22,6 @@ export function DelegationsCard({
   error,
   summary,
   refetch,
-  onDeposit,
-  onDelegate,
-  onUndelegate,
-  onUnclaimUnstaked,
   availableBalance,
   availableLoading,
 }: Props) {
@@ -52,10 +44,6 @@ export function DelegationsCard({
       <Summary
         loading={loading}
         entries={summary}
-        onDeposit={onDeposit}
-        onDelegate={onDelegate}
-        onUndelegate={onUndelegate}
-        onUnclaimUnstaked={onUnclaimUnstaked}
         availableBalance={availableBalance}
         availableLoading={availableLoading}
       />

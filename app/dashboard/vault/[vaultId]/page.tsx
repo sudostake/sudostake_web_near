@@ -18,6 +18,7 @@ import { LiquidityRequestsCard } from "./components/LiquidityRequestsCard";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
+import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -51,18 +52,25 @@ export default function VaultPage() {
   const [depositOpen, setDepositOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [delegateOpen, setDelegateOpen] = useState(false);
+  const [delegateValidator, setDelegateValidator] = useState<string | null>(null);
   const [undelegateOpen, setUndelegateOpen] = useState(false);
   const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
   const handleDeposit = () => setDepositOpen(true);
   const handleWithdraw = () => setWithdrawOpen(true);
-  const handleDelegate = () => setDelegateOpen(true);
+  const handleDelegate = (validator?: string) => {
+    setDelegateValidator(validator ?? null);
+    setDelegateOpen(true);
+  };
   const handleUndelegate = (validator: string) => {
     setUndelegateValidator(validator);
     setUndelegateOpen(true);
   };
   const resetDeposit = () => setDepositOpen(false);
   const resetWithdraw = () => setWithdrawOpen(false);
-  const resetDelegate = () => setDelegateOpen(false);
+  const resetDelegate = () => {
+    setDelegateValidator(null);
+    setDelegateOpen(false);
+  };
   const resetUndelegate = () => {
     setUndelegateValidator(null);
     setUndelegateOpen(false);
@@ -137,18 +145,23 @@ let Body: React.ReactNode;
         <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
 
         {/* Delegations list & controls */}
-        <DelegationsCard
-          loading={delegLoading}
-          error={delegError}
-          summary={delegData?.summary}
-          refetch={refetchDeleg}
-          onDeposit={handleDeposit}
-          onDelegate={handleDelegate}
-          onUndelegate={handleUndelegate}
-          onUnclaimUnstaked={handleUnclaimUnstaked}
-          availableBalance={availBalance}
-          availableLoading={availLoading}
-        />
+        <DelegationsActionsProvider
+          value={{
+            onDeposit: handleDeposit,
+            onDelegate: handleDelegate,
+            onUndelegate: handleUndelegate,
+            onUnclaimUnstaked: handleUnclaimUnstaked,
+          }}
+        >
+          <DelegationsCard
+            loading={delegLoading}
+            error={delegError}
+            summary={delegData?.summary}
+            refetch={refetchDeleg}
+            availableBalance={availBalance}
+            availableLoading={availLoading}
+          />
+        </DelegationsActionsProvider>
 
         <LiquidityRequestsCard />
       </div>
@@ -187,6 +200,7 @@ let Body: React.ReactNode;
           vaultId={vaultId}
           balance={availBalance}
           loading={availLoading}
+          defaultValidator={delegateValidator ?? undefined}
           onSuccess={() => {
             refetchAvail();
             // Refresh delegations after delegation
@@ -194,10 +208,10 @@ let Body: React.ReactNode;
           }}
         />
         <UndelegateDialog
-          open={undelegateOpen}
+          open={undelegateOpen && Boolean(undelegateValidator)}
           onClose={resetUndelegate}
           vaultId={vaultId}
-          validator={undelegateValidator ?? ""}
+          validator={undelegateValidator!}
           balance={
             new Balance(
               delegData?.summary?.find((e) => e.validator === undelegateValidator)
