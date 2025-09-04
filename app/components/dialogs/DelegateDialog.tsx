@@ -20,6 +20,7 @@ export function DelegateDialog({
   balance,
   loading,
   onSuccess,
+  defaultValidator,
 }: {
   open: boolean;
   onClose: () => void;
@@ -29,6 +30,8 @@ export function DelegateDialog({
   /** True while balance is loading. */
   loading?: boolean;
   onSuccess?: () => void;
+  /** When provided, preselect and lock modal to this validator. */
+  defaultValidator?: string;
 }) {
   // Selected validator
   const [validator, setValidator] = useState<string>("");
@@ -80,12 +83,17 @@ export function DelegateDialog({
     return m;
   }, [data]);
 
-  // Reset selection when validator list updates
+  // Initialize validator when dialog opens
   useEffect(() => {
+    if (!open) return;
+    if (defaultValidator) {
+      setValidator(defaultValidator);
+      return;
+    }
     if (mergedValidators.length > 0) {
       setValidator(mergedValidators[0]);
     }
-  }, [mergedValidators]);
+  }, [open, defaultValidator, mergedValidators]);
 
   const disableContinue = useMemo(() => {
     if (!validator || !amount) return true;
@@ -122,7 +130,7 @@ export function DelegateDialog({
     <Modal
       open={open}
       onClose={resetAndClose}
-      title="Delegate to validator"
+      title={defaultValidator ? `Delegate to ${defaultValidator}` : "Delegate to validator"}
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
@@ -146,27 +154,26 @@ export function DelegateDialog({
       }
     >
       <div className="space-y-4">
-        <div className="text-sm text-secondary-text">
-          Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-        </div>
-        <label className="block text-sm">
-          <span className="text-secondary-text">Validator</span>
-          <select
-            className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-            value={validator}
-            onChange={(e) => setValidator(e.target.value)}
-          >
-            {(loadValidators || loadingDefaults) && <option disabled>Loading...</option>}
-            {mergedValidators.map((v) => {
-              const bal = stakedMap.get(v);
-              return (
-                <option key={v} value={v}>
-                  {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
-                </option>
-              );
-            })}
-          </select>
-        </label>
+        {!defaultValidator && (
+          <label className="block text-sm">
+            <span className="text-secondary-text">Validator</span>
+            <select
+              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+              value={validator}
+              onChange={(e) => setValidator(e.target.value)}
+            >
+              {(loadValidators || loadingDefaults) && <option disabled>Loading...</option>}
+              {mergedValidators.map((v) => {
+                const bal = stakedMap.get(v);
+                return (
+                  <option key={v} value={v}>
+                    {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
+                  </option>
+                );
+              })}
+            </select>
+          </label>
+        )}
         <label className="block text-sm">
           <span className="text-secondary-text">Amount ({balance.symbol})</span>
           <input

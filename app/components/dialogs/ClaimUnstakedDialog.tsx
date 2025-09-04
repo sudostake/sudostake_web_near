@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useClaimUnstaked } from "@/hooks/useClaimUnstaked";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { NATIVE_TOKEN } from "@/utils/constants";
+import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 
 /**
  * Dialog for claiming unstaked NEAR tokens from a vault contract for a validator.
@@ -27,6 +28,10 @@ export function ClaimUnstakedDialog({
   const { claimUnstaked, pending, error } = useClaimUnstaked();
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
+  const { data, loading } = useVaultDelegations(factoryId, vaultId);
+
+  const claimEntry = useMemo(() => data?.summary?.find((e) => e.validator === validator), [data, validator]);
+  const claimDisplay = claimEntry?.unstaked_balance.toDisplay();
 
   const resetAndClose = () => {
     setLocalError(null);
@@ -76,10 +81,13 @@ export function ClaimUnstakedDialog({
     >
       <div className="space-y-4">
         <div className="text-sm text-secondary-text">
-          Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-        </div>
-        <div className="text-sm text-secondary-text">
           Validator: <span className="font-mono text-foreground" title={validator}>{validator}</span>
+        </div>
+        <div className="text-sm">
+          <span className="text-secondary-text mr-1">Amount to claim:</span>
+          <span className="font-mono font-medium">
+            {loading ? "…" : claimDisplay ?? `0 ${NATIVE_TOKEN}`}
+          </span>
         </div>
         {(localError || error) && (
           <div className="text-xs text-red-500">{localError ?? error}</div>

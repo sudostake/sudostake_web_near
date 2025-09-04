@@ -8,7 +8,6 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { MaxAvailable } from "@/app/components/MaxAvailable";
-import { Balance } from "@/utils/balance";
 
 export function DepositDialog({
   open,
@@ -30,7 +29,6 @@ export function DepositDialog({
   const factoryId = getActiveFactoryId();
 
   const balanceObj = (symbol?.toUpperCase() === "USDC" ? balances.usdc : balances.near);
-  const availableDisplay = balanceObj.toDisplay();
   const availableNumber = parseNumber(balanceObj.toDisplay());
   const amountNumber = parseNumber(amount);
   const disableContinue = amountNumber <= 0 || amountNumber > availableNumber;

@@ -77,7 +77,7 @@ export function UndelegateDialog({
     <Modal
       open={open}
       onClose={resetAndClose}
-      title="Undelegate from validator"
+      title={`Undelegate from ${validator}`}
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
@@ -101,12 +101,6 @@ export function UndelegateDialog({
       }
     >
       <div className="space-y-4">
-        <div className="text-sm text-secondary-text">
-          Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-        </div>
-        <div className="text-sm text-secondary-text">
-          Validator: <span className="font-mono text-foreground" title={validator}>{validator}</span>
-        </div>
         <label className="block text-sm">
           <span className="text-secondary-text">Amount ({balance.symbol})</span>
           <input
