@@ -10,6 +10,9 @@ import { getFriendlyErrorMessage } from "@/utils/errors";
 import { getActiveNetwork } from "@/utils/networks";
 import { getTokenDecimals } from "@/utils/tokens";
 
+// Big.js rounding mode: RoundDown
+const BIG_JS_ROUND_DOWN = 0 as const;
+
 export type RequestLiquidityParams = {
   vault: string;
   token: string; // NEP-141 token contract id
@@ -95,5 +98,3 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
 
   return { requestLiquidity, pending, error, success };
 }
-// Big.js rounding mode: RoundDown
-const BIG_JS_ROUND_DOWN = 0 as const;
