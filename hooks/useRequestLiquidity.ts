@@ -45,7 +45,6 @@ function toMinimalTokenAmount(display: string, decimals: number): string {
   }
 
   const v = new Big(trimmed);
-  if (v.lt(0)) throw new Error("Amount must be non-negative");
 
   const scaled = v.times(new Big(10).pow(decimals));
   // Avoid scientific notation; contract expects string integer
@@ -82,7 +81,7 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
         }
         // Round to the nearest second to match UI expectations when fractional days are provided
         const duration = Math.round(daysNum * SECONDS_PER_DAY);
-        if (!Number.isFinite(duration) || duration <= 0) {
+        if (duration <= 0) {
           throw new Error("Invalid duration (seconds)");
         }
 
