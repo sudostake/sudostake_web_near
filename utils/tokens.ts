@@ -42,7 +42,8 @@ export function getDefaultUsdcTokenId(network: Network = getActiveNetwork()): st
   if (!known) return null;
   // Prefer a token with symbol USDC
   for (const cfg of Object.values(known)) {
-    if (cfg.symbol.toUpperCase() === "USDC") return cfg.id;
+    const symbolUpper = cfg.symbol.toUpperCase();
+    if (symbolUpper === "USDC") return cfg.id;
   }
   return null;
 }
@@ -53,4 +54,3 @@ export function getTokenDecimals(tokenId: string, network: Network = getActiveNe
   // Default to 6 for stablecoins if unknown; callers may override in the future
   return 6;
 }
-

@@ -17,6 +17,8 @@ type Props = { vaultId: string; factoryId: string };
  * - Removes unnecessary leading zeros, trailing zeros after the decimal, and a trailing decimal point.
  */
 function formatMinimalTokenAmount(minimal: string, decimals: number): string {
+  // Fast-path: pure zero string
+  if (/^0+$/.test(minimal)) return "0";
   // Strip leading zeros only when followed by another digit; keep a single zero for all-zero inputs
   const s = minimal.replace(/^0+(?=\d)/, "");
   const d = Math.max(0, decimals);

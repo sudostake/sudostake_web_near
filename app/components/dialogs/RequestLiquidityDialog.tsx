@@ -26,12 +26,12 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   // Compute max collateral from total staked balance across validators
   const maxCollateralYocto = useMemo(() => {
     const summary = delegData?.summary ?? [];
-    let total = "0";
+    let total = BigInt(0);
     for (const s of summary) {
-      // add big integers as strings
-      total = (BigInt(total) + BigInt(s.staked_balance.minimal ?? "0")).toString();
+      // Accumulate as BigInt and convert once at the end
+      total += BigInt(s.staked_balance.minimal ?? "0");
     }
-    return total;
+    return total.toString();
   }, [delegData]);
 
   const maxCollateralNear = useMemo(() => {
@@ -105,11 +105,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
-    } catch (err) {
-      // handled by hook error state; log in development only
-      if (process.env.NODE_ENV !== "production") {
-        console.error("Error in confirm:", err);
-      }
+    } catch {
+      // handled by hook error state
     } finally {
       resetAndClose();
     }
