@@ -42,6 +42,8 @@ export function getDefaultUsdcTokenId(network: Network = getActiveNetwork()): st
   if (!known) return null;
   // Prefer a token with symbol USDC
   for (const cfg of Object.values(known)) {
+    // Fast path: exact match without allocation
+    if (cfg.symbol === "USDC") return cfg.id;
     const symbolUpper = cfg.symbol.toUpperCase();
     if (symbolUpper === "USDC") return cfg.id;
   }

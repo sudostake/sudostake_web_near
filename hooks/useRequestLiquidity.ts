@@ -32,7 +32,7 @@ function toMinimalTokenAmount(display: string, decimals: number): string {
   const v = new Big(display || "0");
   const scaled = v.times(new Big(10).pow(decimals));
   // Avoid scientific notation; contract expects string integer
-  return scaled.round(0, 0 /* RoundDown */).toString();
+  return scaled.round(0, BIG_JS_ROUND_DOWN).toString();
 }
 
 export function useRequestLiquidity(): UseRequestLiquidityResult {
@@ -95,3 +95,5 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
 
   return { requestLiquidity, pending, error, success };
 }
+// Big.js rounding mode: RoundDown
+const BIG_JS_ROUND_DOWN = 0 as const;

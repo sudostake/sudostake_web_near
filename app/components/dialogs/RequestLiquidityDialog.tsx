@@ -74,8 +74,18 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     }
   }, [collateralNear, maxCollateralYocto]);
 
+  const hasToken = Boolean(token);
+  const hasValidAmount = Number(amount) > 0;
+  const hasValidInterestToken = Number(interestToken) >= 0;
+  const hasValidCollateral = Number(collateralNear) > 0;
+  const hasValidDuration = Number(durationDays) > 0;
   const canSubmit = Boolean(
-    token && Number(amount) > 0 && Number(interestToken) >= 0 && Number(collateralNear) > 0 && Number(durationDays) > 0 && collateralWithinMax
+    hasToken &&
+    hasValidAmount &&
+    hasValidInterestToken &&
+    hasValidCollateral &&
+    hasValidDuration &&
+    collateralWithinMax
   );
 
   const clampCollateral = (next: string) => {
