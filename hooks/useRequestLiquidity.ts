@@ -5,7 +5,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { utils } from "near-api-js";
 import Big from "big.js";
-import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
+import { DEFAULT_GAS, ONE_YOCTO, SECONDS_PER_DAY } from "@/utils/constants";
 import { getFriendlyErrorMessage } from "@/utils/errors";
 import { getActiveNetwork } from "@/utils/networks";
 import { getTokenDecimals } from "@/utils/tokens";
@@ -55,7 +55,7 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
         const interestMinimal = toMinimalTokenAmount(interest, decimals);
         const collateral = utils.format.parseNearAmount(collateral_near);
         if (!collateral) throw new Error("Invalid collateral amount");
-        const duration = Math.max(1, Math.floor(Number(duration_days) * 86400));
+        const duration = Math.max(1, Math.floor(Number(duration_days) * SECONDS_PER_DAY));
 
         const outcomeRaw = await wallet.signAndSendTransaction({
           receiverId: vault,

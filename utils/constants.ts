@@ -18,3 +18,5 @@ export const ONE_YOCTO = "1";
 export const USDC_DECIMALS = 6;
 /** Number of decimal places for NEAR native token. */
 export const NATIVE_DECIMALS = 24;
+/** Number of seconds in one day. */
+export const SECONDS_PER_DAY = 86_400;

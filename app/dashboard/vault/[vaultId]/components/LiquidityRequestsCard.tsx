@@ -6,21 +6,36 @@ import { useVault } from "@/hooks/useVault";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { utils } from "near-api-js";
+import { SECONDS_PER_DAY } from "@/utils/constants";
 
 type Props = { vaultId: string; factoryId: string };
 
-function formatTokenAmount(minimal: string, tokenId: string): string {
-  const cfg = getTokenConfigById(tokenId);
-  const decimals = cfg?.decimals ?? getTokenDecimals(tokenId);
-  const sym = cfg?.symbol ?? "FT";
-  // Avoid big.js here to keep this lightweight; format by padding and inserting decimal point
+/**
+ * Formats a minimal token amount (as a string) into a human-readable decimal string.
+ * - Strips leading zeros only when followed by another digit (to preserve "0" for all-zero inputs).
+ * - Pads with zeros if necessary, inserts the decimal point at the correct position.
+ * - Removes unnecessary leading zeros, trailing zeros after the decimal, and a trailing decimal point.
+ */
+function formatMinimalTokenAmount(minimal: string, decimals: number): string {
   // Strip leading zeros only when followed by another digit; keep a single zero for all-zero inputs
   const s = minimal.replace(/^0+(?=\d)/, "");
   const d = Math.max(0, decimals);
   const pad = s.length <= d ? "0".repeat(d - s.length + 1) + s : s;
   const i = pad.length - d;
   const withDot = d === 0 ? pad : `${pad.slice(0, i)}.${pad.slice(i)}`;
-  const cleaned = withDot.replace(/^0+(\d)/, "$1").replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+  // Remove leading zeros before the integer part, trailing zeros after the decimal, and trailing decimal point
+  const cleaned = withDot
+    .replace(/^0+(\d)/, "$1")
+    .replace(/\.0+$/, "")
+    .replace(/(\.\d*?)0+$/, "$1");
+  return cleaned;
+}
+
+function formatTokenAmount(minimal: string, tokenId: string): string {
+  const cfg = getTokenConfigById(tokenId);
+  const decimals = cfg?.decimals ?? getTokenDecimals(tokenId);
+  const sym = cfg?.symbol ?? "FT";
+  const cleaned = formatMinimalTokenAmount(minimal, decimals);
   return `${cleaned} ${sym}`;
 }
 
@@ -35,7 +50,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
     const amount = formatTokenAmount(req.amount, req.token);
     const interest = formatTokenAmount(req.interest, req.token);
     const collateral = `${utils.format.formatNearAmount(req.collateral)} NEAR`;
-    const durationDays = Math.max(1, Math.round((req.duration ?? 0) / 86400));
+    const durationDays = Math.max(1, Math.round((req.duration ?? 0) / SECONDS_PER_DAY));
     return { amount, interest, collateral, durationDays, token: req.token };
   }, [data]);
 

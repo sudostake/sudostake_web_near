@@ -106,8 +106,10 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
     } catch (err) {
-      // handled by hook error state
-      console.error("Error in confirm:", err);
+      // handled by hook error state; log in development only
+      if (process.env.NODE_ENV !== "production") {
+        console.error("Error in confirm:", err);
+      }
     } finally {
       resetAndClose();
     }
