@@ -105,8 +105,9 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
-    } catch {
+    } catch (err) {
       // handled by hook error state
+      console.error("Error in confirm:", err);
     } finally {
       resetAndClose();
     }

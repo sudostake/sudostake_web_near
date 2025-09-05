@@ -14,7 +14,8 @@ function formatTokenAmount(minimal: string, tokenId: string): string {
   const decimals = cfg?.decimals ?? getTokenDecimals(tokenId);
   const sym = cfg?.symbol ?? "FT";
   // Avoid big.js here to keep this lightweight; format by padding and inserting decimal point
-  const s = minimal.replace(/^0+/, "");
+  // Strip leading zeros only when followed by another digit; keep a single zero for all-zero inputs
+  const s = minimal.replace(/^0+(?=\d)/, "");
   const d = Math.max(0, decimals);
   const pad = s.length <= d ? "0".repeat(d - s.length + 1) + s : s;
   const i = pad.length - d;
