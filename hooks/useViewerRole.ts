@@ -34,8 +34,8 @@ export function useViewerRole(
     if (!signedAccountId) return "guest";
     const owner = data?.owner;
     const lender = data?.accepted_offer?.lender;
-    if (signedAccountId && lender && lender === signedAccountId) return "activeLender";
-    if (signedAccountId && owner && owner === signedAccountId) return "owner";
+    if (lender && lender === signedAccountId) return "activeLender";
+    if (owner && owner === signedAccountId) return "owner";
     return "potentialLender";
   }, [signedAccountId, data?.owner, data?.accepted_offer?.lender]);
 
@@ -44,4 +44,3 @@ export function useViewerRole(
 
   return { role, isOwner, isActiveLender, loading, error };
 }
-

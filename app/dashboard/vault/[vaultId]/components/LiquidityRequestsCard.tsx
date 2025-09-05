@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
+import { Modal } from "@/app/components/dialogs/Modal";
 import { useVault } from "@/hooks/useVault";
 import { useViewerRole } from "@/hooks/useViewerRole";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
@@ -583,8 +584,6 @@ type AcceptConfirmProps = {
   durationDays: number;
   network: Network;
 };
-
-import { Modal } from "@/app/components/dialogs/Modal";
 
 function AcceptConfirm({
   open,

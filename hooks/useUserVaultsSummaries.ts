@@ -43,14 +43,22 @@ export function useUserVaultsSummaries(
     const unsub = onSnapshot(
       q,
       (snap) => {
+        const isTimestamp = (v: unknown): v is { toMillis: () => number } =>
+          typeof (v as { toMillis?: unknown })?.toMillis === "function";
+        const isVaultState = (v: unknown): v is VaultSummary["state"] =>
+          v === "idle" || v === "pending" || v === "active";
+
         const docs = snap.docs.slice().sort((a, b) => {
-          const aTs: any = a.get("updated_at");
-          const bTs: any = b.get("updated_at");
-          const aMs = aTs && typeof aTs.toMillis === "function" ? aTs.toMillis() : 0;
-          const bMs = bTs && typeof bTs.toMillis === "function" ? bTs.toMillis() : 0;
+          const aTs: unknown = a.get("updated_at") as unknown;
+          const bTs: unknown = b.get("updated_at") as unknown;
+          const aMs = isTimestamp(aTs) ? aTs.toMillis() : 0;
+          const bMs = isTimestamp(bTs) ? bTs.toMillis() : 0;
           return bMs - aMs;
         });
-        const items: VaultSummary[] = docs.map((d) => ({ id: d.id, state: (d.get("state") as any) ?? "idle" }));
+        const items: VaultSummary[] = docs.map((d) => {
+          const raw = d.get("state") as unknown;
+          return { id: d.id, state: isVaultState(raw) ? raw : "idle" };
+        });
         setData(items);
         setLoading(false);
       },
@@ -66,4 +74,3 @@ export function useUserVaultsSummaries(
 
   return { data, loading, error, refetch };
 }
-
