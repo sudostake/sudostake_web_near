@@ -32,7 +32,21 @@ export type UseRequestLiquidityResult = {
 };
 
 function toMinimalTokenAmount(display: string, decimals: number): string {
-  const v = new Big(display || "0");
+  const trimmed = (display ?? "").trim();
+  // Require a simple decimal format: digits with optional single decimal point and fractional digits
+  if (!/^\d*(?:\.\d*)?$/.test(trimmed) || trimmed === "" || trimmed === ".") {
+    throw new Error("Invalid token amount format");
+  }
+  // Enforce maximum fractional precision according to token decimals
+  const parts = trimmed.split(".");
+  const fraction = parts[1] ?? "";
+  if (fraction.length > decimals) {
+    throw new Error(`Amount has more than ${decimals} decimal places`);
+  }
+
+  const v = new Big(trimmed);
+  if (v.lt(0)) throw new Error("Amount must be non-negative");
+
   const scaled = v.times(new Big(10).pow(decimals));
   // Avoid scientific notation; contract expects string integer
   return scaled.round(0, BIG_JS_ROUND_DOWN).toString();

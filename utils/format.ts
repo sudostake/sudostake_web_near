@@ -22,7 +22,9 @@ export function formatMinimalTokenAmount(minimal: string, decimals: number): str
   if (ZERO_ONLY_REGEX.test(minimal)) return "0";
   const s = minimal.replace(/^0+(?=\d)/, "");
   const safeDecimals = Math.max(0, decimals);
-  const paddedString = s.length <= safeDecimals ? "0".repeat(safeDecimals - s.length + 1) + s : s;
+  // Pad with enough zeros to ensure at least one digit before the decimal point
+  const padLength = s.length <= safeDecimals ? safeDecimals - s.length + 1 : 0;
+  const paddedString = padLength > 0 ? "0".repeat(padLength) + s : s;
   const decimalIndex = paddedString.length - safeDecimals;
   const withDot =
     safeDecimals === 0

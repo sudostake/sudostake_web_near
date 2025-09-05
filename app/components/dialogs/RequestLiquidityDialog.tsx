@@ -67,7 +67,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     if (!collateralNear) return false;
     try {
       const inputYocto = utils.format.parseNearAmount(collateralNear);
-      if (!inputYocto) return false;
+      if (inputYocto === null) return false;
       return BigInt(inputYocto) <= BigInt(maxCollateralYocto);
     } catch {
       return false;
@@ -94,7 +94,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     // If parsed value exceeds max, clamp to max
     try {
       const yo = utils.format.parseNearAmount(next || "0");
-      if (!yo) return setCollateralNear(next);
+      if (yo === null) return setCollateralNear(next);
       if (BigInt(yo) > BigInt(maxCollateralYocto)) {
         setCollateralNear(maxCollateralNear);
       } else {
