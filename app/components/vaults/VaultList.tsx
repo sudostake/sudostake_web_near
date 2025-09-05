@@ -4,12 +4,14 @@ import React from "react";
 import Link from "next/link";
 import { useState } from "react";
 
+export type VaultSummary = { id: string; state: "idle" | "pending" | "active" };
 export type VaultListProps = {
   vaultIds: string[];
   onVaultClick?: (vaultId: string) => void;
+  summaries?: VaultSummary[];
 };
 
-export function VaultList({ vaultIds, onVaultClick }: VaultListProps) {
+export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
   const [copied, setCopied] = useState<string | null>(
     null,
   );
@@ -30,6 +32,25 @@ export function VaultList({ vaultIds, onVaultClick }: VaultListProps) {
     return base.slice(0, 2).toUpperCase();
   };
 
+  const stateFor = (id: string): VaultSummary["state"] | undefined => {
+    const s = summaries?.find((v) => v.id === id)?.state;
+    return s;
+  };
+
+  const badge = (state?: VaultSummary["state"]) => {
+    if (!state || state === "idle") return null;
+    const label = state === "pending" ? "Request open" : "Active loan";
+    const cls =
+      state === "pending"
+        ? "bg-amber-100 text-amber-900 border-amber-400/30"
+        : "bg-emerald-100 text-emerald-900 border-emerald-400/30";
+    return (
+      <span className={`ml-2 inline-flex items-center rounded border px-2 py-0.5 text-xs ${cls}`}>
+        {label}
+      </span>
+    );
+  };
+
   const ItemInner = ({ id }: { id: string }) => (
     <div className="flex items-center justify-between gap-3 rounded border bg-surface hover:bg-surface/90 p-3">
       <div className="flex items-center gap-3 min-w-0">
@@ -42,6 +63,7 @@ export function VaultList({ vaultIds, onVaultClick }: VaultListProps) {
         <div className="min-w-0">
           <div className="font-medium truncate" title={id}>
             {id}
+            {badge(stateFor(id))}
           </div>
         </div>
       </div>
