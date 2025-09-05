@@ -33,8 +33,8 @@ export type UseRequestLiquidityResult = {
 
 function toMinimalTokenAmount(display: string, decimals: number): string {
   const trimmed = (display ?? "").trim();
-  // Require a simple decimal format: digits with optional single decimal point and fractional digits
-  if (!/^\d*(?:\.\d*)?$/.test(trimmed) || trimmed === "" || trimmed === ".") {
+  // Require a simple decimal format: at least one digit, optional single decimal point and fractional digits
+  if (!/^\d+(?:\.\d*)?$/.test(trimmed)) {
     throw new Error("Invalid token amount format");
   }
   // Enforce maximum fractional precision according to token decimals

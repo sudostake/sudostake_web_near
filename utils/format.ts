@@ -20,7 +20,8 @@ const ZERO_ONLY_REGEX = /^0+$/;
  */
 export function formatMinimalTokenAmount(minimal: string, decimals: number): string {
   if (ZERO_ONLY_REGEX.test(minimal)) return "0";
-  const s = minimal.replace(/^0+(?=\d)/, "");
+  let s = minimal.replace(/^0+(?=\d)/, "");
+  if (s === "") s = "0";
   const safeDecimals = Math.max(0, decimals);
   // Pad with enough zeros to ensure at least one digit before the decimal point
   const padLength = s.length <= safeDecimals ? safeDecimals - s.length + 1 : 0;

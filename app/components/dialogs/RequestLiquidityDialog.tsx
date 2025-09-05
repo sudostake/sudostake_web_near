@@ -63,8 +63,11 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     onClose();
   };
 
-  const collateralWithinMax = useMemo(() => {
-    if (!collateralNear) return false;
+  const hasCollateralInput = collateralNear.trim().length > 0;
+  // Check strictly whether the provided collateral is within the staked max.
+  // Empty input is handled separately via hasCollateralInput.
+  const isCollateralWithinMax = useMemo(() => {
+    if (!hasCollateralInput) return true;
     try {
       const inputYocto = utils.format.parseNearAmount(collateralNear);
       if (inputYocto === null) return false;
@@ -72,7 +75,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     } catch {
       return false;
     }
-  }, [collateralNear, maxCollateralYocto]);
+  }, [hasCollateralInput, collateralNear, maxCollateralYocto]);
 
   const hasToken = Boolean(token);
   const hasValidAmount = Number(amount) > 0;
@@ -85,10 +88,10 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     hasValidInterestToken &&
     hasValidCollateral &&
     hasValidDuration &&
-    collateralWithinMax
+    isCollateralWithinMax
   );
 
-  const showCollateralError = Boolean(collateralNear) && !collateralWithinMax;
+  const showCollateralError = hasCollateralInput && !isCollateralWithinMax;
 
   const clampCollateral = (next: string) => {
     // If parsed value exceeds max, clamp to max
@@ -117,10 +120,9 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
-    } catch {
-      // handled by hook error state
-    } finally {
       resetAndClose();
+    } catch {
+      // handled by hook error state; keep dialog open to allow corrections
     }
   };
 
