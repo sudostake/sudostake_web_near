@@ -31,8 +31,11 @@ export function formatMinimalTokenAmount(minimal: string, decimals: number): str
     safeDecimals === 0
       ? paddedString
       : `${paddedString.slice(0, decimalIndex)}.${paddedString.slice(decimalIndex)}`;
-  return withDot
-    .replace(/^0+(\d)/, "$1")
-    .replace(/\.0+$/, "")
-    .replace(/(\.\d*?)0+$/, "$1");
+  // 1) Trim trailing zeros in the fractional part (e.g., 1.2300 -> 1.23)
+  const trimmedFraction = withDot.replace(/(\.\d*?)0+$/, "$1");
+  // 2) Remove a trailing decimal point if fraction became empty (e.g., 12. -> 12)
+  const withoutTrailingDot = trimmedFraction.replace(/\.$/, "");
+  // 3) Remove unnecessary leading zeros on the integer part (e.g., 00012.3 -> 12.3)
+  const cleaned = withoutTrailingDot.replace(/^0+(\d)/, "$1");
+  return cleaned;
 }

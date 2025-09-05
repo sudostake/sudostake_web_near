@@ -69,6 +69,9 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
         const network = getActiveNetwork();
         const decimals = getTokenDecimals(token, network);
         const amountMinimal = toMinimalTokenAmount(amount, decimals);
+        if (amountMinimal === "0") {
+          throw new Error("Amount must be greater than zero");
+        }
         const interestMinimal = toMinimalTokenAmount(interest, decimals);
         const collateral = utils.format.parseNearAmount(collateral_near);
         if (!collateral) throw new Error("Invalid collateral amount");
