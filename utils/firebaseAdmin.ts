@@ -36,6 +36,9 @@ export function initFirebaseAdmin(): void {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
+  try {
+    admin.firestore().settings({ ignoreUndefinedProperties: true });
+  } catch {}
 }
 
 export function getAdmin() {
