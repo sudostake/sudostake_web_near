@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
 import { useVault } from "@/hooks/useVault";
-import { useIndexVault } from "@/hooks/useIndexVault";
+import { useViewerRole } from "@/hooks/useViewerRole";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import type { Network } from "@/utils/networks";
@@ -24,9 +24,9 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 
 export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
-  const { data, loading, error, refetch } = useVault(factoryId, vaultId);
-  const { indexVault } = useIndexVault();
+  const { data } = useVault(factoryId, vaultId);
   const network = networkFromFactoryId(factoryId);
+  const { isOwner } = useViewerRole(factoryId, vaultId);
 
   const content = useMemo(() => {
     const req = data?.liquidity_request;
@@ -38,7 +38,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
     return { amount, interest, collateral, durationDays, token: req.token };
   }, [data, network]);
 
-  const openDisabled = Boolean(data?.state === "pending" || data?.state === "active");
+  const openDisabled = Boolean(
+    data?.state === "pending" || data?.state === "active" || !isOwner
+  );
   const hasOpenRequest = Boolean(content);
 
   // Stubbed cancel action — to be implemented in next PR.
@@ -59,7 +61,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
         <div className="flex-1 min-w-0">
           {hasOpenRequest ? (
             <>
-              <div className="text-base font-medium truncate">Your liquidity request</div>
+              <div className="text-base font-medium truncate">
+                {isOwner ? "Your liquidity request" : "Current liquidity request"}
+              </div>
               <div className="mt-1 text-sm text-secondary-text">You can cancel before an offer is accepted.</div>
             </>
           ) : (
@@ -69,7 +73,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
             </>
           )}
         </div>
-        {!hasOpenRequest && (
+        {!hasOpenRequest && isOwner && (
           <div className="shrink-0">
             <button
               type="button"
@@ -108,18 +112,20 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
               <div className="font-medium">{content.durationDays} days</div>
             </div>
           </div>
-          <div className="mt-3 text-right">
-            <button
-              type="button"
-              onClick={onCancel}
-              disabled={true}
-              title="Cancel will be available in the next update"
-              className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface disabled:opacity-50"
-            >
-              Cancel request (soon)
-            </button>
-          </div>
-        </div>
+          {isOwner && (
+            <div className="mt-3 text-right">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={true}
+                title="Cancel will be available in the next update"
+                className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface disabled:opacity-50"
+              >
+                Cancel request (soon)
+              </button>
+            </div>
+          )}
+      </div>
       )}
 
       <style jsx>{`
@@ -130,7 +136,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
         .back { background-image: url('/near.svg'); transform: rotateY(180deg); }
         @keyframes coin-spin { 0% { transform: rotateX(6deg) rotateY(0deg);} 50% { transform: rotateX(6deg) rotateY(180deg);} 100% { transform: rotateX(6deg) rotateY(360deg);} }
       `}</style>
-      <RequestLiquidityDialog open={openDialog} onClose={() => setOpenDialog(false)} vaultId={vaultId} />
+      {isOwner && (
+        <RequestLiquidityDialog open={openDialog} onClose={() => setOpenDialog(false)} vaultId={vaultId} />
+      )}
     </section>
   );
 }

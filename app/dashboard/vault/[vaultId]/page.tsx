@@ -19,6 +19,7 @@ import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
+import { useViewerRole } from "@/hooks/useViewerRole";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -42,6 +43,7 @@ export default function VaultPage() {
   const factoryId = useMemo(() => getActiveFactoryId(), []);
 
   const { loading, error, refetch } = useVault(factoryId, vaultId);
+  const { isOwner } = useViewerRole(factoryId, vaultId);
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
   
@@ -142,16 +144,22 @@ let Body: React.ReactNode;
           loading={availLoading}
         />
 
-        <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
+        {isOwner && (
+          <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
+        )}
 
         {/* Delegations list & controls */}
         <DelegationsActionsProvider
-          value={{
-            onDeposit: handleDeposit,
-            onDelegate: handleDelegate,
-            onUndelegate: handleUndelegate,
-            onUnclaimUnstaked: handleUnclaimUnstaked,
-          }}
+          value={
+            isOwner
+              ? {
+                  onDeposit: handleDeposit,
+                  onDelegate: handleDelegate,
+                  onUndelegate: handleUndelegate,
+                  onUnclaimUnstaked: handleUnclaimUnstaked,
+                }
+              : {}
+          }
         >
           <DelegationsCard
             loading={delegLoading}
@@ -173,69 +181,70 @@ let Body: React.ReactNode;
       <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
         {Header}
         {Body}
-        <DepositDialog
-          open={depositOpen}
-          onClose={resetDeposit}
-          vaultId={vaultId}
-          symbol={NATIVE_TOKEN}
-          onSuccess={() => {
-            refetchVaultNear();
-            refetchAvail();
-            // Refresh delegations after deposit? optional
-          }}
-        />
-        <WithdrawDialog
-          open={withdrawOpen}
-          onClose={resetWithdraw}
-          vaultId={vaultId}
-          onSuccess={() => {
-            refetchVaultNear();
-            refetchAvail();
-            // Refresh delegations after withdrawal? optional
-          }}
-        />
-        <DelegateDialog
-          open={delegateOpen}
-          onClose={resetDelegate}
-          vaultId={vaultId}
-          balance={availBalance}
-          loading={availLoading}
-          defaultValidator={delegateValidator ?? undefined}
-          onSuccess={() => {
-            refetchAvail();
-            // Refresh delegations after delegation
-            refetchDeleg();
-          }}
-        />
-        <UndelegateDialog
-          open={undelegateOpen && Boolean(undelegateValidator)}
-          onClose={resetUndelegate}
-          vaultId={vaultId}
-          validator={undelegateValidator!}
-          balance={
-            new Balance(
-              delegData?.summary?.find((e) => e.validator === undelegateValidator)
-                ?.staked_balance.minimal ?? "0",
-              NATIVE_DECIMALS,
-              NATIVE_TOKEN
-            )
-          }
-          loading={delegLoading}
-          onSuccess={() => {
-            refetchAvail();
-            refetchDeleg();
-          }}
-        />
-        <ClaimUnstakedDialog
-          open={claimOpen}
-          onClose={resetClaim}
-          vaultId={vaultId}
-          validator={claimValidator ?? ""}
-          onSuccess={() => {
-            refetchAvail();
-            refetchDeleg();
-          }}
-        />
+        {isOwner && (
+          <>
+            <DepositDialog
+              open={depositOpen}
+              onClose={resetDeposit}
+              vaultId={vaultId}
+              symbol={NATIVE_TOKEN}
+              onSuccess={() => {
+                refetchVaultNear();
+                refetchAvail();
+              }}
+            />
+            <WithdrawDialog
+              open={withdrawOpen}
+              onClose={resetWithdraw}
+              vaultId={vaultId}
+              onSuccess={() => {
+                refetchVaultNear();
+                refetchAvail();
+              }}
+            />
+            <DelegateDialog
+              open={delegateOpen}
+              onClose={resetDelegate}
+              vaultId={vaultId}
+              balance={availBalance}
+              loading={availLoading}
+              defaultValidator={delegateValidator ?? undefined}
+              onSuccess={() => {
+                refetchAvail();
+                refetchDeleg();
+              }}
+            />
+            <UndelegateDialog
+              open={undelegateOpen && Boolean(undelegateValidator)}
+              onClose={resetUndelegate}
+              vaultId={vaultId}
+              validator={undelegateValidator!}
+              balance={
+                new Balance(
+                  delegData?.summary?.find((e) => e.validator === undelegateValidator)
+                    ?.staked_balance.minimal ?? "0",
+                  NATIVE_DECIMALS,
+                  NATIVE_TOKEN
+                )
+              }
+              loading={delegLoading}
+              onSuccess={() => {
+                refetchAvail();
+                refetchDeleg();
+              }}
+            />
+            <ClaimUnstakedDialog
+              open={claimOpen}
+              onClose={resetClaim}
+              vaultId={vaultId}
+              validator={claimValidator ?? ""}
+              onSuccess={() => {
+                refetchAvail();
+                refetchDeleg();
+              }}
+            />
+          </>
+        )}
       </main>
     </div>
   );
