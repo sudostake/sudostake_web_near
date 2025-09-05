@@ -163,7 +163,7 @@ let Body: React.ReactNode;
           />
         </DelegationsActionsProvider>
 
-        <LiquidityRequestsCard />
+        <LiquidityRequestsCard vaultId={vaultId} factoryId={factoryId} />
       </div>
     );
   }
