@@ -20,7 +20,14 @@ const TOKENS_BY_NETWORK: Partial<Record<Network, Record<string, TokenConfig>>> =
   },
   // Add mainnet mappings as they are finalized
   mainnet: {
-    // "usdc.contract.near": { id: "usdc.contract.near", symbol: "USDC", decimals: 6, name: "USD Coin" },
+    // From sudostake_agent_near/agent/src/token_registry.py
+    // Implicit account for USDC on NEAR mainnet
+    "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1": {
+      id: "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      symbol: "USDC",
+      decimals: 6,
+      name: "USD Coin",
+    },
   },
 };
 
