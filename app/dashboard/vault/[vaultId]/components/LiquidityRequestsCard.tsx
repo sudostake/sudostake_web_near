@@ -6,15 +6,17 @@ import { useVault } from "@/hooks/useVault";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { formatMinimalTokenAmount } from "@/utils/format";
+import type { Network } from "@/utils/networks";
+import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { utils } from "near-api-js";
 import { SECONDS_PER_DAY } from "@/utils/constants";
 
 type Props = { vaultId: string; factoryId: string };
 
 
-function formatTokenAmount(minimal: string, tokenId: string): string {
-  const cfg = getTokenConfigById(tokenId);
-  const decimals = cfg?.decimals ?? getTokenDecimals(tokenId);
+function formatTokenAmount(minimal: string, tokenId: string, network: Network): string {
+  const cfg = getTokenConfigById(tokenId, network);
+  const decimals = cfg?.decimals ?? getTokenDecimals(tokenId, network);
   const sym = cfg?.symbol ?? "FT";
   const cleaned = formatMinimalTokenAmount(minimal, decimals);
   return `${cleaned} ${sym}`;
@@ -24,16 +26,17 @@ export function LiquidityRequestsCard({ vaultId, factoryId }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const { data, loading, error, refetch } = useVault(factoryId, vaultId);
   const { indexVault } = useIndexVault();
+  const network = networkFromFactoryId(factoryId);
 
   const content = useMemo(() => {
     const req = data?.liquidity_request;
     if (!req) return null;
-    const amount = formatTokenAmount(req.amount, req.token);
-    const interest = formatTokenAmount(req.interest, req.token);
+    const amount = formatTokenAmount(req.amount, req.token, network);
+    const interest = formatTokenAmount(req.interest, req.token, network);
     const collateral = `${utils.format.formatNearAmount(req.collateral)} NEAR`;
     const durationDays = Math.max(1, Math.round((req.duration ?? 0) / SECONDS_PER_DAY));
     return { amount, interest, collateral, durationDays, token: req.token };
-  }, [data]);
+  }, [data, network]);
 
   const openDisabled = Boolean(data?.state === "pending" || data?.state === "active");
   const hasOpenRequest = Boolean(content);

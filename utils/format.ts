@@ -21,10 +21,13 @@ const ZERO_ONLY_REGEX = /^0+$/;
 export function formatMinimalTokenAmount(minimal: string, decimals: number): string {
   if (ZERO_ONLY_REGEX.test(minimal)) return "0";
   const s = minimal.replace(/^0+(?=\d)/, "");
-  const d = Math.max(0, decimals);
-  const pad = s.length <= d ? "0".repeat(d - s.length + 1) + s : s;
-  const i = pad.length - d;
-  const withDot = d === 0 ? pad : `${pad.slice(0, i)}.${pad.slice(i)}`;
+  const safeDecimals = Math.max(0, decimals);
+  const paddedString = s.length <= safeDecimals ? "0".repeat(safeDecimals - s.length + 1) + s : s;
+  const decimalIndex = paddedString.length - safeDecimals;
+  const withDot =
+    safeDecimals === 0
+      ? paddedString
+      : `${paddedString.slice(0, decimalIndex)}.${paddedString.slice(decimalIndex)}`;
   return withDot
     .replace(/^0+(\d)/, "$1")
     .replace(/\.0+$/, "")

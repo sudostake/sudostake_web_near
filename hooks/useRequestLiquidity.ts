@@ -58,8 +58,16 @@ export function useRequestLiquidity(): UseRequestLiquidityResult {
         const interestMinimal = toMinimalTokenAmount(interest, decimals);
         const collateral = utils.format.parseNearAmount(collateral_near);
         if (!collateral) throw new Error("Invalid collateral amount");
+        // Validate and convert duration (days) to seconds
+        const daysNum = Number(duration_days);
+        if (!Number.isFinite(daysNum) || daysNum <= 0) {
+          throw new Error("Invalid duration (days)");
+        }
         // Round to the nearest second to match UI expectations when fractional days are provided
-        const duration = Math.max(1, Math.round(Number(duration_days) * SECONDS_PER_DAY));
+        const duration = Math.round(daysNum * SECONDS_PER_DAY);
+        if (!Number.isFinite(duration) || duration <= 0) {
+          throw new Error("Invalid duration (seconds)");
+        }
 
         const outcomeRaw = await wallet.signAndSendTransaction({
           receiverId: vault,

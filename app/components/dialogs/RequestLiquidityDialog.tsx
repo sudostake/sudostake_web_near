@@ -88,6 +88,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     collateralWithinMax
   );
 
+  const showCollateralError = Boolean(collateralNear) && !collateralWithinMax;
+
   const clampCollateral = (next: string) => {
     // If parsed value exceeds max, clamp to max
     try {
@@ -230,7 +232,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
             />
           </label>
         </div>
-        {(!collateralWithinMax && collateralNear) && (
+        {showCollateralError && (
           <div className="text-xs text-red-500">Collateral exceeds your total staked balance.</div>
         )}
         {error && (
