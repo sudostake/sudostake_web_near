@@ -1,4 +1,4 @@
-import admin from "@/utils/firebaseAdmin";
+import { getAdmin } from "@/utils/firebaseAdmin";
 import type {
   CollectionReference,
   DocumentReference,
@@ -33,7 +33,7 @@ const jobConverter: FirestoreDataConverter<IndexingJob> = {
 };
 
 export function jobsCollection(): CollectionReference<IndexingJob> {
-  const db = admin.firestore();
+  const db = getAdmin().firestore();
   return db.collection("indexing_jobs").withConverter(jobConverter);
 }
 
@@ -46,11 +46,11 @@ export function jobDoc(factoryId: string, vault: string): DocumentReference<Inde
 }
 
 export function nowTs(): FirebaseFirestore.Timestamp {
-  return admin.firestore.Timestamp.now();
+  return getAdmin().firestore.Timestamp.now();
 }
 
 export function serverNow(): FirebaseFirestore.FieldValue {
-  return admin.firestore.FieldValue.serverTimestamp();
+  return getAdmin().firestore.FieldValue.serverTimestamp();
 }
 
 /**
@@ -65,7 +65,7 @@ const MAX_ERROR_MESSAGE_LENGTH = 5000;
 
 /** A small helper to create a Firestore Timestamp for a date in the future. */
 export function timestampFromDate(date: Date): FirebaseFirestore.Timestamp {
-  return admin.firestore.Timestamp.fromDate(date);
+  return getAdmin().firestore.Timestamp.fromDate(date);
 }
 
 /**
@@ -77,6 +77,7 @@ export async function claimNextJob(options?: {
   maxAttempts?: number;
   leaseSeconds?: number;
 }): Promise<FirebaseFirestore.QueryDocumentSnapshot<IndexingJob> | null> {
+  const admin = getAdmin();
   const db = admin.firestore();
   const col = jobsCollection();
   const now = admin.firestore.Timestamp.now();
@@ -163,9 +164,9 @@ export async function claimNextJob(options?: {
 export async function markJobSucceeded(ref: DocumentReference<IndexingJob>) {
   await ref.update({
     status: "succeeded",
-    lease_until: admin.firestore.FieldValue.delete(),
-    next_run_at: admin.firestore.FieldValue.delete(),
-    last_error: admin.firestore.FieldValue.delete(),
+    lease_until: getAdmin().firestore.FieldValue.delete(),
+    next_run_at: getAdmin().firestore.FieldValue.delete(),
+    last_error: getAdmin().firestore.FieldValue.delete(),
     updated_at: serverNow(),
   });
 }
@@ -177,7 +178,7 @@ export async function markJobFailed(
 ) {
   await ref.update({
     status: "failed",
-    lease_until: admin.firestore.FieldValue.delete(),
+    lease_until: getAdmin().firestore.FieldValue.delete(),
     next_run_at: nextRunAt,
     last_error: errorMessage.substring(0, MAX_ERROR_MESSAGE_LENGTH),
     updated_at: serverNow(),

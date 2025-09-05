@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import { jsonError, jsonOk, safeParseJson } from "@/utils/api/http";
 import { validateFactoryAndVault } from "@/utils/indexing/service";
-import admin from "@/utils/firebaseAdmin";
+import { getAdmin } from "@/utils/firebaseAdmin";
 import { jobDoc, serverNow } from "@/utils/db/indexing_jobs";
 
 type EnqueueBody = {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   if (!valid.ok) return jsonError(valid.message, valid.status);
 
   const docRef = jobDoc(factory_id, vault);
-  const db = admin.firestore();
+  const db = getAdmin().firestore();
   const queued = await db.runTransaction(async (tx) => {
     const snap = await tx.get(docRef);
     if (snap.exists) {

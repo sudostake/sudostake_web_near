@@ -2,7 +2,7 @@ import { FACTORY_CONTRACT_WHITELIST, isValidAccountId } from "@/utils/api/factor
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 import { transformVaultState } from "@/utils/transformers/transform_vault_state";
 import type { VaultDocument } from "@/utils/types/vault_document";
-import admin from "@/utils/firebaseAdmin";
+import { getAdmin } from "@/utils/firebaseAdmin";
 import { vaultDoc } from "@/utils/db/vaults";
 
 export function getRpcUrl(factoryId: string): string | undefined {
@@ -100,8 +100,8 @@ export async function persistIndexedVault(
     factory_id: factoryId,
     // tx hash is not part of the on-chain vault state; persist the provided hash if supplied
     tx_hash: txHash ?? null,
-    created_at: admin.firestore.FieldValue.serverTimestamp(),
-    updated_at: admin.firestore.FieldValue.serverTimestamp(),
+    created_at: getAdmin().firestore.FieldValue.serverTimestamp(),
+    updated_at: getAdmin().firestore.FieldValue.serverTimestamp(),
   };
   await docRef.set(toWrite);
 }

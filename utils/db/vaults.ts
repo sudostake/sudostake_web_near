@@ -1,4 +1,4 @@
-import admin from "@/utils/firebaseAdmin";
+import { getAdmin } from "@/utils/firebaseAdmin";
 import type {
   CollectionReference,
   DocumentReference,
@@ -20,7 +20,7 @@ const vaultConverter: FirestoreDataConverter<VaultDocument> = {
 export function vaultsCollection(
   factoryId: string
 ): CollectionReference<VaultDocument> {
-  const db = admin.firestore();
+  const db = getAdmin().firestore();
   return db.collection(factoryId).withConverter(vaultConverter);
 }
 
