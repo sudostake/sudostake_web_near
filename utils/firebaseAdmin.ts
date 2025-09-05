@@ -36,6 +36,15 @@ export function initFirebaseAdmin(): void {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
+  try {
+    admin.firestore().settings({ ignoreUndefinedProperties: true });
+  } catch (err) {
+    // Log and continue; some environments may not allow settings or may have already been set
+    console.error(
+      "Failed to set Firestore settings (ignoreUndefinedProperties):",
+      err
+    );
+  }
 }
 
 export function getAdmin() {

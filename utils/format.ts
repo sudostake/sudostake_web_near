@@ -6,3 +6,36 @@ export function parseNumber(input: string | number | null | undefined): number {
   return Number.isNaN(n) ? NaN : n;
 }
 
+const ZERO_ONLY_REGEX = /^0+$/;
+
+/**
+ * Format a minimal-unit token amount into a human-readable decimal string.
+ *
+ * Example: minimal="0012300", decimals=4 → "12.3"
+ *
+ * Rules:
+ * - Fast-path zero: returns "0" for inputs like "0", "00", …
+ * - Inserts the decimal point according to `decimals`
+ * - Trims superfluous leading zeros, trailing zeros, and trailing decimal point
+ */
+export function formatMinimalTokenAmount(minimal: string, decimals: number): string {
+  if (ZERO_ONLY_REGEX.test(minimal)) return "0";
+  // Remove all leading zeros; if the result is empty, default to "0"
+  let s = minimal.replace(/^0+/, "") || "0";
+  const safeDecimals = Math.max(0, decimals);
+  // Pad with enough zeros to ensure at least one digit before the decimal point
+  const padLength = s.length <= safeDecimals ? safeDecimals - s.length + 1 : 0;
+  const paddedString = padLength > 0 ? "0".repeat(padLength) + s : s;
+  const decimalIndex = paddedString.length - safeDecimals;
+  const withDot =
+    safeDecimals === 0
+      ? paddedString
+      : `${paddedString.slice(0, decimalIndex)}.${paddedString.slice(decimalIndex)}`;
+  // 1) Trim trailing zeros in the fractional part (e.g., 1.2300 -> 1.23)
+  const trimmedFraction = withDot.replace(/(\.\d*?)0+$/, "$1");
+  // 2) Remove a trailing decimal point if fraction became empty (e.g., 12. -> 12)
+  const withoutTrailingDot = trimmedFraction.replace(/\.$/, "");
+  // 3) Remove unnecessary leading zeros on the integer part (e.g., 00012.3 -> 12.3)
+  const cleaned = withoutTrailingDot.replace(/^0+(\d)/, "$1");
+  return cleaned;
+}

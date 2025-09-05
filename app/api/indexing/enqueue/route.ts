@@ -28,20 +28,17 @@ export async function POST(req: NextRequest) {
         return false; // already done, do not modify
       }
     }
-    tx.set(
-      docRef,
-      {
-        id: docRef.id,
-        factory_id,
-        vault,
-        tx_hash,
-        status: "pending",
-        attempts: 0,
-        created_at: serverNow(),
-        updated_at: serverNow(),
-      },
-      { merge: true }
-    );
+    const payload: Record<string, unknown> = {
+      id: docRef.id,
+      factory_id,
+      vault,
+      status: "pending",
+      attempts: 0,
+      created_at: serverNow(),
+      updated_at: serverNow(),
+    };
+    if (tx_hash !== undefined) payload.tx_hash = tx_hash;
+    tx.set(docRef, payload, { merge: true });
     return true;
   });
 
