@@ -22,6 +22,16 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
 
 
+function tsToDate(ts: unknown): Date | null {
+  try {
+    const maybeDate = (ts as { toDate?: () => Date })?.toDate?.();
+    return maybeDate instanceof Date ? maybeDate : null;
+  } catch {
+    return null;
+  }
+}
+
+
 function formatTokenAmount(minimal: string, tokenId: string, network: Network): string {
   const cfg = getTokenConfigById(tokenId, network);
   const decimals = cfg?.decimals ?? getTokenDecimals(tokenId, network);
@@ -75,15 +85,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
   }, [lenderTokenBal, tokenDecimals]);
 
   // Expiry countdown for active loans
-  const acceptedAtDate = useMemo(() => {
-    try {
-      const ts: unknown = data?.accepted_offer?.accepted_at as unknown;
-      const maybeDate = (ts as { toDate?: () => Date })?.toDate?.();
-      return maybeDate instanceof Date ? maybeDate : null;
-    } catch {
-      return null;
-    }
-  }, [data?.accepted_offer?.accepted_at]);
+  const acceptedAtDate = useMemo(() => tsToDate(data?.accepted_offer?.accepted_at as unknown), [data?.accepted_offer?.accepted_at]);
 
   const expiryDate = useMemo(() => {
     if (!acceptedAtDate || !data?.liquidity_request?.duration) return null;
@@ -340,22 +342,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
           {data?.state === "active" && role === "activeLender" && (
             <div className="mt-3 rounded border border-emerald-500/30 bg-emerald-100/50 text-emerald-900 p-2 text-sm">
               <span className="font-medium">You provided the funds for this loan.</span>
-              {data?.accepted_offer?.accepted_at && (
-                <>
-                  {" "}Accepted on {
-                    (() => {
-                      try {
-                        const ts: unknown = data.accepted_offer?.accepted_at as unknown;
-                        const maybeDate = (ts as { toDate?: () => Date })?.toDate?.();
-                        const d = maybeDate instanceof Date ? maybeDate : new Date();
-                        return d.toLocaleString();
-                      } catch {
-                        return new Date().toLocaleString();
-                      }
-                    })()
-                  }
-                </>
-              )}
+              {acceptedAtDate && <>{" "}Accepted on {acceptedAtDate.toLocaleString()}</>}
             </div>
           )}
           {isOwner && data?.state === "pending" ? (

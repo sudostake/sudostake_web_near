@@ -44,7 +44,7 @@ export function useUserVaultsSummaries(
       q,
       (snap) => {
         const isTimestamp = (v: unknown): v is { toMillis: () => number } =>
-          typeof (v as { toMillis?: unknown })?.toMillis === "function";
+          typeof v === "object" && v !== null && typeof (v as any).toMillis === "function";
         const isVaultState = (v: unknown): v is VaultSummary["state"] =>
           v === "idle" || v === "pending" || v === "active";
 
