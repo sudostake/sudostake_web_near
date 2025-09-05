@@ -52,3 +52,9 @@ export function factoryContract(network: Network): string {
 export function getActiveFactoryId(): string {
   return factoryContract(getActiveNetwork());
 }
+
+// Explorer helpers
+export function explorerAccountUrl(network: Network, accountId: string): string {
+  const base = network === "mainnet" ? "https://explorer.near.org" : "https://explorer.testnet.near.org";
+  return `${base}/accounts/${accountId}`;
+}
