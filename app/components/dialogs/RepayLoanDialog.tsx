@@ -109,21 +109,26 @@ export function RepayLoanDialog({
   const confirm = async () => {
     try {
       const { txHash } = await repayLoan({ vault: vaultId });
-      // Post-tx side effects: run concurrently and don't block success UX
-      const results = await Promise.allSettled([
-        indexVault({ factoryId, vault: vaultId, txHash }),
-        refetchVaultTokenBal(),
-      ]);
-      const [idxRes, balRes] = results;
-      if (idxRes.status === "rejected") {
-        console.error("Indexing enqueue failed after repay", idxRes.reason);
-      }
-      if (balRes.status === "rejected") {
-        console.error("Vault token balance refresh failed after repay", balRes.reason);
-      }
+      // Immediately inform user of success and close dialog
       showToast(STRINGS.repaySuccess, { variant: "success" });
       onSuccess?.();
       onClose();
+
+      // Fire-and-forget post-tx side effects: do not block UX
+      void Promise.allSettled([
+        indexVault({ factoryId, vault: vaultId, txHash }),
+        refetchVaultTokenBal(),
+      ]).then(([idxRes, balRes]) => {
+        if (idxRes.status === "rejected") {
+          console.error("Indexing enqueue failed after repay", idxRes.reason);
+        }
+        if (balRes.status === "rejected") {
+          console.error("Vault token balance refresh failed after repay", balRes.reason);
+        }
+      }).catch((err) => {
+        // Shouldn't happen with allSettled, but guard just in case
+        console.error("Unexpected error in post-repay side effects", err);
+      });
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
     }
