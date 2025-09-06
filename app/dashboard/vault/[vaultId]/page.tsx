@@ -206,6 +206,10 @@ let Body: React.ReactNode;
             refetchAvail();
             refetchDeleg();
           }}
+          onAfterTopUp={() => {
+            // Update USDC header balance promptly when a top-up is made
+            refetchVaultUsdc();
+          }}
         />
       </div>
     );

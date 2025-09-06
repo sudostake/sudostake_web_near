@@ -22,7 +22,7 @@ import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 
-type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void };
+type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
 
 
 
@@ -35,7 +35,7 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
   return `${cleaned} ${sym}`;
 }
 
-export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay }: Props) {
+export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
@@ -496,6 +496,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           onSuccess={() => {
             onAfterRepay?.();
             setRepayOpen(false);
+          }}
+          onVaultTokenBalanceChange={() => {
+            onAfterTopUp?.();
           }}
         />
       )}
