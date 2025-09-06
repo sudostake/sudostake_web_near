@@ -47,36 +47,17 @@ export function showToast(message: string, opts: ToastOptions = {}): void {
   toast.setAttribute("aria-live", "polite");
 
   const palette: Record<string, { bg: string; fg: string; border: string }> = {
-    success: { bg: "#DCFCE7", fg: "#065F46", border: "#34D399" },
-    error: { bg: "#FEE2E2", fg: "#991B1B", border: "#F87171" },
-    info: { bg: "#DBEAFE", fg: "#1E3A8A", border: "#60A5FA" },
+    // Border colors precomputed with 25% alpha
+    success: { bg: "#DCFCE7", fg: "#065F46", border: "rgba(52, 211, 153, 0.25)" }, // #34D399
+    error: { bg: "#FEE2E2", fg: "#991B1B", border: "rgba(248, 113, 113, 0.25)" },   // #F87171
+    info: { bg: "#DBEAFE", fg: "#1E3A8A", border: "rgba(96, 165, 250, 0.25)" },     // #60A5FA
   };
   const colors = palette[variant] ?? palette.success;
-
-  function hexToRgba(hex: string, alpha: number): string {
-    const normalized = hex.replace('#', '');
-    const valid = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(normalized);
-    if (!valid) {
-      throw new Error(`Invalid hex color string: "${hex}"`);
-    }
-    let r = 0, g = 0, b = 0;
-    if (normalized.length === 3) {
-      r = parseInt(normalized[0] + normalized[0], 16);
-      g = parseInt(normalized[1] + normalized[1], 16);
-      b = parseInt(normalized[2] + normalized[2], 16);
-    } else {
-      r = parseInt(normalized.slice(0, 2), 16);
-      g = parseInt(normalized.slice(2, 4), 16);
-      b = parseInt(normalized.slice(4, 6), 16);
-    }
-    const a = Math.max(0, Math.min(1, alpha));
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
 
   setStyles(toast, {
     background: colors.bg,
     color: colors.fg,
-    border: `1px solid ${hexToRgba(colors.border, 0.25)}`,
+    border: `1px solid ${colors.border}`,
     borderRadius: "8px",
     padding: "10px 12px",
     boxShadow: "0 6px 20px rgba(0,0,0,0.12)",

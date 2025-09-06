@@ -275,12 +275,13 @@ function TopUpSection({
   onTopUp,
 }: TopUpSectionProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const COPY_FEEDBACK_MS = 1600;
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(text);
       showToast(STRINGS.copied, { variant: "success", duration: 1500 });
-      window.setTimeout(() => setCopied((prev) => (prev === text ? null : prev)), 1200);
+      window.setTimeout(() => setCopied((prev) => (prev === text ? null : prev)), COPY_FEEDBACK_MS);
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
     }
