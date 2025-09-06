@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useRepayLoan } from "@/hooks/useRepayLoan";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -274,7 +274,7 @@ function TopUpSection({
   onRegisterVault,
   onTopUp,
 }: TopUpSectionProps) {
-  const [copied, setCopied] = React.useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);

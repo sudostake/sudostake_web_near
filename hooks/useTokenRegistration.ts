@@ -23,6 +23,12 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
+  // Simple in-memory cache for token bounds to avoid duplicate network calls
+  // across multiple consumers within the same session/render lifecycle.
+  // Only caches the `min` value which is all we need for registration.
+  const staticCache: Map<string, string | null> = (useTokenRegistration as unknown as { __boundsCache?: Map<string, string | null> }).__boundsCache ?? new Map();
+  (useTokenRegistration as unknown as { __boundsCache?: Map<string, string | null> }).__boundsCache = staticCache;
+
   useEffect(() => {
     let cancelled = false;
     async function run() {
@@ -39,9 +45,14 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
         const isReg = bal !== null;
         setRegistered(isReg);
         if (!isReg) {
-          const bounds = await storageBounds(tokenId);
+          let min = staticCache.get(tokenId);
+          if (min === undefined) {
+            const bounds = await storageBounds(tokenId);
+            min = bounds?.min ?? null;
+            staticCache.set(tokenId, min);
+          }
           if (cancelled) return;
-          setMinDeposit(bounds?.min ?? null);
+          setMinDeposit(min ?? null);
         } else {
           setMinDeposit(null);
         }
@@ -55,4 +66,3 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
 
   return { registered, minDeposit, loading, error: storageError ?? null, refresh };
 }
-
