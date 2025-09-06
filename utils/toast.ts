@@ -9,9 +9,10 @@ export type ToastOptions = {
 const ROOT_ID = "toast-root";
 
 function setStyles(el: HTMLElement, styles: Record<string, string | number>) {
+  const style = el.style as CSSStyleDeclaration;
   for (const [k, v] of Object.entries(styles)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (el.style as any)[k] = String(v);
+    // Index signature isn't defined on CSSStyleDeclaration; cast key to any safely here.
+    (style as unknown as Record<string, string>)[k] = String(v);
   }
 }
 
@@ -54,12 +55,17 @@ export function showToast(message: string, opts: ToastOptions = {}): void {
 
   function hexToRgba(hex: string, alpha: number): string {
     const normalized = hex.replace('#', '');
+    const valid = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(normalized);
+    if (!valid) {
+      const a = Math.max(0, Math.min(1, alpha));
+      return `rgba(0, 0, 0, ${a})`;
+    }
     let r = 0, g = 0, b = 0;
     if (normalized.length === 3) {
       r = parseInt(normalized[0] + normalized[0], 16);
       g = parseInt(normalized[1] + normalized[1], 16);
       b = parseInt(normalized[2] + normalized[2], 16);
-    } else if (normalized.length === 6) {
+    } else {
       r = parseInt(normalized.slice(0, 2), 16);
       g = parseInt(normalized.slice(2, 4), 16);
       b = parseInt(normalized.slice(4, 6), 16);

@@ -16,6 +16,8 @@ import { showToast } from "@/utils/toast";
 import { getFriendlyErrorMessage } from "@/utils/errors";
 import { utils } from "near-api-js";
 
+const TOP_UP_MEMO = "Vault top-up for loan repayment";
+
 type Props = {
   open: boolean;
   onClose: () => void;
@@ -39,7 +41,6 @@ export function RepayLoanDialog({
   onSuccess,
   onVaultTokenBalanceChange,
 }: Props) {
-  const TOP_UP_MEMO = "Vault top-up for loan repayment";
   const network = networkFromFactoryId(factoryId);
   const decimals = getTokenDecimals(tokenId, network);
   const symbol = getTokenConfigById(tokenId, network)?.symbol ?? "FT";
