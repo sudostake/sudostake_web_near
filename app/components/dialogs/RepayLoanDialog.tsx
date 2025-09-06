@@ -15,6 +15,9 @@ import { useFtBalance } from "@/hooks/useFtBalance";
 import { showToast } from "@/utils/toast";
 import { getFriendlyErrorMessage } from "@/utils/errors";
 import { utils } from "near-api-js";
+import { useTokenRegistration } from "@/hooks/useTokenRegistration";
+import { explorerAccountUrl } from "@/utils/networks";
+import { STRINGS } from "@/utils/strings";
 
 const TOP_UP_MEMO = "Vault top-up for loan repayment";
 
@@ -75,7 +78,7 @@ export function RepayLoanDialog({
   const { repayLoan, pending, error } = useRepayLoan();
   const { indexVault } = useIndexVault();
   const { signedAccountId } = useWalletSelector();
-  const { storageBalanceOf, storageBounds, registerStorage, pending: regPending, error: regError } = useFtStorage();
+  const { registerStorage, pending: regPending, error: regError } = useFtStorage();
   const { ftTransfer, pending: transferPending, error: transferError } = useFtTransfer();
   const { balance: ownerTokenBal, loading: ownerBalLoading } = useFtBalance(tokenId);
 
@@ -96,57 +99,15 @@ export function RepayLoanDialog({
     return `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}`;
   }, [ownerHasEnough, missingLabel, ownerBalanceLabel, symbol]);
 
-  const [ownerRegistered, setOwnerRegistered] = React.useState<boolean | null>(null);
-  const [ownerMinDeposit, setOwnerMinDeposit] = React.useState<string | null>(null);
-  const [vaultRegistered, setVaultRegistered] = React.useState<boolean | null>(null);
-  const [vaultMinDeposit, setVaultMinDeposit] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      if (!signedAccountId) { setOwnerRegistered(null); setOwnerMinDeposit(null); return; }
-      const bal = await storageBalanceOf(tokenId, signedAccountId);
-      if (cancelled) return;
-      const reg = bal !== null;
-      setOwnerRegistered(reg);
-      if (!reg) {
-        const b = await storageBounds(tokenId);
-        if (cancelled) return;
-        setOwnerMinDeposit(b?.min ?? null);
-      } else {
-        setOwnerMinDeposit(null);
-      }
-    }
-    void run();
-    return () => { cancelled = true; };
-  }, [signedAccountId, tokenId, storageBalanceOf, storageBounds]);
-
-  // Check vault registration for the token (edge case after acceptance)
-  React.useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      const bal = await storageBalanceOf(tokenId, vaultId);
-      if (cancelled) return;
-      const isReg = bal !== null;
-      setVaultRegistered(isReg);
-      if (!isReg) {
-        const bounds = await storageBounds(tokenId);
-        if (cancelled) return;
-        setVaultMinDeposit(bounds?.min ?? null);
-      } else {
-        setVaultMinDeposit(null);
-      }
-    }
-    void run();
-    return () => { cancelled = true; };
-  }, [tokenId, vaultId, storageBalanceOf, storageBounds]);
+  const { registered: ownerRegistered, minDeposit: ownerMinDeposit, refresh: refreshOwnerReg } = useTokenRegistration(tokenId, signedAccountId);
+  const { registered: vaultRegistered, minDeposit: vaultMinDeposit, refresh: refreshVaultReg } = useTokenRegistration(tokenId, vaultId);
 
   const confirm = async () => {
     try {
       const { txHash } = await repayLoan({ vault: vaultId });
       await indexVault({ factoryId, vault: vaultId, txHash });
       await refetchVaultTokenBal();
-      showToast("Loan repaid successfully", { variant: "success" });
+      showToast(STRINGS.repaySuccess, { variant: "success" });
       if (onSuccess) onSuccess();
       onClose();
     } catch (e) {
@@ -158,9 +119,8 @@ export function RepayLoanDialog({
     if (!signedAccountId || !ownerMinDeposit) return;
     try {
       await registerStorage(tokenId, signedAccountId, ownerMinDeposit);
-      const bal = await storageBalanceOf(tokenId, signedAccountId);
-      setOwnerRegistered(bal !== null);
-      showToast("Registration successful", { variant: "success" });
+      refreshOwnerReg();
+      showToast(STRINGS.accountRegisteredSuccess, { variant: "success" });
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
     }
@@ -182,9 +142,8 @@ export function RepayLoanDialog({
     if (!vaultMinDeposit) return;
     try {
       await registerStorage(tokenId, vaultId, vaultMinDeposit);
-      const bal = await storageBalanceOf(tokenId, vaultId);
-      setVaultRegistered(bal !== null);
-      showToast("Vault registered with token", { variant: "success" });
+      refreshVaultReg();
+      showToast(STRINGS.vaultRegisteredSuccess, { variant: "success" });
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
     }
@@ -240,58 +199,174 @@ export function RepayLoanDialog({
             {balLoading ? "…" : `${vaultTokenBal?.toDisplay() ?? "0"} ${symbol}`}
           </div>
           {missingMinimal !== "0" && (
-            <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2">
-              <div>Missing {missingLabel} {symbol} on the vault to complete repayment.</div>
-              <div className="mt-1 text-secondary-text">
-                Your balance: <span className="font-medium text-foreground">{ownerBalLoading ? "…" : `${ownerBalanceLabel} ${symbol}`}</span>
-              </div>
-              {vaultRegistered === false ? (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    onClick={onRegisterVault}
-                    disabled={regPending || !vaultMinDeposit}
-                    className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-                  >
-                    {regPending ? "Registering…" : "Register vault with token"}
-                  </button>
-                  {vaultMinDeposit && (
-                    <div className="mt-1 text-xs text-amber-900">
-                      Requires ~{utils.format.formatNearAmount(vaultMinDeposit)} NEAR storage deposit
-                    </div>
-                  )}
-                </div>
-              ) : ownerRegistered === false ? (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    onClick={onRegisterOwner}
-                    disabled={regPending || !ownerMinDeposit}
-                    className="inline-flex items-center gap-2 px-3 h-8 rounded border bg-surface disabled:opacity-50"
-                  >
-                    {regPending ? "Registering…" : "Register your account with token"}
-                  </button>
-                  {regError && <div className="mt-1 text-xs text-red-700">{regError}</div>}
-                </div>
-              ) : (
-                <div className="mt-2">
-                  <button
-                    type="button"
-                    onClick={onTopUp}
-                    disabled={transferPending || ownerBalLoading || !ownerHasEnough}
-                    className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-                    title={topUpTooltip}
-                  >
-                    {transferPending ? "Transferring…" : `Top up ${missingLabel} ${symbol} to vault`}
-                  </button>
-                  {transferError && <div className="mt-1 text-xs text-red-700">{transferError}</div>}
-                </div>
-              )}
-            </div>
+            <TopUpSection
+              networkId={network}
+              tokenId={tokenId}
+              vaultId={vaultId}
+              symbol={symbol}
+              missingLabel={missingLabel}
+              ownerBalLoading={ownerBalLoading}
+              ownerBalanceLabel={ownerBalanceLabel}
+              vaultRegistered={vaultRegistered}
+              ownerRegistered={ownerRegistered}
+              regPending={regPending}
+              ownerMinDeposit={ownerMinDeposit}
+              vaultMinDeposit={vaultMinDeposit}
+              regError={regError}
+              transferPending={transferPending}
+              transferError={transferError}
+              ownerHasEnough={ownerHasEnough}
+              topUpTooltip={topUpTooltip}
+              onRegisterOwner={onRegisterOwner}
+              onRegisterVault={onRegisterVault}
+              onTopUp={onTopUp}
+            />
           )}
         </div>
         {error && <div className="text-xs text-red-600">{error}</div>}
       </div>
     </Modal>
+  );
+}
+
+type TopUpSectionProps = {
+  networkId: ReturnType<typeof networkFromFactoryId>;
+  tokenId: string;
+  vaultId: string;
+  symbol: string;
+  missingLabel: string;
+  ownerBalLoading: boolean;
+  ownerBalanceLabel: string;
+  vaultRegistered: boolean | null;
+  ownerRegistered: boolean | null;
+  regPending: boolean;
+  ownerMinDeposit: string | null;
+  vaultMinDeposit: string | null;
+  regError: string | null;
+  transferPending: boolean;
+  transferError: string | null;
+  ownerHasEnough: boolean;
+  topUpTooltip?: string;
+  onRegisterOwner: () => Promise<void> | void;
+  onRegisterVault: () => Promise<void> | void;
+  onTopUp: () => Promise<void> | void;
+};
+
+function TopUpSection({
+  networkId,
+  tokenId,
+  vaultId,
+  symbol,
+  missingLabel,
+  ownerBalLoading,
+  ownerBalanceLabel,
+  vaultRegistered,
+  ownerRegistered,
+  regPending,
+  ownerMinDeposit,
+  vaultMinDeposit,
+  regError,
+  transferPending,
+  transferError,
+  ownerHasEnough,
+  topUpTooltip,
+  onRegisterOwner,
+  onRegisterVault,
+  onTopUp,
+}: TopUpSectionProps) {
+  const [copied, setCopied] = React.useState<string | null>(null);
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(text);
+      showToast(STRINGS.copied, { variant: "success", duration: 1500 });
+      window.setTimeout(() => setCopied((prev) => (prev === text ? null : prev)), 1200);
+    } catch (e) {
+      showToast(getFriendlyErrorMessage(e), { variant: "error" });
+    }
+  };
+  return (
+    <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2">
+      <div>Missing {missingLabel} {symbol} on the vault to complete repayment.</div>
+      <div className="mt-1 text-secondary-text">
+        Your balance: <span className="font-medium text-foreground">{ownerBalLoading ? "…" : `${ownerBalanceLabel} ${symbol}`}</span>
+      </div>
+      <div className="mt-1 text-xs text-secondary-text">
+        <a
+          href={explorerAccountUrl(networkId, tokenId)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-primary"
+        >
+          {STRINGS.viewTokenOnExplorer}
+        </a>
+        <button
+          type="button"
+          className="ml-2 underline text-primary"
+          onClick={() => copy(tokenId)}
+          title={copied === tokenId ? STRINGS.copied : STRINGS.copy}
+        >
+          {copied === tokenId ? STRINGS.copied : STRINGS.copy}
+        </button>
+        <a
+          href={explorerAccountUrl(networkId, vaultId)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-primary ml-3"
+        >
+          {STRINGS.viewVaultOnExplorer}
+        </a>
+        <button
+          type="button"
+          className="ml-2 underline text-primary"
+          onClick={() => copy(vaultId)}
+          title={copied === vaultId ? STRINGS.copied : STRINGS.copy}
+        >
+          {copied === vaultId ? STRINGS.copied : STRINGS.copy}
+        </button>
+      </div>
+      {vaultRegistered === false ? (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={onRegisterVault}
+            disabled={regPending || !vaultMinDeposit}
+            className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
+          >
+            {regPending ? "Registering…" : STRINGS.registerVaultWithToken}
+          </button>
+          {vaultMinDeposit && (
+            <div className="mt-1 text-xs text-amber-900">
+              Requires ~{utils.format.formatNearAmount(vaultMinDeposit)} NEAR storage deposit
+            </div>
+          )}
+        </div>
+      ) : ownerRegistered === false ? (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={onRegisterOwner}
+            disabled={regPending || !ownerMinDeposit}
+            className="inline-flex items-center gap-2 px-3 h-8 rounded border bg-surface disabled:opacity-50"
+          >
+            {regPending ? "Registering…" : STRINGS.registerAccountWithToken}
+          </button>
+          {regError && <div className="mt-1 text-xs text-red-700">{regError}</div>}
+        </div>
+      ) : (
+        <div className="mt-2">
+          <button
+            type="button"
+            onClick={onTopUp}
+            disabled={transferPending || ownerBalLoading || !ownerHasEnough}
+            className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
+            title={topUpTooltip}
+          >
+            {transferPending ? STRINGS.transferring : STRINGS.topUpToVault(missingLabel, symbol)}
+          </button>
+          {transferError && <div className="mt-1 text-xs text-red-700">{transferError}</div>}
+        </div>
+      )}
+    </div>
   );
 }

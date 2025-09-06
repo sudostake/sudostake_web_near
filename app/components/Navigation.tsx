@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 function LogoutIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -24,6 +24,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 export function Navigation() {
   const { signedAccountId, signIn, signOut } = useWalletSelector();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const accountShort = useMemo(() => {
     if (!signedAccountId) return "";
     if (signedAccountId.length <= 20) return signedAccountId;
@@ -33,6 +34,25 @@ export function Navigation() {
   }, [signedAccountId]);
   const onLogin = () => signIn();
   const onLogout = () => signOut().catch((err) => console.error(err));
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!menuRef.current) return;
+      if (target && menuRef.current.contains(target)) return;
+      setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   return (
     <>
@@ -54,7 +74,7 @@ export function Navigation() {
               Login
             </button>
           ) : (
-            <div className="relative">
+            <div className="relative" ref={menuRef}>
               <button
                 type="button"
                 className="inline-flex items-center gap-2 rounded border bg-surface hover:bg-surface/90 py-2 pl-3 pr-2 text-sm"
