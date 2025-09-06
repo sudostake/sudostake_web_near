@@ -6,6 +6,7 @@ import { useFtStorage } from "@/hooks/useFtStorage";
 // Module-level in-memory cache for token storage bounds (min deposit) by tokenId
 // to avoid duplicate network calls in the same session.
 const BOUNDS_CACHE = new Map<string, string | null>();
+const BOUNDS_CACHE_MAX = 100;
 
 export type UseTokenRegistrationResult = {
   registered: boolean | null;
@@ -50,7 +51,7 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
             const bounds = await storageBounds(tokenId);
             min = bounds?.min ?? null;
             // Simple size cap to prevent unbounded growth
-            if (BOUNDS_CACHE.size >= 100) {
+            if (BOUNDS_CACHE.size >= BOUNDS_CACHE_MAX) {
               const firstKey = BOUNDS_CACHE.keys().next().value as string | undefined;
               if (firstKey) BOUNDS_CACHE.delete(firstKey);
             }

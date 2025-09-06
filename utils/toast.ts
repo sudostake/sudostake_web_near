@@ -7,6 +7,7 @@ export type ToastOptions = {
 };
 
 const ROOT_ID = "toast-root";
+const TOAST_ROOT_Z_INDEX = 60000; // ensure above modals/headers
 
 function setStyles(el: HTMLElement, styles: Record<string, string | number>) {
   for (const [k, v] of Object.entries(styles)) {
@@ -24,7 +25,7 @@ function ensureRoot(): HTMLElement | null {
       position: "fixed",
       right: "16px",
       bottom: "16px",
-      zIndex: 60000,
+      zIndex: TOAST_ROOT_Z_INDEX,
       display: "flex",
       flexDirection: "column",
       gap: "8px",

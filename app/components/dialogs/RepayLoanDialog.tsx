@@ -289,7 +289,7 @@ function TopUpSection({
     try {
       await navigator.clipboard.writeText(text);
       setCopied(text);
-      showToast(STRINGS.copied, { variant: "success", duration: 1500 });
+      showToast(STRINGS.copied, { variant: "success", duration: COPY_FEEDBACK_MS });
       window.setTimeout(() => setCopied((prev) => (prev === text ? null : prev)), COPY_FEEDBACK_MS);
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
