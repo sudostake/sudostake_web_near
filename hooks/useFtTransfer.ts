@@ -10,7 +10,7 @@ export type FtTransferParams = {
   token: string; // NEP-141 token contract id
   receiverId: string; // target account id to receive tokens
   amount: string; // minimal units as string
-  memo?: string | null;
+  memo?: string;
 };
 
 export type FtTransferResult = { txHash: string };
@@ -29,7 +29,7 @@ export function useFtTransfer(): UseFtTransferResult {
   const [success, setSuccess] = useState(false);
 
   const ftTransfer = useCallback(
-    async ({ token, receiverId, amount, memo = null }: FtTransferParams) => {
+    async ({ token, receiverId, amount, memo }: FtTransferParams) => {
       if (!signedAccountId) throw new Error("Wallet not signed in");
       if (!wallet) throw new Error("No wallet connected");
       setPending(true);
@@ -67,4 +67,3 @@ export function useFtTransfer(): UseFtTransferResult {
 
   return { ftTransfer, pending, error, success };
 }
-

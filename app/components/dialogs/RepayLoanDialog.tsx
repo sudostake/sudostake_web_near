@@ -133,7 +133,6 @@ export function RepayLoanDialog({
     void run();
     return () => { cancelled = true; };
   }, [tokenId, vaultId, storageBalanceOf, storageBounds]);
-  // Top-up flow is omitted; instruct the user to fund the vault externally.
 
   const confirm = async () => {
     try {
@@ -163,7 +162,7 @@ export function RepayLoanDialog({
   const onTopUp = async () => {
     if (!signedAccountId || missingMinimal === "0") return;
     try {
-      await ftTransfer({ token: tokenId, receiverId: vaultId, amount: missingMinimal });
+      await ftTransfer({ token: tokenId, receiverId: vaultId, amount: missingMinimal, memo: "Vault top-up for loan repayment" });
       await refetchVaultTokenBal();
       showToast(`Transferred ${missingLabel} ${symbol} to vault`, { variant: "success" });
       onVaultTokenBalanceChange?.();
