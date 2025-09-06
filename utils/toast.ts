@@ -57,8 +57,7 @@ export function showToast(message: string, opts: ToastOptions = {}): void {
     const normalized = hex.replace('#', '');
     const valid = /^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(normalized);
     if (!valid) {
-      const a = Math.max(0, Math.min(1, alpha));
-      return `rgba(0, 0, 0, ${a})`;
+      throw new Error(`Invalid hex color string: "${hex}"`);
     }
     let r = 0, g = 0, b = 0;
     if (normalized.length === 3) {
