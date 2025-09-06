@@ -52,10 +52,26 @@ export function showToast(message: string, opts: ToastOptions = {}): void {
   };
   const colors = palette[variant] ?? palette.success;
 
+  function hexToRgba(hex: string, alpha: number): string {
+    const normalized = hex.replace('#', '');
+    let r = 0, g = 0, b = 0;
+    if (normalized.length === 3) {
+      r = parseInt(normalized[0] + normalized[0], 16);
+      g = parseInt(normalized[1] + normalized[1], 16);
+      b = parseInt(normalized[2] + normalized[2], 16);
+    } else if (normalized.length === 6) {
+      r = parseInt(normalized.slice(0, 2), 16);
+      g = parseInt(normalized.slice(2, 4), 16);
+      b = parseInt(normalized.slice(4, 6), 16);
+    }
+    const a = Math.max(0, Math.min(1, alpha));
+    return `rgba(${r}, ${g}, ${b}, ${a})`;
+  }
+
   setStyles(toast, {
     background: colors.bg,
     color: colors.fg,
-    border: `1px solid ${colors.border}40`,
+    border: `1px solid ${hexToRgba(colors.border, 0.25)}`,
     borderRadius: "8px",
     padding: "10px 12px",
     boxShadow: "0 6px 20px rgba(0,0,0,0.12)",

@@ -39,6 +39,7 @@ export function RepayLoanDialog({
   onSuccess,
   onVaultTokenBalanceChange,
 }: Props) {
+  const TOP_UP_MEMO = "Vault top-up for loan repayment";
   const network = networkFromFactoryId(factoryId);
   const decimals = getTokenDecimals(tokenId, network);
   const symbol = getTokenConfigById(tokenId, network)?.symbol ?? "FT";
@@ -162,7 +163,7 @@ export function RepayLoanDialog({
   const onTopUp = async () => {
     if (!signedAccountId || missingMinimal === "0") return;
     try {
-      await ftTransfer({ token: tokenId, receiverId: vaultId, amount: missingMinimal, memo: "Vault top-up for loan repayment" });
+      await ftTransfer({ token: tokenId, receiverId: vaultId, amount: missingMinimal, memo: TOP_UP_MEMO });
       await refetchVaultTokenBal();
       showToast(`Transferred ${missingLabel} ${symbol} to vault`, { variant: "success" });
       onVaultTokenBalanceChange?.();
@@ -273,7 +274,10 @@ export function RepayLoanDialog({
                     onClick={onTopUp}
                     disabled={transferPending || ownerBalLoading || !ownerHasEnough}
                     className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-                    title={!ownerHasEnough ? `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}` : undefined}
+                    title={(() => {
+                      if (ownerHasEnough) return undefined;
+                      return `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}`;
+                    })()}
                   >
                     {transferPending ? "Transferring…" : `Top up ${missingLabel} ${symbol} to vault`}
                   </button>
