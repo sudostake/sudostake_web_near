@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Balance } from "@/utils/balance";
 import { getTokenDecimals } from "@/utils/tokens";
+import type { Network } from "@/utils/networks";
 
 export type UseAccountFtBalanceResult = {
   balance: Balance | null;
@@ -18,7 +19,8 @@ export type UseAccountFtBalanceResult = {
 export function useAccountFtBalance(
   accountId?: string | null,
   tokenId?: string | null,
-  symbol: string = "FT"
+  symbol: string = "FT",
+  network?: Network
 ): UseAccountFtBalanceResult {
   const { viewFunction } = useWalletSelector();
   const [raw, setRaw] = useState<string | null>(null);
@@ -50,10 +52,9 @@ export function useAccountFtBalance(
 
   const balance = useMemo(() => {
     if (!tokenId) return null;
-    const decimals = getTokenDecimals(tokenId);
+    const decimals = network ? getTokenDecimals(tokenId, network) : getTokenDecimals(tokenId);
     return new Balance(raw ?? "0", decimals, symbol);
-  }, [raw, tokenId, symbol]);
+  }, [raw, tokenId, symbol, network]);
 
   return { balance, loading, error, refetch: load };
 }
-
