@@ -7,21 +7,19 @@ export interface FirestoreTimestampToMillisLike {
 }
 
 export function hasToDate(v: unknown): v is FirestoreTimestampToDateLike {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    "toDate" in (v as Record<string, unknown>) &&
-    typeof (v as Record<string, unknown>).toDate === "function"
-  );
+  if (typeof v === "object" && v !== null) {
+    const obj = v as Record<string, unknown>;
+    return "toDate" in obj && typeof obj.toDate === "function";
+  }
+  return false;
 }
 
 export function hasToMillis(v: unknown): v is FirestoreTimestampToMillisLike {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    "toMillis" in (v as Record<string, unknown>) &&
-    typeof (v as Record<string, unknown>).toMillis === "function"
-  );
+  if (typeof v === "object" && v !== null) {
+    const obj = v as Record<string, unknown>;
+    return "toMillis" in obj && typeof obj.toMillis === "function";
+  }
+  return false;
 }
 
 export function tsToDate(ts: unknown): Date | null {
@@ -46,4 +44,3 @@ export function tsToMillis(ts: unknown): number | null {
     return null;
   }
 }
-

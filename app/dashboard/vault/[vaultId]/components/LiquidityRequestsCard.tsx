@@ -11,7 +11,7 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
-import { SECONDS_PER_DAY } from "@/utils/constants";
+import { SECONDS_PER_DAY, SECONDS_PER_HOUR } from "@/utils/constants";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useFtBalance } from "@/hooks/useFtBalance";
@@ -101,8 +101,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
   const formattedCountdown = useMemo(() => {
     if (remainingMs === null) return null;
     let s = Math.floor(remainingMs / 1000);
-    const days = Math.floor(s / 86400); s -= days * 86400;
-    const hours = Math.floor(s / 3600); s -= hours * 3600;
+    const days = Math.floor(s / SECONDS_PER_DAY); s -= days * SECONDS_PER_DAY;
+    const hours = Math.floor(s / SECONDS_PER_HOUR); s -= hours * SECONDS_PER_HOUR;
     const minutes = Math.floor(s / 60); s -= minutes * 60;
     const seconds = s;
     const parts: string[] = [];

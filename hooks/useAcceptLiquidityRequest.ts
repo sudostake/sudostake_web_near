@@ -5,6 +5,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
 import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
 import { getFriendlyErrorMessage } from "@/utils/errors";
+const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;
 
 export type AcceptLiquidityParams = {
   vault: string;
@@ -39,7 +40,7 @@ export function useAcceptLiquidityRequest(): UseAcceptLiquidityRequestResult {
       setSuccess(false);
       try {
         const msg = JSON.stringify({
-          action: "AcceptLiquidityRequest",
+          action: ACTION_ACCEPT_LIQUIDITY,
           token,
           amount,
           interest,
@@ -84,4 +85,3 @@ export function useAcceptLiquidityRequest(): UseAcceptLiquidityRequestResult {
 
   return { acceptLiquidity, pending, error, success };
 }
-
