@@ -602,12 +602,14 @@ function AcceptConfirm({
     const sum = (BigInt(amountRaw) + BigInt(interestRaw)).toString();
     totalRepay = formatMinimalTokenAmount(sum, decimals);
   } catch (err) {
-    console.error("Failed to compute totalRepay in AcceptConfirm:", {
-      amountRaw,
-      interestRaw,
-      decimals,
-      error: err,
-    });
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Failed to compute totalRepay in AcceptConfirm:", {
+        amountRaw,
+        interestRaw,
+        decimals,
+        error: err,
+      });
+    }
   }
   const collateralNear = utils.format.formatNearAmount(collateralYocto);
 
