@@ -49,6 +49,11 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
           if (min === undefined) {
             const bounds = await storageBounds(tokenId);
             min = bounds?.min ?? null;
+            // Simple size cap to prevent unbounded growth
+            if (BOUNDS_CACHE.size >= 100) {
+              const firstKey = BOUNDS_CACHE.keys().next().value as string | undefined;
+              if (firstKey) BOUNDS_CACHE.delete(firstKey);
+            }
             BOUNDS_CACHE.set(tokenId, min);
           }
           if (cancelled) return;

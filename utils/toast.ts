@@ -9,10 +9,8 @@ export type ToastOptions = {
 const ROOT_ID = "toast-root";
 
 function setStyles(el: HTMLElement, styles: Record<string, string | number>) {
-  const style = el.style as CSSStyleDeclaration;
   for (const [k, v] of Object.entries(styles)) {
-    // Index signature isn't defined on CSSStyleDeclaration; cast key to any safely here.
-    (style as unknown as Record<string, string>)[k] = String(v);
+    el.style.setProperty(k, String(v));
   }
 }
 

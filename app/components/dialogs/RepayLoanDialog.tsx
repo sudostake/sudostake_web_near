@@ -105,10 +105,19 @@ export function RepayLoanDialog({
   const confirm = async () => {
     try {
       const { txHash } = await repayLoan({ vault: vaultId });
-      await indexVault({ factoryId, vault: vaultId, txHash });
-      await refetchVaultTokenBal();
+      // Post-tx side effects should not block success UX
+      try {
+        await indexVault({ factoryId, vault: vaultId, txHash });
+      } catch (e) {
+        console.error("Indexing enqueue failed after repay", e);
+      }
+      try {
+        await refetchVaultTokenBal();
+      } catch (e) {
+        console.error("Vault token balance refresh failed after repay", e);
+      }
       showToast(STRINGS.repaySuccess, { variant: "success" });
-      if (onSuccess) onSuccess();
+      onSuccess?.();
       onClose();
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
