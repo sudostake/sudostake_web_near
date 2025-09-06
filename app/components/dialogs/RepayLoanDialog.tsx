@@ -105,16 +105,17 @@ export function RepayLoanDialog({
   const confirm = async () => {
     try {
       const { txHash } = await repayLoan({ vault: vaultId });
-      // Post-tx side effects should not block success UX
-      try {
-        await indexVault({ factoryId, vault: vaultId, txHash });
-      } catch (e) {
-        console.error("Indexing enqueue failed after repay", e);
+      // Post-tx side effects: run concurrently and don't block success UX
+      const results = await Promise.allSettled([
+        indexVault({ factoryId, vault: vaultId, txHash }),
+        refetchVaultTokenBal(),
+      ]);
+      const [idxRes, balRes] = results;
+      if (idxRes.status === "rejected") {
+        console.error("Indexing enqueue failed after repay", idxRes.reason);
       }
-      try {
-        await refetchVaultTokenBal();
-      } catch (e) {
-        console.error("Vault token balance refresh failed after repay", e);
+      if (balRes.status === "rejected") {
+        console.error("Vault token balance refresh failed after repay", balRes.reason);
       }
       showToast(STRINGS.repaySuccess, { variant: "success" });
       onSuccess?.();
@@ -284,17 +285,28 @@ function TopUpSection({
   onTopUp,
 }: TopUpSectionProps) {
   const [copied, setCopied] = useState<string | null>(null);
+  const timeoutRef = React.useRef<number | null>(null);
   const COPY_FEEDBACK_MS = 1600;
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(text);
       showToast(STRINGS.copied, { variant: "success", duration: COPY_FEEDBACK_MS });
-      window.setTimeout(() => setCopied((prev) => (prev === text ? null : prev)), COPY_FEEDBACK_MS);
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(
+        () => setCopied((prev) => (prev === text ? null : prev)),
+        COPY_FEEDBACK_MS
+      );
     } catch (e) {
       showToast(getFriendlyErrorMessage(e), { variant: "error" });
     }
   };
+
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
   return (
     <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2">
       <div>Missing {missingLabel} {symbol} on the vault to complete repayment.</div>

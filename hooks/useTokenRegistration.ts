@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useFtStorage } from "@/hooks/useFtStorage";
 
 // Module-level in-memory cache for token storage bounds (min deposit) by tokenId
-// to avoid duplicate network calls in the same session.
+// to avoid duplicate network calls in the same session. Eviction uses insertion
+// order (FIFO) rather than true LRU to keep complexity low.
 const BOUNDS_CACHE = new Map<string, string | null>();
 const BOUNDS_CACHE_MAX = 100;
 
