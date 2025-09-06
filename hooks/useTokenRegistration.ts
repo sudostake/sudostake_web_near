@@ -51,6 +51,12 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
           if (min === undefined) {
             const bounds = await storageBounds(tokenId);
             min = bounds?.min ?? null;
+            // Eviction note: we use simple FIFO eviction here because the expected
+            // token set is very small in practice (primarily USDC and a handful of
+            // candidates during onboarding). This keeps the implementation minimal
+            // without pulling in a full LRU utility. If the app grows to support a
+            // large rotating set of tokens, consider replacing with an LRU cache or
+            // React Query with TTL-based caching.
             // Simple size cap to prevent unbounded growth
             if (BOUNDS_CACHE.size >= BOUNDS_CACHE_MAX) {
               const firstKey = BOUNDS_CACHE.keys().next().value;
