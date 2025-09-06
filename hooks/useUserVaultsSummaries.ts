@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, query as fsQuery, where } from "firebase/firestore";
 import { getFirebaseDb } from "@/utils/firebaseClient";
+import { tsToMillis } from "@/utils/firestoreTimestamps";
 
 export type VaultSummary = {
   id: string;
@@ -43,22 +44,12 @@ export function useUserVaultsSummaries(
     const unsub = onSnapshot(
       q,
       (snap) => {
-        interface FirestoreTimestampLike {
-          toMillis: () => number;
-        }
-        const isTimestamp = (v: unknown): v is FirestoreTimestampLike =>
-          typeof v === "object" &&
-          v !== null &&
-          "toMillis" in (v as Record<string, unknown>) &&
-          typeof (v as Record<string, unknown>).toMillis === "function";
         const isVaultState = (v: unknown): v is VaultSummary["state"] =>
           v === "idle" || v === "pending" || v === "active";
 
         const docs = snap.docs.slice().sort((a, b) => {
-          const aTs: unknown = a.get("updated_at") as unknown;
-          const bTs: unknown = b.get("updated_at") as unknown;
-          const aMs = isTimestamp(aTs) ? aTs.toMillis() : 0;
-          const bMs = isTimestamp(bTs) ? bTs.toMillis() : 0;
+          const aMs = tsToMillis(a.get("updated_at") as unknown) ?? 0;
+          const bMs = tsToMillis(b.get("updated_at") as unknown) ?? 0;
           return bMs - aMs;
         });
         const items: VaultSummary[] = docs.map((d) => {

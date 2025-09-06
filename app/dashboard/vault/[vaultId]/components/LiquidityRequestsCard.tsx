@@ -18,26 +18,12 @@ import { useFtBalance } from "@/hooks/useFtBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { tsToDate } from "@/utils/firestoreTimestamps";
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
 
 
-interface FirestoreTimestampLike { toDate: () => Date }
-function hasToDate(v: unknown): v is FirestoreTimestampLike {
-  return typeof v === "object" && v !== null && "toDate" in (v as Record<string, unknown>) &&
-    typeof (v as Record<string, unknown>).toDate === "function";
-}
-function tsToDate(ts: unknown): Date | null {
-  try {
-    if (hasToDate(ts)) {
-      const d = ts.toDate();
-      return d instanceof Date ? d : null;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+// Firestore timestamp converter is centralized in utils/firestoreTimestamps
 
 
 function formatTokenAmount(minimal: string, tokenId: string, network: Network): string {
@@ -615,7 +601,14 @@ function AcceptConfirm({
   try {
     const sum = (BigInt(amountRaw) + BigInt(interestRaw)).toString();
     totalRepay = formatMinimalTokenAmount(sum, decimals);
-  } catch {}
+  } catch (err) {
+    console.error("Failed to compute totalRepay in AcceptConfirm:", {
+      amountRaw,
+      interestRaw,
+      decimals,
+      error: err,
+    });
+  }
   const collateralNear = utils.format.formatNearAmount(collateralYocto);
 
   return (
