@@ -60,7 +60,10 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
             // Simple size cap to prevent unbounded growth
             if (BOUNDS_CACHE.size >= BOUNDS_CACHE_MAX) {
               const firstKey = BOUNDS_CACHE.keys().next().value;
-              if (firstKey) BOUNDS_CACHE.delete(firstKey);
+              // Delete only when we actually obtained a key from the iterator.
+              // Use explicit undefined check to avoid skipping deletion for
+              // falsy string keys.
+              if (firstKey !== undefined) BOUNDS_CACHE.delete(firstKey);
             }
             BOUNDS_CACHE.set(tokenId, min);
           }

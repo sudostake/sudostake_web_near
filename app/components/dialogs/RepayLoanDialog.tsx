@@ -67,7 +67,12 @@ export function RepayLoanDialog({
       const have = BigInt(vaultTokenBal?.minimal ?? "0");
       const need = BigInt(totalDueMinimal);
       return need > have ? (need - have).toString() : "0";
-    } catch {
+    } catch (error) {
+      // Log details for troubleshooting unexpected parsing issues
+      console.error("Error calculating missingMinimal in RepayLoanDialog:", error, {
+        vaultTokenBalMinimal: vaultTokenBal?.minimal,
+        totalDueMinimal,
+      });
       return "0";
     }
   }, [vaultTokenBal?.minimal, totalDueMinimal]);
