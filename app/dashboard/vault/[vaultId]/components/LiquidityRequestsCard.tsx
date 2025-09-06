@@ -11,7 +11,7 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
-import { SECONDS_PER_DAY, SECONDS_PER_HOUR } from "@/utils/constants";
+import { SECONDS_PER_DAY } from "@/utils/constants";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useFtBalance } from "@/hooks/useFtBalance";
@@ -20,8 +20,9 @@ import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
+import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 
-type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
+type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void };
 
 
 
@@ -34,9 +35,10 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
   return `${cleaned} ${sym}`;
 }
 
-export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Props) {
+export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
+  const [repayOpen, setRepayOpen] = useState(false);
   const { data } = useVault(factoryId, vaultId);
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
@@ -58,7 +60,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
     const interest = formatTokenAmount(req.interest, req.token, network);
     const collateral = `${utils.format.formatNearAmount(req.collateral)} NEAR`;
     const durationDays = Math.max(1, Math.round((req.duration ?? 0) / SECONDS_PER_DAY));
-    return { amount, interest, collateral, durationDays, token: req.token, amountRaw: req.amount };
+    let totalDue = "";
+    try {
+      const sum = (BigInt(req.amount) + BigInt(req.interest)).toString();
+      totalDue = formatTokenAmount(sum, req.token, network);
+    } catch {
+      totalDue = "-";
+    }
+    return { amount, interest, collateral, durationDays, token: req.token, amountRaw: req.amount, interestRaw: req.interest, totalDue };
   }, [data, network]);
 
   // Lender balance check for the token of the current request
@@ -303,6 +312,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
               <div className="text-secondary-text">Interest</div>
               <div className="font-medium">{content.interest}</div>
             </div>
+            {data?.state === "active" && (
+              <div>
+                <div className="text-secondary-text">Total due</div>
+                <div className="font-medium">{content.totalDue}</div>
+              </div>
+            )}
             <div>
               <div className="text-secondary-text">Collateral</div>
               <div className="font-medium">{content.collateral}</div>
@@ -323,6 +338,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
           {data?.state === "active" && acceptedAtDate && (
             <div className="mt-1 text-xs text-secondary-text">
               Accepted at: <span className="text-foreground">{acceptedAtDate.toLocaleString()}</span>
+            </div>
+          )}
+          {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
+            <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2 text-xs">
+              The loan duration has ended. Repayment is still possible until liquidation is triggered.
             </div>
           )}
           {data?.state === "active" && role === "activeLender" && (
@@ -454,15 +474,30 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
             <div className="mt-3 text-right">
               <button
                 type="button"
-                disabled={true}
-                title="Repay will be available in the next update"
-                className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface disabled:opacity-50"
+                onClick={() => setRepayOpen(true)}
+                className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text"
               >
-                Repay loan (soon)
+                Repay loan
               </button>
             </div>
           )}
         </div>
+      )}
+
+      {isOwner && data?.state === "active" && content?.token && content?.amountRaw && content?.interestRaw && (
+        <RepayLoanDialog
+          open={repayOpen}
+          onClose={() => setRepayOpen(false)}
+          vaultId={vaultId}
+          factoryId={factoryId}
+          tokenId={content.token}
+          principalMinimal={content.amountRaw}
+          interestMinimal={content.interestRaw}
+          onSuccess={() => {
+            onAfterRepay?.();
+            setRepayOpen(false);
+          }}
+        />
       )}
 
       {isOwner && hasOpenRequest && vaultRegisteredForToken === false && (

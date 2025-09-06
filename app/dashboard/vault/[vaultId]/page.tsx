@@ -201,6 +201,11 @@ let Body: React.ReactNode;
           onAfterAccept={() => {
             refetchVaultUsdc();
           }}
+          onAfterRepay={() => {
+            refetchVaultUsdc();
+            refetchAvail();
+            refetchDeleg();
+          }}
         />
       </div>
     );
