@@ -91,6 +91,11 @@ export function RepayLoanDialog({
     } catch { return false; }
   }, [ownerTokenBal, missingMinimal]);
 
+  const topUpTooltip = useMemo(() => {
+    if (ownerHasEnough) return undefined;
+    return `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}`;
+  }, [ownerHasEnough, missingLabel, ownerBalanceLabel, symbol]);
+
   const [ownerRegistered, setOwnerRegistered] = React.useState<boolean | null>(null);
   const [ownerMinDeposit, setOwnerMinDeposit] = React.useState<string | null>(null);
   const [vaultRegistered, setVaultRegistered] = React.useState<boolean | null>(null);
@@ -275,10 +280,7 @@ export function RepayLoanDialog({
                     onClick={onTopUp}
                     disabled={transferPending || ownerBalLoading || !ownerHasEnough}
                     className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-                    title={(() => {
-                      if (ownerHasEnough) return undefined;
-                      return `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}`;
-                    })()}
+                    title={topUpTooltip}
                   >
                     {transferPending ? "Transferring…" : `Top up ${missingLabel} ${symbol} to vault`}
                   </button>
