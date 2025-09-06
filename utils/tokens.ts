@@ -21,7 +21,9 @@ const TOKENS_BY_NETWORK: Partial<Record<Network, Record<string, TokenConfig>>> =
   // Add mainnet mappings as they are finalized
   mainnet: {
     // From sudostake_agent_near/agent/src/token_registry.py
-    // Implicit account for USDC on NEAR mainnet
+    // USDC token on NEAR mainnet (implicit account). See also:
+    // - https://github.com/near/near-discovery-token-registry/blob/main/mainnet.json
+    // - https://github.com/sudostake/sudostake_agent_near/blob/main/agent/src/token_registry.py
     "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1": {
       id: "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
       symbol: "USDC",

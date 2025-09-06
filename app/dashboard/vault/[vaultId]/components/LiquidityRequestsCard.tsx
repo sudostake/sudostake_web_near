@@ -22,10 +22,18 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
 
 
+interface FirestoreTimestampLike { toDate: () => Date }
+function hasToDate(v: unknown): v is FirestoreTimestampLike {
+  return typeof v === "object" && v !== null && "toDate" in (v as Record<string, unknown>) &&
+    typeof (v as Record<string, unknown>).toDate === "function";
+}
 function tsToDate(ts: unknown): Date | null {
   try {
-    const maybeDate = (ts as { toDate?: () => Date })?.toDate?.();
-    return maybeDate instanceof Date ? maybeDate : null;
+    if (hasToDate(ts)) {
+      const d = ts.toDate();
+      return d instanceof Date ? d : null;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -111,9 +119,22 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
     const hours = Math.floor(s / 3600); s -= hours * 3600;
     const minutes = Math.floor(s / 60); s -= minutes * 60;
     const seconds = s;
-    const parts = [] as string[];
-    if (days > 0) parts.push(`${days}d`);
-    parts.push(`${String(hours).padStart(2, '0')}h`, `${String(minutes).padStart(2, '0')}m`, `${String(seconds).padStart(2, '0')}s`);
+    const parts: string[] = [];
+    if (days > 0) {
+      parts.push(`${days}d`);
+      if (hours > 0) parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else if (hours > 0) {
+      parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else if (minutes > 0) {
+      parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else {
+      parts.push(`${seconds}s`);
+    }
     return parts.join(" ");
   }, [remainingMs]);
 

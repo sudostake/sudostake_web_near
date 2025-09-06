@@ -43,8 +43,14 @@ export function useUserVaultsSummaries(
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const isTimestamp = (v: unknown): v is { toMillis: () => number } =>
-          typeof v === "object" && v !== null && typeof (v as any).toMillis === "function";
+        interface FirestoreTimestampLike {
+          toMillis: () => number;
+        }
+        const isTimestamp = (v: unknown): v is FirestoreTimestampLike =>
+          typeof v === "object" &&
+          v !== null &&
+          "toMillis" in (v as Record<string, unknown>) &&
+          typeof (v as Record<string, unknown>).toMillis === "function";
         const isVaultState = (v: unknown): v is VaultSummary["state"] =>
           v === "idle" || v === "pending" || v === "active";
 
