@@ -38,7 +38,7 @@ export function Navigation() {
     <>
       <nav
         className={[
-          "fixed top-0 left-0 right-0 z-20 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
+          "fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
         ].join(" ")}
       >
         <div className="flex items-center justify-between px-4 py-3 md:mx-auto md:max-w-2xl">
@@ -68,7 +68,7 @@ export function Navigation() {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1"
+                  className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1 z-50"
                 >
                   <button
                     role="menuitem"
