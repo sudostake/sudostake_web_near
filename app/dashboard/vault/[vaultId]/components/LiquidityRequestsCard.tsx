@@ -601,15 +601,8 @@ function AcceptConfirm({
   try {
     const sum = (BigInt(amountRaw) + BigInt(interestRaw)).toString();
     totalRepay = formatMinimalTokenAmount(sum, decimals);
-  } catch (err) {
-    if (process.env.NODE_ENV !== "production") {
-      console.error("Failed to compute totalRepay in AcceptConfirm:", {
-        amountRaw,
-        interestRaw,
-        decimals,
-        error: err,
-      });
-    }
+  } catch {
+    // Error computing totalRepay; fallback value '-' is already set.
   }
   const collateralNear = utils.format.formatNearAmount(collateralYocto);
 
