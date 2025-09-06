@@ -7,6 +7,7 @@ import { ErrorMessage } from "./ErrorMessage";
 import { EmptyState } from "./EmptyState";
 import { CreateVaultButton } from "../CreateVaultButton";
 import { useUserVaults } from "@/hooks/useUserVaults";
+import { useUserVaultsSummaries } from "@/hooks/useUserVaultsSummaries";
 
 export type UserVaultsProps = {
   owner: string;
@@ -17,6 +18,7 @@ export type UserVaultsProps = {
 
 export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVaultsProps) {
   const { data, loading, error, refetch } = useUserVaults(owner, factoryId);
+  const { data: summaries } = useUserVaultsSummaries(owner, factoryId);
   const [query, setQuery] = React.useState("");
   const filtered = React.useMemo(() => {
     const list = data ?? [];
@@ -57,7 +59,11 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVau
         <div className="text-sm text-secondary-text mt-3">No vaults match “{query}”.</div>
       ) : null}
       <div className="mt-2">
-        <VaultList vaultIds={filtered} onVaultClick={onVaultClick} />
+        <VaultList
+          vaultIds={filtered}
+          onVaultClick={onVaultClick}
+          summaries={summaries ?? undefined}
+        />
       </div>
     </div>
   );

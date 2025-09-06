@@ -4,10 +4,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useRequestLiquidity } from "@/hooks/useRequestLiquidity";
 import { useIndexVault } from "@/hooks/useIndexVault";
-import { getActiveNetwork, getActiveFactoryId } from "@/utils/networks";
+import { getActiveNetwork, getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { utils } from "near-api-js";
+import { useFtStorage } from "@/hooks/useFtStorage";
 
 type Props = {
   open: boolean;
@@ -22,6 +23,10 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   const factoryId = getActiveFactoryId();
   const network = getActiveNetwork();
   const { data: delegData } = useVaultDelegations(factoryId, vaultId);
+  const { storageBalanceOf, storageBounds, registerStorage, pending: regPending, error: regError } = useFtStorage();
+  const [isRegistered, setIsRegistered] = useState<boolean>(true);
+  const [minStorageDeposit, setMinStorageDeposit] = useState<string | null>(null);
+  const [checkingRegistration, setCheckingRegistration] = useState(false);
 
   // Compute max collateral from total staked balance across validators
   const maxCollateralYocto = useMemo(() => {
@@ -54,6 +59,38 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       if (usdc) setToken(usdc);
     }
   }, [network, token]);
+
+  // Check FT storage registration for the vault on selected token
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      if (!token) {
+        setIsRegistered(true);
+        setMinStorageDeposit(null);
+        return;
+      }
+      setCheckingRegistration(true);
+      try {
+        const bal = await storageBalanceOf(token, vaultId);
+        if (cancelled) return;
+        const registered = !!(bal && typeof bal.total === "string" && bal.total !== "0");
+        setIsRegistered(registered);
+        if (!registered) {
+          const bounds = await storageBounds(token);
+          if (cancelled) return;
+          setMinStorageDeposit(bounds?.min ?? null);
+        } else {
+          setMinStorageDeposit(null);
+        }
+      } finally {
+        if (!cancelled) setCheckingRegistration(false);
+      }
+    }
+    void check();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, vaultId, storageBalanceOf, storageBounds]);
 
   const resetAndClose = () => {
     setAmount("");
@@ -88,7 +125,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     hasValidInterestToken &&
     hasValidCollateral &&
     hasValidDuration &&
-    isCollateralWithinMax
+    isCollateralWithinMax &&
+    isRegistered
   );
 
   const showCollateralError = hasCollateralInput && !isCollateralWithinMax;
@@ -123,6 +161,19 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       resetAndClose();
     } catch {
       // handled by hook error state; keep dialog open to allow corrections
+    }
+  };
+
+  const onRegister = async () => {
+    if (!token || !minStorageDeposit) return;
+    try {
+      await registerStorage(token, vaultId, minStorageDeposit);
+      // Re-check
+      const bal = await storageBalanceOf(token, vaultId);
+      const registered = !!(bal && typeof bal.total === "string" && bal.total !== "0");
+      setIsRegistered(registered);
+    } catch {
+      // regError handled in hook
     }
   };
 
@@ -234,6 +285,49 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
             />
           </label>
         </div>
+        {!isRegistered && (
+          <div className="rounded border border-amber-500/30 bg-amber-100/40 text-amber-900 p-3 text-sm">
+            <div className="font-medium">Registration required</div>
+            <div className="mt-1">
+              Your vault must be registered with the token contract before it can receive funds via ft_transfer_call.
+              {" "}
+              {minStorageDeposit && (
+                <>
+                  This requires a one-time storage deposit of {utils.format.formatNearAmount(minStorageDeposit)} NEAR to the token contract.
+                </>
+              )}
+            </div>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={onRegister}
+                disabled={regPending || checkingRegistration || !minStorageDeposit}
+                className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-50"
+              >
+                {regPending ? "Registering…" : "Register vault with token"}
+              </button>
+              {token && (
+                <a
+                  href={explorerAccountUrl(network, token)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-3 inline-flex items-center text-primary underline"
+                >
+                  View token on Explorer
+                </a>
+              )}
+              <a
+                href="/docs/token-registration"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-3 inline-flex items-center text-primary underline"
+              >
+                Learn more
+              </a>
+              {regError && <div className="mt-2 text-xs text-red-600">{regError}</div>}
+            </div>
+          </div>
+        )}
         {showCollateralError && (
           <div className="text-xs text-red-500">Collateral exceeds your total staked balance.</div>
         )}

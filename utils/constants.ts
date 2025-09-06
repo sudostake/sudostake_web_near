@@ -20,3 +20,7 @@ export const USDC_DECIMALS = 6;
 export const NATIVE_DECIMALS = 24;
 /** Number of seconds in one day. */
 export const SECONDS_PER_DAY = 86_400;
+/** Number of seconds in one hour. */
+export const SECONDS_PER_HOUR = 3_600;
+/** Contract-level action identifiers used in FT transfer messages. */
+export const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;

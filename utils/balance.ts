@@ -1,4 +1,4 @@
-import { formatNearAmount } from "near-api-js/lib/utils/format";
+import { formatMinimalTokenAmount } from "@/utils/format";
 
 /**
  * Represents a token balance with raw minimal-unit value and methods to format it.
@@ -20,7 +20,7 @@ export class Balance {
    * Human-friendly display string using the configured decimals.
    */
   toDisplay(): string {
-    return formatNearAmount(this.raw, this.decimals);
+    return formatMinimalTokenAmount(this.raw, this.decimals);
   }
 
   /** Raw minimal-unit string. */
