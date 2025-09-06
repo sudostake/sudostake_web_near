@@ -3,9 +3,8 @@
 import { useCallback, useState } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import type { FinalExecutionOutcome } from "near-api-js/lib/providers";
-import { DEFAULT_GAS, ONE_YOCTO } from "@/utils/constants";
+import { DEFAULT_GAS, ONE_YOCTO, ACTION_ACCEPT_LIQUIDITY } from "@/utils/constants";
 import { getFriendlyErrorMessage } from "@/utils/errors";
-const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;
 
 export type AcceptLiquidityParams = {
   vault: string;

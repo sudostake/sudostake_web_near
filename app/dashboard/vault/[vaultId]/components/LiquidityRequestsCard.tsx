@@ -24,7 +24,6 @@ import { formatDurationShort } from "@/utils/time";
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
 
 
-// Firestore timestamp converter is centralized in utils/firestoreTimestamps
 
 
 function formatTokenAmount(minimal: string, tokenId: string, network: Network): string {
@@ -194,7 +193,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
     return () => { cancelled = true; };
   }, [isOwner, hasOpenRequest, storageBalanceOf, usdcId, vaultId]);
 
-  // Stubbed cancel action — to be implemented in next PR.
+  // TODO: Implement cancel request mutation (factory/vault contract) in a follow-up PR.
   const onCancel = async () => {
     // Placeholder: intentionally no-op for this release.
     return;
