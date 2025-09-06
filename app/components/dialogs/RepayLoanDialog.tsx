@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useRepayLoan } from "@/hooks/useRepayLoan";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -285,7 +285,7 @@ function TopUpSection({
   onTopUp,
 }: TopUpSectionProps) {
   const [copied, setCopied] = useState<string | null>(null);
-  const timeoutRef = React.useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const COPY_FEEDBACK_MS = 1600;
   const copy = async (text: string) => {
     try {
@@ -302,7 +302,7 @@ function TopUpSection({
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
     };
