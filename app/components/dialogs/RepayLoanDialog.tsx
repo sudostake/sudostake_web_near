@@ -18,8 +18,10 @@ import { utils } from "near-api-js";
 import { useTokenRegistration } from "@/hooks/useTokenRegistration";
 import { explorerAccountUrl } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
+import { sumMinimal } from "@/utils/amounts";
 
 const TOP_UP_MEMO = "Vault top-up for loan repayment";
+const COPY_FEEDBACK_MS = 1600;
 
 type Props = {
   open: boolean;
@@ -48,13 +50,10 @@ export function RepayLoanDialog({
   const decimals = getTokenDecimals(tokenId, network);
   const symbol = getTokenConfigById(tokenId, network)?.symbol ?? "FT";
 
-  const totalDueMinimal = useMemo(() => {
-    try {
-      return (BigInt(principalMinimal) + BigInt(interestMinimal)).toString();
-    } catch {
-      return "0";
-    }
-  }, [principalMinimal, interestMinimal]);
+  const totalDueMinimal = useMemo(
+    () => sumMinimal(principalMinimal, interestMinimal),
+    [principalMinimal, interestMinimal]
+  );
 
   const principalLabel = formatMinimalTokenAmount(principalMinimal, decimals);
   const interestLabel = formatMinimalTokenAmount(interestMinimal, decimals);
@@ -286,7 +285,6 @@ function TopUpSection({
 }: TopUpSectionProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const COPY_FEEDBACK_MS = 1600;
   const copy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);

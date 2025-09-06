@@ -20,6 +20,7 @@ import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
+import { sumMinimal } from "@/utils/amounts";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
@@ -60,13 +61,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     const interest = formatTokenAmount(req.interest, req.token, network);
     const collateral = `${utils.format.formatNearAmount(req.collateral)} NEAR`;
     const durationDays = Math.max(1, Math.round((req.duration ?? 0) / SECONDS_PER_DAY));
-    let totalDue = "";
-    try {
-      const sum = (BigInt(req.amount) + BigInt(req.interest)).toString();
-      totalDue = formatTokenAmount(sum, req.token, network);
-    } catch {
-      totalDue = "-";
-    }
+    const totalDue = formatTokenAmount(sumMinimal(req.amount, req.interest), req.token, network);
     return { amount, interest, collateral, durationDays, token: req.token, amountRaw: req.amount, interestRaw: req.interest, totalDue };
   }, [data, network]);
 
