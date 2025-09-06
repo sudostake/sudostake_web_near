@@ -56,6 +56,7 @@ export function Navigation() {
 
   return (
     <>
+      {/* z-50 ensures the account dropdown overlays sticky page headers (vault view uses z-30) */}
       <nav
         className={[
           "fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",

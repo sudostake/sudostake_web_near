@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFtStorage } from "@/hooks/useFtStorage";
 
+// Module-level in-memory cache for token storage bounds (min deposit) by tokenId
+// to avoid duplicate network calls in the same session.
+const BOUNDS_CACHE = new Map<string, string | null>();
+
 export type UseTokenRegistrationResult = {
   registered: boolean | null;
   minDeposit: string | null;
@@ -23,12 +27,7 @@ export function useTokenRegistration(tokenId?: string | null, accountId?: string
 
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
 
-  // Module-level in-memory cache for token storage bounds (min deposit) by tokenId
-  // to avoid duplicate network calls in the same session.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const BOUNDS_CACHE: Map<string, string | null> = (globalThis as any).__SUDOSTAKE_BOUNDS_CACHE__ ?? new Map<string, string | null>();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (globalThis as any).__SUDOSTAKE_BOUNDS_CACHE__ = BOUNDS_CACHE;
+  // use module-level BOUNDS_CACHE defined above
 
   useEffect(() => {
     let cancelled = false;
