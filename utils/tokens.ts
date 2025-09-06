@@ -1,6 +1,11 @@
 import { getActiveNetwork, type Network } from "@/utils/networks";
 
-// Implicit account for USDC on NEAR mainnet
+// Implicit account for USDC on NEAR mainnet.
+// In the NEAR ecosystem, an "implicit account" is a special type of account whose
+// address is a 64-character hex-encoded public key (rather than a human-readable name).
+// These accounts are typically used for contracts deployed without a named account and
+// are controlled by the holder of the corresponding private key.
+// See: https://docs.near.org/concepts/basics/account#implicit-accounts
 const USDC_MAINNET_ID = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
 
 export type TokenConfig = {

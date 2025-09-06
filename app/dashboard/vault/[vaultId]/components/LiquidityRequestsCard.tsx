@@ -19,6 +19,7 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
+import { formatDurationShort } from "@/utils/time";
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void };
 
@@ -100,28 +101,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept }: Pro
 
   const formattedCountdown = useMemo(() => {
     if (remainingMs === null) return null;
-    let s = Math.floor(remainingMs / 1000);
-    const days = Math.floor(s / SECONDS_PER_DAY); s -= days * SECONDS_PER_DAY;
-    const hours = Math.floor(s / SECONDS_PER_HOUR); s -= hours * SECONDS_PER_HOUR;
-    const minutes = Math.floor(s / 60); s -= minutes * 60;
-    const seconds = s;
-    const parts: string[] = [];
-    if (days > 0) {
-      parts.push(`${days}d`);
-      if (hours > 0) parts.push(`${hours}h`);
-      if (minutes > 0) parts.push(`${minutes}m`);
-      if (seconds > 0) parts.push(`${seconds}s`);
-    } else if (hours > 0) {
-      parts.push(`${hours}h`);
-      if (minutes > 0) parts.push(`${minutes}m`);
-      if (seconds > 0) parts.push(`${seconds}s`);
-    } else if (minutes > 0) {
-      parts.push(`${minutes}m`);
-      if (seconds > 0) parts.push(`${seconds}s`);
-    } else {
-      parts.push(`${seconds}s`);
-    }
-    return parts.join(" ");
+    return formatDurationShort(remainingMs);
   }, [remainingMs]);
 
   const openDisabled = Boolean(
@@ -601,9 +581,7 @@ function AcceptConfirm({
   try {
     const sum = (BigInt(amountRaw) + BigInt(interestRaw)).toString();
     totalRepay = formatMinimalTokenAmount(sum, decimals);
-  } catch {
-    // Error computing totalRepay; fallback value '-' is already set.
-  }
+  } catch {}
   const collateralNear = utils.format.formatNearAmount(collateralYocto);
 
   return (

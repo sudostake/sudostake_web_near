@@ -55,6 +55,13 @@ export function getActiveFactoryId(): string {
 
 // Explorer helpers
 export function explorerAccountUrl(network: Network, accountId: string): string {
-  const base = network === "mainnet" ? "https://explorer.near.org" : "https://explorer.testnet.near.org";
+  let base: string;
+  if (network === "mainnet") {
+    base = "https://explorer.near.org";
+  } else if (network === "testnet") {
+    base = "https://explorer.testnet.near.org";
+  } else {
+    throw new Error(`Unsupported network: ${network}`);
+  }
   return `${base}/accounts/${accountId}`;
 }

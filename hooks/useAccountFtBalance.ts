@@ -50,11 +50,15 @@ export function useAccountFtBalance(
     void load();
   }, [load]);
 
+  const decimals = useMemo(() => {
+    if (!tokenId) return undefined as number | undefined;
+    return network ? getTokenDecimals(tokenId, network) : getTokenDecimals(tokenId);
+  }, [tokenId, network]);
+
   const balance = useMemo(() => {
-    if (!tokenId) return null;
-    const decimals = network ? getTokenDecimals(tokenId, network) : getTokenDecimals(tokenId);
+    if (!tokenId || decimals === undefined) return null;
     return new Balance(raw ?? "0", decimals, symbol);
-  }, [raw, tokenId, symbol, network]);
+  }, [raw, tokenId, symbol, decimals]);
 
   return { balance, loading, error, refetch: load };
 }
