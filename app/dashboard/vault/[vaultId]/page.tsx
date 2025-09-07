@@ -23,6 +23,9 @@ import { useViewerRole } from "@/hooks/useViewerRole";
 import { useAccountFtBalance } from "@/hooks/useAccountFtBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
+import { showToast } from "@/utils/toast";
+import { STRINGS } from "@/utils/strings";
+import { useRefundEntries } from "@/hooks/useRefundEntries";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -55,6 +58,8 @@ export default function VaultPage() {
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
     useAvailableBalance(vaultId);
 
+  const { count: refundCount, loading: refundsLoading, refetch: refetchRefunds } = useRefundEntries(vaultId);
+
   // Vault USDC balance for display when funded
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const { balance: vaultUsdc, loading: vaultUsdcLoading, refetch: refetchVaultUsdc } = useAccountFtBalance(vaultId, usdcId, "USDC");
@@ -73,8 +78,29 @@ export default function VaultPage() {
   const [undelegateOpen, setUndelegateOpen] = useState(false);
   const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
   const handleDeposit = () => setDepositOpen(true);
-  const handleWithdraw = () => setWithdrawOpen(true);
+  const withdrawBlockReason = useMemo(() => {
+    if (data?.liquidation) return STRINGS.withdrawDisabledLiquidation;
+    if (data?.state === "active") return STRINGS.withdrawDisabledActive;
+    if (data?.state === "pending") return STRINGS.withdrawDisabledPending;
+    return null;
+  }, [data?.liquidation, data?.state]);
+
+  const handleWithdraw = () => {
+    if (withdrawBlockReason) {
+      showToast(withdrawBlockReason, { variant: "info" });
+      return;
+    }
+    setWithdrawOpen(true);
+  };
   const handleDelegate = (validator?: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.delegateDisabledLiquidation, { variant: "info" });
+      return;
+    }
+    if ((refundCount ?? 0) > 0) {
+      showToast(STRINGS.delegateDisabledRefunds, { variant: "info" });
+      return;
+    }
     setDelegateValidator(validator ?? null);
     setDelegateOpen(true);
   };
@@ -192,6 +218,9 @@ let Body: React.ReactNode;
             refetch={refetchDeleg}
             availableBalance={availBalance}
             availableLoading={availLoading}
+            refundsCount={refundCount}
+            refundsLoading={refundsLoading}
+            onRefreshRefunds={refetchRefunds}
           />
         </DelegationsActionsProvider>
 

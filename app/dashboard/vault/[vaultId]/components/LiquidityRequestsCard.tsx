@@ -11,10 +11,11 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
-import { SECONDS_PER_DAY } from "@/utils/constants";
+import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS, NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useFtBalance } from "@/hooks/useFtBalance";
+import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
@@ -22,6 +23,12 @@ import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
+import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLenderDialog";
+import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
+import { useProcessClaims } from "@/hooks/useProcessClaims";
+import { showToast } from "@/utils/toast";
+import { STRINGS } from "@/utils/strings";
+import Big from "big.js";
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
 
@@ -36,11 +43,56 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
   return `${cleaned} ${sym}`;
 }
 
+// Guarded NEAR formatter for potentially inconsistent types coming from indexer/view
+function safeFormatYoctoNear(value: unknown, fracDigits = 5): string {
+  try {
+    let s: string | null = null;
+    if (typeof value === "string") {
+      // If it is not a plain integer string, try to normalize via Big
+      if (/^\d+$/.test(value)) {
+        s = value;
+      } else {
+        try { s = new Big(value).toFixed(0); } catch { s = value; }
+      }
+    }
+    else if (typeof value === "bigint") s = value.toString();
+    else if (typeof value === "number" && Number.isFinite(value)) {
+      // Convert potential scientific notation into an integer string
+      try { s = new Big(value).toFixed(0); } catch { s = Math.trunc(value).toString(); }
+    }
+    if (!s) return "—";
+    return utils.format.formatNearAmount(s, fracDigits);
+  } catch {
+    return typeof value === "string" ? value : String(value ?? "—");
+  }
+}
+
+function toYoctoBigInt(value: unknown): bigint {
+  try {
+    if (typeof value === "bigint") return value;
+    if (typeof value === "string") {
+      if (/^\d+$/.test(value)) return BigInt(value);
+      try {
+        return BigInt(new Big(value).toFixed(0));
+      } catch {
+        const digits = value.replace(/\D+/g, "");
+        return digits ? BigInt(digits) : BigInt(0);
+      }
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      try { return BigInt(new Big(value).toFixed(0)); } catch { return BigInt(Math.trunc(value)); }
+    }
+  } catch {}
+  return BigInt(0);
+}
+
 export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
-  const { data } = useVault(factoryId, vaultId);
+  const [showDetails, setShowDetails] = useState(false);
+  const { data, refetch, loading: vaultLoading } = useVault(factoryId, vaultId);
+  const { balance: availableNear, loading: availLoading, refetch: refetchAvail } = useAvailableBalance(vaultId);
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
   const { acceptLiquidity, pending, error: acceptError } = useAcceptLiquidityRequest();
@@ -92,20 +144,245 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   }, [acceptedAtDate, data?.liquidity_request?.duration]);
 
   const [remainingMs, setRemainingMs] = React.useState<number | null>(null);
+  const prevRemainingRef = React.useRef<number | null>(null);
+  const [postExpiryOpen, setPostExpiryOpen] = React.useState(false);
+  const [postExpiryShown, setPostExpiryShown] = React.useState(false);
+  const [ownerPostExpiryOpen, setOwnerPostExpiryOpen] = React.useState(false);
+  const [ownerPostExpiryShown, setOwnerPostExpiryShown] = React.useState(false);
   React.useEffect(() => {
     if (!expiryDate) { setRemainingMs(null); return; }
     const tick = () => {
-      setRemainingMs(Math.max(0, expiryDate.getTime() - Date.now()));
+      setRemainingMs((prev) => {
+        const next = Math.max(0, expiryDate.getTime() - Date.now());
+        prevRemainingRef.current = prev ?? next;
+        return next;
+      });
     };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, [expiryDate]);
 
+  // Open lender popup once when the timer reaches zero
+  React.useEffect(() => {
+    if (
+      role === "activeLender" &&
+      data?.state === "active" &&
+      !data?.liquidation &&
+      remainingMs === 0 &&
+      !postExpiryShown
+    ) {
+      const prev = prevRemainingRef.current;
+      if (prev === null || prev > 0) {
+        setPostExpiryOpen(true);
+        setPostExpiryShown(true);
+      }
+    }
+  }, [remainingMs, role, data?.state, data?.liquidation, postExpiryShown]);
+
+  // Open owner popup once when the timer reaches zero
+  React.useEffect(() => {
+    if (
+      isOwner &&
+      data?.state === "active" &&
+      !data?.liquidation &&
+      remainingMs === 0 &&
+      !ownerPostExpiryShown
+    ) {
+      const prev = prevRemainingRef.current;
+      if (prev === null || prev > 0) {
+        setOwnerPostExpiryOpen(true);
+        setOwnerPostExpiryShown(true);
+      }
+    }
+  }, [remainingMs, isOwner, data?.state, data?.liquidation, ownerPostExpiryShown]);
+
+  // Process claims (lender action)
+  const { processClaims, pending: processPending, error: processError } = useProcessClaims();
+  const { indexVault: indexAfterProcess } = useIndexVault();
+  const lenderId = data?.accepted_offer?.lender;
+  const onBeginLiquidation = async () => {
+    try {
+      const { txHash } = await processClaims({ vault: vaultId });
+      showToast(STRINGS.processClaimsSuccess, { variant: "success" });
+      setPostExpiryOpen(false);
+      // Index side-effect, do not block user
+      void indexAfterProcess({ factoryId, vault: vaultId, txHash }).catch((e) => {
+        console.error("Indexing after process_claims failed", e);
+      });
+    } catch {
+      // handled via processError
+    }
+  };
+
   const formattedCountdown = useMemo(() => {
     if (remainingMs === null) return null;
     return formatDurationShort(remainingMs);
   }, [remainingMs]);
+
+  // Collateral/liquidation calculations (all in NEAR)
+  const collateralYocto = data?.liquidity_request?.collateral;
+  const liquidatedYocto = data?.liquidation?.liquidated;
+  const collateralLabel = useMemo(() => (collateralYocto ? safeFormatYoctoNear(collateralYocto, 5) : null), [collateralYocto]);
+  // liquidated label can be derived inline where needed; avoid keeping an unused memoized value
+  const remainingTargetLabel = useMemo(() => {
+    try {
+      if (!collateralYocto) return null;
+      const col = toYoctoBigInt(collateralYocto);
+      const liq = toYoctoBigInt(liquidatedYocto ?? "0");
+      const rem = col > liq ? col - liq : BigInt(0);
+      return safeFormatYoctoNear(rem.toString(), 5);
+    } catch { return null; }
+  }, [collateralYocto, liquidatedYocto]);
+
+  // Remaining target as BigInt (yocto)
+  const remainingYocto = useMemo(() => {
+    try {
+      if (!collateralYocto) return null;
+      const col = toYoctoBigInt(collateralYocto);
+      const liq = toYoctoBigInt(liquidatedYocto ?? "0");
+      return col > liq ? col - liq : BigInt(0);
+    } catch { return null; }
+  }, [collateralYocto, liquidatedYocto]);
+
+  const unbondingTotalLabel = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries)) return null;
+      let sum = BigInt(0);
+      for (const e of data!.unstake_entries!) {
+        // Treat entries as still unbonding; matured ones are normally claimed and removed by the contract
+        // To be safe, exclude entries whose unlock epoch has already passed NUM_EPOCHS_TO_UNLOCK ago.
+        const current = typeof data?.current_epoch === "number" ? data!.current_epoch! : undefined;
+        if (typeof current === "number" && current >= e.epoch_height + NUM_EPOCHS_TO_UNLOCK) {
+          continue;
+        }
+        const amt = toYoctoBigInt(e.amount);
+        sum += amt;
+      }
+      return safeFormatYoctoNear(sum.toString(), 5);
+    } catch { return null; }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
+  // Matured (claimable) total: entries whose maturity epoch has passed
+  const maturedTotalLabel = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return null;
+      const current = data.current_epoch as number;
+      let sum = BigInt(0);
+      for (const e of data!.unstake_entries!) {
+        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+        if (current >= maturity) {
+          const amt = toYoctoBigInt(e.amount);
+          sum += amt;
+        }
+      }
+      if (sum === BigInt(0)) return null;
+      return safeFormatYoctoNear(sum.toString(), 5);
+    } catch { return null; }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
+  // Matured total as BigInt for calculations
+  const maturedYocto = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return BigInt(0);
+      const current = data.current_epoch as number;
+      let sum = BigInt(0);
+      for (const e of data!.unstake_entries!) {
+        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+        if (current >= maturity) {
+          sum += toYoctoBigInt(e.amount);
+        }
+      }
+      return sum;
+    } catch { return BigInt(0); }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
+  // Expected immediate payout now (capped by remaining target)
+  const expectedImmediateLabel = useMemo(() => {
+    try {
+      const avail = BigInt(availableNear?.minimal ?? "0");
+      const imm = remainingYocto !== null ? (avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint)) : avail;
+      if (imm === BigInt(0)) return null;
+      return safeFormatYoctoNear(imm.toString(), 5);
+    } catch { return null; }
+  }, [availableNear?.minimal, remainingYocto]);
+
+  // BigInt versions for logic
+  const expectedImmediateYocto = useMemo(() => {
+    try {
+      const avail = BigInt(availableNear?.minimal ?? "0");
+      if (remainingYocto === null) return avail;
+      return avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint);
+    } catch { return BigInt(0); }
+  }, [availableNear?.minimal, remainingYocto]);
+
+  // Unbonding (not yet matured) as BigInt for calculations
+  const unbondingYocto = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries)) return BigInt(0);
+      const current = typeof data?.current_epoch === "number" ? (data!.current_epoch as number) : null;
+      let sum = BigInt(0);
+      for (const e of data!.unstake_entries!) {
+        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+        const amt = toYoctoBigInt(e.amount);
+        if (current === null) {
+          // Without a current epoch reference, conservatively include all entries as "coming next".
+          sum += amt;
+        } else if (current < maturity) {
+          // Current epoch known: include only entries that are still unbonding (not yet matured).
+          sum += amt;
+        }
+      }
+      return sum;
+    } catch { return BigInt(0); }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
+  // Expected next total (immediate + matured + current unbonding, capped by remaining target)
+  const expectedNextLabel = useMemo(() => {
+    try {
+      const avail = BigInt(availableNear?.minimal ?? "0");
+      const imm = remainingYocto !== null ? (avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint)) : avail;
+      let total = imm + maturedYocto + unbondingYocto;
+      if (remainingYocto !== null && total > (remainingYocto as bigint)) total = remainingYocto as bigint;
+      if (total === BigInt(0)) return null;
+      return safeFormatYoctoNear(total.toString(), 5);
+    } catch { return null; }
+  }, [availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto]);
+
+  // Collect matured entries to show sources (validator -> amount)
+  const maturedEntries = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return [] as Array<{validator: string; amount: string}>;
+      const current = data.current_epoch as number;
+      const rows: Array<{validator: string; amount: string}> = [];
+      for (const e of data!.unstake_entries!) {
+        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+        if (current >= maturity) {
+          const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
+          rows.push({ validator: e.validator, amount: amt });
+        }
+      }
+      return rows;
+    } catch { return [] as Array<{validator: string; amount: string}>; }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
+  // Longest remaining epochs among unbonding entries (to provide a simple worst-case ETA)
+  const longestRemainingEpochs = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries)) return null;
+      if (typeof data?.current_epoch !== "number") return null;
+      const curr = data.current_epoch as number;
+      let maxRem = 0;
+      for (const e of data.unstake_entries) {
+        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+        const rem = Math.max(0, maturity - curr);
+        if (rem > maxRem) maxRem = rem;
+      }
+      return maxRem;
+    } catch { return null; }
+  }, [data?.unstake_entries, data?.current_epoch]);
+  const longestEtaMs = useMemo(() => (longestRemainingEpochs === null ? null : longestRemainingEpochs * AVERAGE_EPOCH_SECONDS * 1000), [longestRemainingEpochs]);
+  const longestEtaLabel = useMemo(() => (longestEtaMs && longestEtaMs > 0 ? formatDurationShort(longestEtaMs) : null), [longestEtaMs]);
 
   const openDisabled = Boolean(
     data?.state === "pending" || data?.state === "active" || !isOwner
@@ -322,30 +599,50 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <div className="font-medium">{content.durationDays} days</div>
             </div>
           </div>
-          {data?.state === "active" && expiryDate && (
+          {/* Countdown line removed: the lender action button below now conveys timing */}
+          {data?.state === "active" && role === "activeLender" && expiryDate && (
             <div className="mt-2 text-sm">
-              <span className="text-secondary-text">Time to expiry: </span>
-              <span className={remainingMs === 0 ? "text-red-600 font-medium" : "font-medium"}>
-                {formattedCountdown ?? "—"}
-              </span>
+              <button
+                type="button"
+                onClick={() => setPostExpiryOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
+                disabled={Boolean(data?.liquidation) || (remainingMs !== null && remainingMs > 0)}
+                title={
+                  data?.liquidation
+                    ? "Liquidation in progress"
+                    : remainingMs && remainingMs > 0
+                    ? "Available after expiry"
+                    : undefined
+                }
+              >
+                {data?.liquidation
+                  ? "Liquidation in progress"
+                  : remainingMs && remainingMs > 0
+                  ? `Start liquidation in ${formattedCountdown ?? "—"}`
+                  : "Start liquidation now"}
+              </button>
             </div>
           )}
-          {data?.state === "active" && acceptedAtDate && (
-            <div className="mt-1 text-xs text-secondary-text">
-              Accepted at: <span className="text-foreground">{acceptedAtDate.toLocaleString()}</span>
+          {data?.state === "active" && isOwner && (
+            <div className="mt-2 text-sm">
+              <button
+                type="button"
+                onClick={() => setRepayOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
+                disabled={Boolean(data?.liquidation)}
+                title={data?.liquidation ? "Liquidation in progress" : undefined}
+              >
+                Repay now
+              </button>
             </div>
           )}
+          {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
             <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2 text-xs">
               The loan duration has ended. Repayment is still possible until liquidation is triggered.
             </div>
           )}
-          {data?.state === "active" && role === "activeLender" && (
-            <div className="mt-3 rounded border border-emerald-500/30 bg-emerald-100/50 text-emerald-900 p-2 text-sm">
-              <span className="font-medium">You provided the funds for this loan.</span>
-              {acceptedAtDate && <>{" "}Accepted on {acceptedAtDate.toLocaleString()}</>}
-            </div>
-          )}
+          {/* Lender appreciation card intentionally removed for a leaner UI */}
           {isOwner && data?.state === "pending" ? (
             <div className="mt-3 text-right">
               <button
@@ -465,7 +762,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </button>
             </div>
           ) : null}
-          {isOwner && data?.state === "active" && (
+          {isOwner && data?.state === "active" && !data?.liquidation && (
             <div className="mt-3 text-right">
               <button
                 type="button"
@@ -476,6 +773,185 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Liquidation progress/status section */}
+      {data?.state === "active" && data?.liquidation && (
+        <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
+          <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
+          {remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+            <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
+              <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
+              <div className="mt-1 text-sm text-red-900/90">{role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}</div>
+            </div>
+          )}
+          <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
+            <div className="rounded bg-white/70 border border-red-200/50 p-2">
+              <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
+              <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
+            </div>
+            <div className="rounded bg-white/70 border border-red-200/50 p-2">
+              <div className="text-red-900/80">{STRINGS.expectedNext}</div>
+              <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
+              {lenderId && (
+                <div className="text-xs text-red-900/80 mt-0.5">{STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span></div>
+              )}
+            </div>
+            {unbondingTotalLabel && (
+              <div className="rounded bg-white/70 border border-red-200/50 p-2">
+                <div className="text-red-900/80">{STRINGS.waitingToUnlock}</div>
+                <div className="font-medium">{unbondingTotalLabel} NEAR</div>
+                {longestEtaLabel && (
+                  <div className="text-xs text-red-900/80 mt-0.5">up to ~{longestEtaLabel}</div>
+                )}
+              </div>
+            )}
+          </div>
+          {(remainingTargetLabel || collateralLabel) && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+              {remainingTargetLabel && (
+                <div>
+                  <div className="text-red-900/80">Remaining</div>
+                  <div className="font-medium">{remainingTargetLabel} NEAR</div>
+                </div>
+              )}
+              {collateralLabel && (
+                <div>
+                  <div className="text-red-900/80">Target</div>
+                  <div className="font-medium">{collateralLabel} NEAR</div>
+                </div>
+              )}
+            </div>
+          )}
+          {lenderId && (
+            <div className="mt-1 text-xs text-red-900/80">
+              {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
+              <a
+                href={explorerAccountUrl(network, lenderId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-2 underline text-primary"
+              >
+                {STRINGS.viewAccountOnExplorer}
+              </a>
+            </div>
+          )}
+          {/* Removed secondary inline refresh to avoid duplication */}
+          <div className="mt-2">
+            <button
+              type="button"
+              className="text-xs underline text-primary"
+              onClick={() => setShowDetails((v) => !v)}
+            >
+              {showDetails ? STRINGS.hideDetails : STRINGS.showDetails}
+            </button>
+          </div>
+          {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+            <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
+              <div className="font-medium">Currently unbonding</div>
+              <div className="mt-2 space-y-2">
+                {data.unstake_entries.map((e, idx) => {
+                  const maturityEpoch = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+                  const remaining = typeof data.current_epoch === "number" ? Math.max(0, maturityEpoch - data.current_epoch) : null;
+                  const pct = (() => {
+                    if (remaining === null) return null;
+                    const done = NUM_EPOCHS_TO_UNLOCK - remaining;
+                    const ratio = Math.max(0, Math.min(NUM_EPOCHS_TO_UNLOCK, done)) / NUM_EPOCHS_TO_UNLOCK;
+                    return Math.round(ratio * 100);
+                  })();
+                  const etaMs = remaining === null ? null : remaining * AVERAGE_EPOCH_SECONDS * 1000;
+                  return (
+                    <div key={`${e.validator}-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                      <div>
+                        <div className="text-red-900/80">Amount</div>
+                        <div className="font-medium">{safeFormatYoctoNear(e.amount)} NEAR</div>
+                      </div>
+                      <div>
+                        <div className="text-red-900/80">Unlock epoch</div>
+                        <div className="font-medium">{maturityEpoch}</div>
+                        {typeof data.current_epoch === "number" && (
+                          <div className="text-xs text-red-900/80">current: {data.current_epoch}</div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-red-900/80">Validator</div>
+                        <div className="font-medium truncate" title={e.validator}>{e.validator}</div>
+                        {remaining !== null && (
+                          <div className="text-xs text-red-900/80">
+                            {remaining > 0
+                              ? `≈ ${remaining} epoch${remaining === 1 ? "" : "s"} remaining`
+                              : "Unlocks this epoch"}
+                          </div>
+                        )}
+                        {pct !== null && (
+                          <div className="mt-1" aria-label="Unbonding progress">
+                            <div className="h-1.5 w-full bg-red-200 rounded">
+                              <div className="h-1.5 bg-red-500 rounded" style={{ width: `${pct}%` }} />
+                            </div>
+                            <div className="mt-1 text-xs text-red-900/80">{pct}%</div>
+                          </div>
+                        )}
+                        {etaMs !== null && etaMs > 0 && (
+                          <div className="mt-1 text-xs text-red-900/80">
+                            ~{formatDurationShort(etaMs)} remaining (ETA {new Date(Date.now() + etaMs).toLocaleString()})
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-2 text-xs text-red-900/80">
+                {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
+              </div>
+            </div>
+          )}
+          <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
+            <div className="font-medium">{STRINGS.nextPayoutSources}</div>
+            <div className="mt-2 text-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="text-red-900/80">{STRINGS.sourceVaultBalanceNow}</div>
+                <div className="font-medium">{safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR</div>
+              </div>
+              <div className="mt-2">
+                <div className="text-red-900/80">{STRINGS.sourceMaturedUnbonding}</div>
+                {maturedEntries.length > 0 ? (
+                  <ul className="mt-1 text-sm space-y-1">
+                    {maturedEntries.map((m, idx) => (
+                      <li key={idx} className="flex items-center justify-between">
+                        <span className="truncate" title={m.validator}>{m.validator}</span>
+                        <span className="font-medium">{safeFormatYoctoNear(m.amount)} NEAR</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-xs text-red-900/80">{STRINGS.noMaturedYet}</div>
+                )}
+              </div>
+            </div>
+          </div>
+          {role === "activeLender" ? (
+            <div className="mt-2 text-xs text-red-900/90">{STRINGS.lenderLiquidationNote}</div>
+          ) : isOwner ? (
+            <div className="mt-2 text-xs text-red-900/90">{STRINGS.ownerLiquidationNote}</div>
+          ) : null}
+          <div className="mt-2 text-right">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded border bg-surface disabled:opacity-60 w-full sm:w-auto"
+              onClick={() => {
+                const txHash = `manual-refresh-${Date.now()}`;
+                void indexVault({ factoryId, vault: vaultId, txHash });
+                refetch();
+                refetchAvail();
+              }}
+              title={STRINGS.refresh}
+              disabled={vaultLoading || availLoading}
+            >
+              {vaultLoading || availLoading ? "Refreshing…" : STRINGS.refresh}
+            </button>
+          </div>
         </div>
       )}
 
@@ -569,6 +1045,62 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           collateralYocto={data.liquidity_request.collateral}
           durationDays={content.durationDays}
           network={network}
+        />
+      )}
+
+      {/* Post-expiry lender popup */}
+      {postExpiryOpen && role === "activeLender" && data?.state === "active" && content && data?.liquidity_request && (
+        <PostExpiryLenderDialog
+          open={postExpiryOpen}
+          onClose={() => setPostExpiryOpen(false)}
+          onBegin={onBeginLiquidation}
+          vaultId={vaultId}
+          tokenSymbol={tokenSymbol}
+          totalDueLabel={formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals)}
+          collateralNearLabel={utils.format.formatNearAmount(data.liquidity_request.collateral)}
+          pending={processPending}
+          error={processError ?? undefined}
+          payoutTo={lenderId ?? undefined}
+          payoutToUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
+          expectedImmediateLabel={expectedImmediateLabel ?? undefined}
+          maturedTotalLabel={maturedTotalLabel ?? undefined}
+          expectedNextLabel={expectedNextLabel ?? undefined}
+        />
+      )}
+      {/* Post-expiry owner popup */}
+      {ownerPostExpiryOpen && isOwner && data?.state === "active" && content && data?.liquidity_request && (
+        <PostExpiryOwnerDialog
+          open={ownerPostExpiryOpen}
+          onClose={() => setOwnerPostExpiryOpen(false)}
+          onRepay={() => {
+            setOwnerPostExpiryOpen(false);
+            setRepayOpen(true);
+          }}
+          vaultId={vaultId}
+          tokenSymbol={tokenSymbol}
+          totalDueLabel={formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals)}
+          collateralNearLabel={utils.format.formatNearAmount(data.liquidity_request.collateral)}
+        />
+      )}
+
+      {/* Repay dialog for owner */}
+      {repayOpen && isOwner && data?.liquidity_request && (
+        <RepayLoanDialog
+          open={repayOpen}
+          onClose={() => setRepayOpen(false)}
+          vaultId={vaultId}
+          factoryId={factoryId}
+          tokenId={data.liquidity_request.token}
+          principalMinimal={data.liquidity_request.amount}
+          interestMinimal={data.liquidity_request.interest}
+          onSuccess={() => {
+            onAfterRepay?.();
+            refetchAvail();
+            refetch();
+          }}
+          onVaultTokenBalanceChange={() => {
+            onAfterTopUp?.();
+          }}
         />
       )}
     </section>
