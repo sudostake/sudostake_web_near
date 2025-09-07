@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { utils } from "near-api-js";
+import Big from "big.js";
 import { Balance } from "@/utils/balance";
 import { NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
 
@@ -30,7 +31,12 @@ export function useAvailableBalance(
         method: "view_available_balance",
         args: {},
       });
-      const rawStr = typeof available === "string" ? available : String(available);
+      let rawStr: string;
+      if (typeof available === "string") rawStr = available;
+      else if (typeof available === "number") {
+        try { rawStr = new Big(available).toFixed(0); } catch { rawStr = String(Math.trunc(available)); }
+      } else if (typeof available === "bigint") rawStr = available.toString();
+      else rawStr = String(available);
       setBalance(new Balance(rawStr, NATIVE_DECIMALS, NATIVE_TOKEN));
     } catch {
       setBalance(new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN));
