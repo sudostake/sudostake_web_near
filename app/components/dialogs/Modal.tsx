@@ -63,8 +63,8 @@ export function Modal({
         onClick={disableBackdropClose ? undefined : onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-full max-w-md rounded bg-surface shadow-lg">
-        <div className="flex items-center justify-between border-b border-foreground/10 p-4">
+      <div className="relative z-10 w-full max-w-md max-h-[85vh] rounded bg-surface shadow-lg flex flex-col mx-auto">
+        <div className="flex items-center justify-between border-b border-foreground/10 p-4 shrink-0">
           <h2 id="modal-title" className="text-base font-medium truncate">
             {title ?? "Dialog"}
           </h2>
@@ -79,8 +79,14 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="p-4">{children}</div>
-        {footer && <div className="border-t border-foreground/10 p-3 text-right">{footer}</div>}
+        <div className="p-4 overflow-y-auto">
+          {children}
+        </div>
+        {footer && (
+          <div className="border-t border-foreground/10 p-3 text-right shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
