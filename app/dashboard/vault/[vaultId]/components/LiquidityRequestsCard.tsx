@@ -262,12 +262,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       if (!Array.isArray(data?.unstake_entries)) return null;
       let sum = BigInt(0);
       for (const e of data!.unstake_entries!) {
-        // Treat entries as still unbonding; matured ones are normally claimed and removed by the contract
-        // To be safe, exclude entries whose unlock epoch has already passed NUM_EPOCHS_TO_UNLOCK ago.
+        // Treat entries as still unbonding until the unlock epoch is reached.
         const current = typeof data?.current_epoch === "number" ? data!.current_epoch! : undefined;
-        if (typeof current === "number" && current >= e.epoch_height + NUM_EPOCHS_TO_UNLOCK) {
-          continue;
-        }
+        if (typeof current === "number" && current >= e.epoch_height) continue;
         const amt = toYoctoBigInt(e.amount);
         sum += amt;
       }
@@ -275,15 +272,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     } catch { return null; }
   }, [data?.unstake_entries, data?.current_epoch]);
 
-  // Matured (claimable) total: entries whose maturity epoch has passed
+  // Matured (claimable) total: entries whose unlock epoch has passed
   const maturedTotalLabel = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return null;
       const current = data.current_epoch as number;
       let sum = BigInt(0);
       for (const e of data!.unstake_entries!) {
-        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
-        if (current >= maturity) {
+        if (current >= e.epoch_height) {
           const amt = toYoctoBigInt(e.amount);
           sum += amt;
         }
@@ -300,8 +296,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch as number;
       let sum = BigInt(0);
       for (const e of data!.unstake_entries!) {
-        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
-        if (current >= maturity) {
+        if (current >= e.epoch_height) {
           sum += toYoctoBigInt(e.amount);
         }
       }
@@ -335,12 +330,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = typeof data?.current_epoch === "number" ? (data!.current_epoch as number) : null;
       let sum = BigInt(0);
       for (const e of data!.unstake_entries!) {
-        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
         const amt = toYoctoBigInt(e.amount);
         if (current === null) {
           // Without a current epoch reference, conservatively include all entries as "coming next".
           sum += amt;
-        } else if (current < maturity) {
+        } else if (current < e.epoch_height) {
           // Current epoch known: include only entries that are still unbonding (not yet matured).
           sum += amt;
         }
@@ -381,8 +375,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch as number;
       const rows: Array<{validator: string; amount: string}> = [];
       for (const e of data!.unstake_entries!) {
-        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
-        if (current >= maturity) {
+        if (current >= e.epoch_height) {
           const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
           rows.push({ validator: e.validator, amount: amt });
         }
@@ -399,8 +392,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const curr = data.current_epoch as number;
       let maxRem = 0;
       for (const e of data.unstake_entries) {
-        const maturity = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
-        const rem = Math.max(0, maturity - curr);
+        const rem = Math.max(0, e.epoch_height - curr);
         if (rem > maxRem) maxRem = rem;
       }
       return maxRem;
@@ -621,7 +613,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
             <div>
               <div className="text-secondary-text">Duration</div>
-              <div className="font-medium">{content.durationDays} days</div>
+              <div className="font-medium">{content.durationDays} {content.durationDays === 1 ? "day" : "days"}</div>
             </div>
           </div>
           {/* Countdown line removed: the lender action button below now conveys timing */}
@@ -667,24 +659,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         </a>
                       </div>
                     )}
-                    <div className="text-sm space-y-1">
-                      <div className="flex items-center justify-between">
-                        <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
-                        <div className="font-medium">{expectedImmediateLabel ?? "0"} NEAR</div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
-                        <div className="font-medium">{maturedTotalLabel ?? STRINGS.noMaturedYet}{maturedTotalLabel ? " NEAR" : ""}</div>
-                      </div>
-                      {expectedNextLabel && (
-                        <div className="flex items-center justify-between">
-                          <div className="text-secondary-text">{STRINGS.expectedNext}</div>
-                          <div className="font-medium">{expectedNextLabel} NEAR</div>
-                        </div>
-                      )}
-                    </div>
+                    {/* Simplified: detailed sources are covered by the Waiting to unlock section */}
                     {processError && (
                       <div className="text-xs text-red-600">{processError}</div>
+                    )}
+                    {maturedYocto > BigInt(0) && (
+                      <div className="text-xs text-secondary-text">
+                        {STRINGS.includesMatured(safeFormatYoctoNear(maturedYocto.toString(), 5))}
+                      </div>
                     )}
                     <button
                       type="button"
@@ -700,14 +682,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           )}
-          {data?.state === "active" && isOwner && (
+          {data?.state === "active" && isOwner && !data?.liquidation && remainingMs !== 0 && (
             <div className="mt-2 text-sm">
               <button
                 type="button"
                 onClick={() => setRepayOpen(true)}
                 className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
-                disabled={Boolean(data?.liquidation)}
-                title={data?.liquidation ? "Liquidation in progress" : undefined}
+                
               >
                 Repay now
               </button>
@@ -839,7 +820,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </button>
             </div>
           ) : null}
-          {isOwner && data?.state === "active" && !data?.liquidation && (
+          {isOwner && data?.state === "active" && !data?.liquidation && remainingMs !== 0 && (
             <div className="mt-3 text-right">
               <button
                 type="button"
@@ -875,34 +856,19 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     )}
                   </div>
                 )}
-                <div className="text-sm space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
-                    <div className="font-medium">{expectedImmediateLabel ?? "0"} NEAR</div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
-                    <div className="font-medium">{maturedTotalLabel ?? STRINGS.noMaturedYet}{maturedTotalLabel ? " NEAR" : ""}</div>
-                  </div>
-                  {expectedNextLabel && (
-                    <div className="flex items-center justify-between">
-                      <div className="text-secondary-text">{STRINGS.expectedNext}</div>
-                      <div className="font-medium">{expectedNextLabel} NEAR</div>
-                    </div>
-                  )}
-                </div>
+                {/* Simplified: detailed sources are covered by the Waiting to unlock section */}
                 {(remainingTargetLabel || collateralLabel) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     {remainingTargetLabel && (
-                      <div className="flex items-center justify-between">
+                      <div>
                         <div className="text-secondary-text">Remaining</div>
-                        <div className="font-medium">{remainingTargetLabel} NEAR</div>
+                        <div className="font-medium mt-0.5">{remainingTargetLabel} NEAR</div>
                       </div>
                     )}
                     {collateralLabel && (
-                      <div className="flex items-center justify-between">
+                      <div>
                         <div className="text-secondary-text">Target</div>
-                        <div className="font-medium">{collateralLabel} NEAR</div>
+                        <div className="font-medium mt-0.5">{collateralLabel} NEAR</div>
                       </div>
                     )}
                   </div>
@@ -938,7 +904,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             </div>
           )}
-          {role !== "activeLender" && remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
               <div className="mt-1 text-sm text-red-900/90">{role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}</div>
@@ -960,14 +926,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 )}
               </div>
             )}
-            {role !== "activeLender" && unbondingTotalLabel && (
+            {unbondingTotalLabel && (
               <div className="rounded bg-white/70 border border-red-200/50 p-2">
                 <div className="text-red-900/80">{STRINGS.waitingToUnlock}</div>
                 <div className="font-medium">{unbondingTotalLabel} NEAR</div>
                 {longestEtaLabel && (
                   <div className="text-xs text-red-900/80 mt-0.5">up to ~{longestEtaLabel}</div>
                 )}
-                {role !== "activeLender" && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+                {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
                   <div className="mt-1">
                     <button
                       type="button"
@@ -1011,16 +977,16 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
-          {role !== "activeLender" && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
                 {data.unstake_entries.map((e, idx) => {
-                  const maturityEpoch = e.epoch_height + NUM_EPOCHS_TO_UNLOCK;
+                  const maturityEpoch = e.epoch_height;
                   const remaining = typeof data.current_epoch === "number" ? Math.max(0, maturityEpoch - data.current_epoch) : null;
                   const pct = (() => {
                     if (remaining === null) return null;
-                    const done = NUM_EPOCHS_TO_UNLOCK - remaining;
+                    const done = NUM_EPOCHS_TO_UNLOCK - Math.min(NUM_EPOCHS_TO_UNLOCK, Math.max(0, remaining));
                     const ratio = Math.max(0, Math.min(NUM_EPOCHS_TO_UNLOCK, done)) / NUM_EPOCHS_TO_UNLOCK;
                     return Math.round(ratio * 100);
                   })();
@@ -1351,7 +1317,7 @@ function AcceptConfirm({
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            On-time repayment (within {durationDays} days) should return a total of
+            On-time repayment (within {durationDays} {durationDays === 1 ? "day" : "days"}) should return a total of
             {" "}
             <span className="font-medium">{totalRepay} {tokenSymbol}</span> (principal + interest).
           </li>

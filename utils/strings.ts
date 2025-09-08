@@ -85,6 +85,7 @@ export const STRINGS = {
   sourceVaultBalanceNow: "Vault balance (available now)",
   sourceMaturedUnbonding: "Matured unbonding",
   noMaturedYet: "No matured entries yet",
+  includesMatured: (amount: string) => `Includes ${amount} NEAR matured`,
   // Liquidation card: role-specific headings/notes
   ownerLiquidationHeader: "Paying lender from collateral",
   ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
