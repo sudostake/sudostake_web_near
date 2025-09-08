@@ -201,6 +201,18 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const { processClaims, pending: processPending, error: processError } = useProcessClaims();
   const { indexVault: indexAfterProcess } = useIndexVault();
   const lenderId = data?.accepted_offer?.lender;
+  const onProcessAvailable = async () => {
+    try {
+      const { txHash } = await processClaims({ vault: vaultId });
+      showToast(STRINGS.processClaimsSuccess, { variant: "success" });
+      // Index side-effect, do not block user
+      void indexAfterProcess({ factoryId, vault: vaultId, txHash }).catch((e) => {
+        console.error("Indexing after process_claims failed", e);
+      });
+    } catch {
+      // handled via processError state
+    }
+  };
   const onBeginLiquidation = async () => {
     try {
       const { txHash } = await processClaims({ vault: vaultId });
@@ -348,6 +360,19 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       return safeFormatYoctoNear(total.toString(), 5);
     } catch { return null; }
   }, [availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto]);
+
+  // Claimable now (available vault balance + matured unbonding), capped by remaining target
+  const claimableNowYocto = useMemo(() => {
+    try {
+      let total = expectedImmediateYocto + maturedYocto;
+      if (remainingYocto !== null && total > (remainingYocto as bigint)) total = remainingYocto as bigint;
+      return total;
+    } catch { return BigInt(0); }
+  }, [expectedImmediateYocto, maturedYocto, remainingYocto]);
+  const claimableNowLabel = useMemo(() => {
+    try { return safeFormatYoctoNear(claimableNowYocto.toString(), 5); } catch { return "0"; }
+  }, [claimableNowYocto]);
+  const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
 
   // Collect matured entries to show sources (validator -> amount)
   const maturedEntries = useMemo(() => {
@@ -600,27 +625,79 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           </div>
           {/* Countdown line removed: the lender action button below now conveys timing */}
-          {data?.state === "active" && role === "activeLender" && expiryDate && (
+          {data?.state === "active" && role === "activeLender" && expiryDate && !data?.liquidation && (
             <div className="mt-2 text-sm">
-              <button
-                type="button"
-                onClick={() => setPostExpiryOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
-                disabled={Boolean(data?.liquidation) || (remainingMs !== null && remainingMs > 0)}
-                title={
-                  data?.liquidation
-                    ? "Liquidation in progress"
-                    : remainingMs && remainingMs > 0
-                    ? "Available after expiry"
-                    : undefined
-                }
-              >
-                {data?.liquidation
-                  ? "Liquidation in progress"
-                  : remainingMs && remainingMs > 0
-                  ? `Start liquidation in ${formattedCountdown ?? "—"}`
-                  : "Start liquidation now"}
-              </button>
+              {remainingMs !== null && remainingMs > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setPostExpiryOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
+                  title="Available after expiry"
+                >
+                  {`Start liquidation in ${formattedCountdown ?? "—"}`}
+                </button>
+              ) : (
+                <div className="rounded border border-foreground/10 bg-background p-3">
+                  <div className="text-sm font-medium mb-2">{STRINGS.nextPayoutSources}</div>
+                  <div className="text-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="text-secondary-text">{STRINGS.availableNow}</div>
+                      <div className="font-medium">{claimableNowLabel} NEAR</div>
+                    </div>
+                    {!hasClaimableNow && (
+                      <div className="text-xs text-secondary-text">
+                        {STRINGS.nothingAvailableNow}
+                        {expectedNextLabel && (
+                          <>
+                            {" · "}{STRINGS.expectedNext}: {expectedNextLabel} NEAR
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {lenderId && (
+                      <div className="text-xs text-secondary-text">
+                        {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
+                        <a
+                          href={explorerAccountUrl(network, lenderId)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 underline text-primary"
+                        >
+                          {STRINGS.viewAccountOnExplorer}
+                        </a>
+                      </div>
+                    )}
+                    <div className="text-sm space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
+                        <div className="font-medium">{expectedImmediateLabel ?? "0"} NEAR</div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
+                        <div className="font-medium">{maturedTotalLabel ?? STRINGS.noMaturedYet}{maturedTotalLabel ? " NEAR" : ""}</div>
+                      </div>
+                      {expectedNextLabel && (
+                        <div className="flex items-center justify-between">
+                          <div className="text-secondary-text">{STRINGS.expectedNext}</div>
+                          <div className="font-medium">{expectedNextLabel} NEAR</div>
+                        </div>
+                      )}
+                    </div>
+                    {processError && (
+                      <div className="text-xs text-red-600">{processError}</div>
+                    )}
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
+                      onClick={onBeginLiquidation}
+                      disabled={processPending || !hasClaimableNow}
+                      title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+                    >
+                      {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {data?.state === "active" && isOwner && (
@@ -780,32 +857,117 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       {data?.state === "active" && data?.liquidation && (
         <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
           <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
-          {remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {role === "activeLender" && (
+            <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
+              <div className="text-sm font-medium mb-2">{STRINGS.nextPayoutSources}</div>
+              <div className="text-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-secondary-text">{STRINGS.availableNow}</div>
+                  <div className="font-medium">{claimableNowLabel} NEAR</div>
+                </div>
+                {!hasClaimableNow && (
+                  <div className="text-xs text-secondary-text">
+                    {STRINGS.nothingAvailableNow}
+                    {expectedNextLabel && (
+                      <>
+                        {" · "}{STRINGS.expectedNext}: {expectedNextLabel} NEAR
+                      </>
+                    )}
+                  </div>
+                )}
+                <div className="text-sm space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
+                    <div className="font-medium">{expectedImmediateLabel ?? "0"} NEAR</div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
+                    <div className="font-medium">{maturedTotalLabel ?? STRINGS.noMaturedYet}{maturedTotalLabel ? " NEAR" : ""}</div>
+                  </div>
+                  {expectedNextLabel && (
+                    <div className="flex items-center justify-between">
+                      <div className="text-secondary-text">{STRINGS.expectedNext}</div>
+                      <div className="font-medium">{expectedNextLabel} NEAR</div>
+                    </div>
+                  )}
+                </div>
+                {(remainingTargetLabel || collateralLabel) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    {remainingTargetLabel && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-secondary-text">Remaining</div>
+                        <div className="font-medium">{remainingTargetLabel} NEAR</div>
+                      </div>
+                    )}
+                    {collateralLabel && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-secondary-text">Target</div>
+                        <div className="font-medium">{collateralLabel} NEAR</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="text-xs text-secondary-text">
+                  {STRINGS.paidSoFar}: <span className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</span>
+                </div>
+                {lenderId && (
+                  <div className="text-xs text-secondary-text">
+                    {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
+                    <a
+                      href={explorerAccountUrl(network, lenderId)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 underline text-primary"
+                    >
+                      {STRINGS.viewAccountOnExplorer}
+                    </a>
+                  </div>
+                )}
+                {processError && (
+                  <div className="text-xs text-red-600">{processError}</div>
+                )}
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
+                  onClick={onProcessAvailable}
+                  disabled={processPending || !hasClaimableNow}
+                  title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+                >
+                  {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
+                </button>
+              </div>
+            </div>
+          )}
+          {role !== "activeLender" && remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
               <div className="mt-1 text-sm text-red-900/90">{role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}</div>
             </div>
           )}
           <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
-            <div className="rounded bg-white/70 border border-red-200/50 p-2">
-              <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
-              <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
-            </div>
-            <div className="rounded bg-white/70 border border-red-200/50 p-2">
-              <div className="text-red-900/80">{STRINGS.expectedNext}</div>
-              <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
-              {lenderId && (
-                <div className="text-xs text-red-900/80 mt-0.5">{STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span></div>
-              )}
-            </div>
-            {unbondingTotalLabel && (
+            {role !== "activeLender" && (
+              <div className="rounded bg-white/70 border border-red-200/50 p-2">
+                <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
+                <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
+              </div>
+            )}
+            {role !== "activeLender" && (
+              <div className="rounded bg-white/70 border border-red-200/50 p-2">
+                <div className="text-red-900/80">{STRINGS.expectedNext}</div>
+                <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
+                {lenderId && (
+                  <div className="text-xs text-red-900/80 mt-0.5">{STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span></div>
+                )}
+              </div>
+            )}
+            {role !== "activeLender" && unbondingTotalLabel && (
               <div className="rounded bg-white/70 border border-red-200/50 p-2">
                 <div className="text-red-900/80">{STRINGS.waitingToUnlock}</div>
                 <div className="font-medium">{unbondingTotalLabel} NEAR</div>
                 {longestEtaLabel && (
                   <div className="text-xs text-red-900/80 mt-0.5">up to ~{longestEtaLabel}</div>
                 )}
-                {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+                {role !== "activeLender" && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
                   <div className="mt-1">
                     <button
                       type="button"
@@ -819,7 +981,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             )}
           </div>
-          {(remainingTargetLabel || collateralLabel) && (
+          {role !== "activeLender" && (remainingTargetLabel || collateralLabel) && (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
               {remainingTargetLabel && (
                 <div>
@@ -835,7 +997,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           )}
-          {lenderId && (
+          {role !== "activeLender" && lenderId && (
             <div className="mt-1 text-xs text-red-900/80">
               {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
               <a
@@ -849,7 +1011,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
-          {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {role !== "activeLender" && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
@@ -909,6 +1071,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             </div>
           )}
+          {role !== "activeLender" && (
           <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
             <div className="font-medium">{STRINGS.nextPayoutSources}</div>
             <div className="mt-2 text-sm space-y-1">
@@ -933,27 +1096,30 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             </div>
           </div>
+          )}
           {role === "activeLender" ? (
             <div className="mt-2 text-xs text-red-900/90">{STRINGS.lenderLiquidationNote}</div>
           ) : isOwner ? (
             <div className="mt-2 text-xs text-red-900/90">{STRINGS.ownerLiquidationNote}</div>
           ) : null}
-          <div className="mt-2 text-right">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded border bg-surface disabled:opacity-60 w-full sm:w-auto"
-              onClick={() => {
-                const txHash = `manual-refresh-${Date.now()}`;
-                void indexVault({ factoryId, vault: vaultId, txHash });
-                refetch();
-                refetchAvail();
-              }}
-              title={STRINGS.refresh}
-              disabled={vaultLoading || availLoading}
-            >
-              {vaultLoading || availLoading ? "Refreshing…" : STRINGS.refresh}
-            </button>
-          </div>
+          {role !== "activeLender" && !isOwner && (
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded border bg-surface disabled:opacity-60 w-full sm:w-auto"
+                onClick={() => {
+                  const txHash = `manual-refresh-${Date.now()}`;
+                  void indexVault({ factoryId, vault: vaultId, txHash });
+                  refetch();
+                  refetchAvail();
+                }}
+                title={STRINGS.refresh}
+                disabled={vaultLoading || availLoading}
+              >
+                {vaultLoading || availLoading ? "Refreshing…" : STRINGS.refresh}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
