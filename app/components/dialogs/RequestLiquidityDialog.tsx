@@ -22,7 +22,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
   const network = getActiveNetwork();
-  const { data: delegData } = useVaultDelegations(factoryId, vaultId);
+  const { data: delegData, refetch: refetchDelegations } = useVaultDelegations(factoryId, vaultId);
   const { storageBalanceOf, storageBounds, registerStorage, pending: regPending, error: regError } = useFtStorage();
   const [isRegistered, setIsRegistered] = useState<boolean>(true);
   const [minStorageDeposit, setMinStorageDeposit] = useState<string | null>(null);
@@ -59,6 +59,23 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       if (usdc) setToken(usdc);
     }
   }, [network, token]);
+
+  // Ensure delegation data is fresh whenever the dialog is opened.
+  useEffect(() => {
+    if (open) {
+      refetchDelegations();
+    }
+  }, [open, refetchDelegations]);
+
+  // While the dialog is open, keep delegations in sync by refetching on window focus.
+  useEffect(() => {
+    if (!open) return;
+    const onFocus = () => refetchDelegations();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [open, refetchDelegations]);
 
   // Check FT storage registration for the vault on selected token
   useEffect(() => {
