@@ -21,6 +21,7 @@ type Props = {
   expectedNextLabel?: string | null;
   closesRepay?: boolean;
   willBePartial?: boolean;
+  inProgress?: boolean;
 };
 
 export function PostExpiryLenderDialog({
@@ -40,13 +41,18 @@ export function PostExpiryLenderDialog({
   expectedNextLabel,
   closesRepay,
   willBePartial,
+  inProgress,
 }: Props) {
   const [showMore, setShowMore] = React.useState(false);
+  const title = inProgress ? STRINGS.liquidationInProgress : STRINGS.loanExpired;
+  const primaryCta = inProgress ? STRINGS.continueProcessing : STRINGS.beginLiquidation;
+  const intro = inProgress ? STRINGS.liquidationInProgressIntro : STRINGS.loanExpiredBodyIntro;
+
   return (
     <Modal
       open={open}
       onClose={pending ? () => {} : onClose}
-      title={STRINGS.loanExpired}
+      title={title}
       footer={
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
           <button
@@ -63,16 +69,22 @@ export function PostExpiryLenderDialog({
             onClick={onBegin}
             disabled={pending}
           >
-            {pending ? STRINGS.processing : STRINGS.beginLiquidation}
+            {pending ? STRINGS.processing : primaryCta}
           </button>
         </div>
       }
     >
       <div className="space-y-3 text-sm">
         <p>
-          {STRINGS.loanExpiredBodyIntro}{" "}
+          {intro}{" "}
           <span className="font-medium" title={vaultId}>{vaultId}</span>.
         </p>
+        {inProgress && (
+          <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs">
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden></span>
+            <span>{STRINGS.liquidationInProgress}</span>
+          </div>
+        )}
         <div className="rounded border bg-background p-3">
           <div className="text-sm text-emerald-900">
             {STRINGS.lenderGratitude}
@@ -81,10 +93,11 @@ export function PostExpiryLenderDialog({
         <div className="rounded border bg-background p-3">
           <div className="text-sm font-medium mb-2">{STRINGS.whatHappensNext}</div>
           <ul className="list-disc pl-5 space-y-1 text-sm">
-            <li>{STRINGS.willStartProcess}</li>
+            <li>{inProgress ? STRINGS.willContinueProcess : STRINGS.willStartProcess}</li>
             <li>{STRINGS.attachesOneYocto}</li>
-            <li>{STRINGS.mayTakeTime}</li>
-            <li>{STRINGS.trackProgressHere}</li>
+            <li>{inProgress ? STRINGS.mayTakeTimeContinuing : STRINGS.mayTakeTime}</li>
+            <li>{inProgress ? STRINGS.trackProgressHereInProgress : STRINGS.trackProgressHere}</li>
+            <li>{STRINGS.youCanCloseWindow}</li>
             {closesRepay && (<li>{STRINGS.liquidationClosesRepay}</li>)}
             {willBePartial === true && (<li>{STRINGS.willBePartial}</li>)}
             {willBePartial === false && (<li>{STRINGS.willSettleNow}</li>)}

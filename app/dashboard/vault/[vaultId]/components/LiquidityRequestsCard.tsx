@@ -201,18 +201,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const { processClaims, pending: processPending, error: processError } = useProcessClaims();
   const { indexVault: indexAfterProcess } = useIndexVault();
   const lenderId = data?.accepted_offer?.lender;
-  const onProcessAvailable = async () => {
-    try {
-      const { txHash } = await processClaims({ vault: vaultId });
-      showToast(STRINGS.processClaimsSuccess, { variant: "success" });
-      // Index side-effect, do not block user
-      void indexAfterProcess({ factoryId, vault: vaultId, txHash }).catch((e) => {
-        console.error("Indexing after process_claims failed", e);
-      });
-    } catch {
-      // handled via processError state
-    }
-  };
   const onBeginLiquidation = async () => {
     try {
       const { txHash } = await processClaims({ vault: vaultId });
@@ -226,6 +214,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       // handled via processError
     }
   };
+
+  // Placeholders moved below after hasClaimableNow is computed
 
   const formattedCountdown = useMemo(() => {
     if (remainingMs === null) return null;
@@ -368,6 +358,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     try { return safeFormatYoctoNear(claimableNowYocto.toString(), 5); } catch { return "0"; }
   }, [claimableNowYocto]);
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
+  const closesRepay = true;
+  const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data!.unstake_entries!.length > 0);
 
   // Collect matured entries to show sources (validator -> amount)
   const maturedEntries = useMemo(() => {
@@ -672,7 +664,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     <button
                       type="button"
                       className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
-                      onClick={onBeginLiquidation}
+                      onClick={() => setPostExpiryOpen(true)}
                       disabled={processPending || !hasClaimableNow}
                       title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                     >
@@ -896,7 +888,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 <button
                   type="button"
                   className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
-                  onClick={onProcessAvailable}
+                  onClick={() => setPostExpiryOpen(true)}
                   disabled={processPending || !hasClaimableNow}
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                 >
@@ -1106,6 +1098,28 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           onVaultTokenBalanceChange={() => {
             onAfterTopUp?.();
           }}
+        />
+      )}
+
+      {role === "activeLender" && data?.state === "active" && (
+        <PostExpiryLenderDialog
+          open={postExpiryOpen}
+          onClose={() => setPostExpiryOpen(false)}
+          onBegin={onBeginLiquidation}
+          vaultId={vaultId}
+          tokenSymbol={tokenSymbol}
+          totalDueLabel={content?.amountRaw && content?.interestRaw ? formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals) : undefined}
+          collateralNearLabel={content ? utils.format.formatNearAmount(String(data?.liquidity_request?.collateral ?? "0")) : undefined}
+          pending={processPending}
+          error={processError}
+          payoutTo={lenderId ?? undefined}
+          payoutToUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
+          expectedImmediateLabel={expectedImmediateLabel}
+          maturedTotalLabel={maturedYocto > BigInt(0) ? safeFormatYoctoNear(maturedYocto.toString()) : null}
+          expectedNextLabel={expectedNextLabel}
+          closesRepay={closesRepay}
+          willBePartial={willBePartial}
+          inProgress={Boolean(data?.liquidation)}
         />
       )}
 
