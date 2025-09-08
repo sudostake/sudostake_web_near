@@ -97,6 +97,15 @@ function toYoctoBigInt(value: unknown): bigint {
   return BigInt(0);
 }
 
+// Compute unbonding progress percentage (0..100) given remaining epochs to unlock.
+// Returns null if remaining is unknown (null).
+function computeUnbondingProgress(remaining: number | null): number | null {
+  if (remaining === null) return null;
+  const done = NUM_EPOCHS_TO_UNLOCK - Math.min(NUM_EPOCHS_TO_UNLOCK, Math.max(0, remaining));
+  const ratio = Math.max(0, Math.min(NUM_EPOCHS_TO_UNLOCK, done)) / NUM_EPOCHS_TO_UNLOCK;
+  return Math.round(ratio * 100);
+}
+
 export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
@@ -995,12 +1004,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 {data.unstake_entries.map((e, idx) => {
                   const maturityEpoch = e.epoch_height;
                   const remaining = typeof data.current_epoch === "number" ? Math.max(0, maturityEpoch - data.current_epoch) : null;
-                  const pct = (() => {
-                    if (remaining === null) return null;
-                    const done = NUM_EPOCHS_TO_UNLOCK - Math.min(NUM_EPOCHS_TO_UNLOCK, Math.max(0, remaining));
-                    const ratio = Math.max(0, Math.min(NUM_EPOCHS_TO_UNLOCK, done)) / NUM_EPOCHS_TO_UNLOCK;
-                    return Math.round(ratio * 100);
-                  })();
+                  const pct = computeUnbondingProgress(remaining);
                   const etaMs = remaining === null ? null : remaining * AVERAGE_EPOCH_SECONDS * 1000;
                   return (
                     <div key={`${e.validator}-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">

@@ -25,8 +25,11 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
  *    - "active" → liquidity request with accepted offer
  */
 // Helper to safely convert a JS number to an integer string without precision loss when possible.
-// Tries Big.js first (handles scientific notation), then falls back to BigInt for large integers,
-// and finally to Math.trunc as a last resort.
+// Strategy (in order):
+// 1) Big.js toFixed(0) — handles scientific notation and typical integer-like numbers.
+// 2) If it's a safe integer, use native toString.
+// 3) Try BigInt for large integers.
+// 4) Final fallback: Math.trunc + toString to ensure we always return a string.
 function numberToIntegerString(n: number): string {
   try {
     return new Big(n).toFixed(0);
