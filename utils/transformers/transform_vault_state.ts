@@ -24,6 +24,34 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
  *    - "pending" → liquidity request without accepted offer
  *    - "active" → liquidity request with accepted offer
  */
+// Attempt to convert using Big.js (handles scientific notation and most cases)
+function tryBigJsToIntegerString(n: number): string | undefined {
+  try {
+    return new Big(n).toFixed(0);
+  } catch {
+    return undefined;
+  }
+}
+
+// Fallback: if the number is a safe integer, use toString()
+function trySafeIntegerToString(n: number): string | undefined {
+  return Number.isSafeInteger(n) ? n.toString() : undefined;
+}
+
+// Fallback: try to use BigInt for large integers
+function tryBigIntToString(n: number): string | undefined {
+  try {
+    return BigInt(n).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+// Final fallback: use Math.trunc and convert to string
+function fallbackTruncToString(n: number): string {
+  return String(Math.trunc(n));
+}
+
 // Helper to safely convert a JS number to an integer string without precision loss when possible.
 // Strategy (in order):
 // 1) Big.js toFixed(0) — handles scientific notation and typical integer-like numbers.
@@ -31,12 +59,12 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
 // 3) Try BigInt for large integers.
 // 4) Final fallback: Math.trunc + toString to ensure we always return a string.
 function numberToIntegerString(n: number): string {
-  try {
-    return new Big(n).toFixed(0);
-  } catch {
-    if (Number.isSafeInteger(n)) return n.toString();
-    try { return BigInt(n).toString(); } catch { return String(Math.trunc(n)); }
-  }
+  return (
+    tryBigJsToIntegerString(n) ??
+    trySafeIntegerToString(n) ??
+    tryBigIntToString(n) ??
+    fallbackTruncToString(n)
+  );
 }
 
 export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {

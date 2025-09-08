@@ -44,25 +44,16 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 }
 
 // Guarded NEAR formatter for potentially inconsistent types coming from indexer/view
+// Format a yoctoNEAR amount coming in as string|number|bigint safely, using existing normalization helpers.
 function safeFormatYoctoNear(value: unknown, fracDigits = 5): string {
   try {
     let s: string | null = null;
     if (typeof value === "string") {
-      // If it is not a plain integer string, try to normalize via Big
-      if (/^\d+$/.test(value)) {
-        s = value;
-      } else {
-        try { s = new Big(value).toFixed(0); } catch { s = value; }
-      }
-    }
-    else if (typeof value === "bigint") s = value.toString();
-    else if (typeof value === "number" && Number.isFinite(value)) {
-      // Convert potential scientific notation into an integer string
-      try { s = new Big(value).toFixed(0); }
-      catch {
-        try { s = BigInt(value).toString(); }
-        catch { s = value.toString(); }
-      }
+      s = /^\d+$/.test(value) ? value : stringToYoctoBigInt(value).toString();
+    } else if (typeof value === "bigint") {
+      s = value.toString();
+    } else if (typeof value === "number" && Number.isFinite(value)) {
+      try { s = new Big(value).toFixed(0); } catch { s = numberToYoctoBigInt(value).toString(); }
     }
     if (!s) return "—";
     return utils.format.formatNearAmount(s, fracDigits);
@@ -71,29 +62,27 @@ function safeFormatYoctoNear(value: unknown, fracDigits = 5): string {
   }
 }
 
+// Helpers to normalize various numeric shapes into a BigInt representing yocto amounts
+function stringToYoctoBigInt(s: string): bigint {
+  if (/^\d+$/.test(s)) {
+    try { return BigInt(s); } catch {}
+  }
+  try { return BigInt(new Big(s).toFixed(0)); } catch {}
+  const digits = s.replace(/\D+/g, "");
+  return digits ? BigInt(digits) : BigInt(0);
+}
+
+function numberToYoctoBigInt(n: number): bigint {
+  try { return BigInt(new Big(n).toFixed(0)); } catch {}
+  try { return BigInt(new Big(n.toString()).toFixed(0)); } catch {}
+  const digits = n.toString().replace(/\D+/g, "");
+  return digits ? BigInt(digits) : BigInt(0);
+}
+
 function toYoctoBigInt(value: unknown): bigint {
-  try {
-    if (typeof value === "bigint") return value;
-    if (typeof value === "string") {
-      if (/^\d+$/.test(value)) return BigInt(value);
-      try {
-        return BigInt(new Big(value).toFixed(0));
-      } catch {
-        const digits = value.replace(/\D+/g, "");
-        return digits ? BigInt(digits) : BigInt(0);
-      }
-    }
-    if (typeof value === "number" && Number.isFinite(value)) {
-      try { return BigInt(new Big(value).toFixed(0)); }
-      catch {
-        try { return BigInt(new Big(value.toString()).toFixed(0)); }
-        catch {
-          const digits = value.toString().replace(/\D+/g, "");
-          return digits ? BigInt(digits) : BigInt(0);
-        }
-      }
-    }
-  } catch {}
+  if (typeof value === "bigint") return value;
+  if (typeof value === "string") return stringToYoctoBigInt(value);
+  if (typeof value === "number" && Number.isFinite(value)) return numberToYoctoBigInt(value);
   return BigInt(0);
 }
 
