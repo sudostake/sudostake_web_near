@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { providers, utils } from "near-api-js";
 import type { AccountView } from "near-api-js/lib/providers/provider";
 import Big from "big.js";
@@ -37,7 +37,7 @@ export function useTokenBalances(): {
     [activeNetwork]
   );
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!signedAccountId) return;
     setLoading(true);
     setError(null);
@@ -83,13 +83,12 @@ export function useTokenBalances(): {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeNetwork, rpc, signedAccountId, viewFunction]);
 
   useEffect(() => {
     if (!signedAccountId) return;
     void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signedAccountId, rpc]);
+  }, [signedAccountId, load]);
 
   return { balances, loading, error, refetch: load };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { utils } from "near-api-js";
 import Big from "big.js";
@@ -14,6 +14,9 @@ export function useAvailableBalance(
   vaultId?: string | null
 ): { balance: Balance; loading: boolean; refetch: () => void } {
   const { viewFunction } = useWalletSelector();
+  // Stabilize viewFunction to avoid effect churn if its identity changes
+  const viewFnRef = useRef(viewFunction);
+  useEffect(() => { viewFnRef.current = viewFunction; }, [viewFunction]);
   const [balance, setBalance] = useState<Balance>(
     new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN)
   );
@@ -26,7 +29,7 @@ export function useAvailableBalance(
     if (!vaultId) return;
     setLoading(true);
     try {
-      const available = await viewFunction({
+      const available = await viewFnRef.current({
         contractId: vaultId,
         method: "view_available_balance",
         args: {},
@@ -52,7 +55,7 @@ export function useAvailableBalance(
     } finally {
       setLoading(false);
     }
-  }, [vaultId, viewFunction, version]);
+  }, [vaultId, version]);
 
   useEffect(() => {
     void fetchBalance();

@@ -158,19 +158,16 @@ export default function VaultPage() {
           <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
           <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
             <span className="shrink-0">Contract Balance:</span>
-            <span
-              className="truncate"
-            title={`${vaultNearLoading ? "…" : vaultNear} ${NATIVE_TOKEN}`}
-            >
-              {vaultNearLoading ? "…" : vaultNear}
+            <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+              {vaultNear}
             </span>
             <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
           </div>
           {usdcId && (
             <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
               <span className="shrink-0">USDC Balance:</span>
-              <span className="truncate" title={`${vaultUsdcLoading ? "…" : vaultUsdc?.toDisplay()} USDC`}>
-                {vaultUsdcLoading ? "…" : vaultUsdc?.toDisplay()}
+              <span className="truncate" title={`${vaultUsdc?.toDisplay()} USDC`}>
+                {vaultUsdc?.toDisplay()}
               </span>
               <span className="text-secondary-text shrink-0">USDC</span>
             </div>

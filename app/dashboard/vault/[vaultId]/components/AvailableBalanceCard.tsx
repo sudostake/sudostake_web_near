@@ -19,9 +19,7 @@ export function AvailableBalanceCard({
     <section className="rounded bg-surface p-4">
       <div className="text-secondary-text text-xs">Available balance</div>
       <div className="mt-1 text-2xl font-semibold flex items-baseline gap-1 min-w-0">
-        <span className="truncate" title={`${balance.toDisplay()} ${symbol}`}>
-          {loading ? "…" : balance.toDisplay()}
-        </span>
+        <span className="truncate" title={`${balance.toDisplay()} ${symbol}`}>{balance.toDisplay()}</span>
         <span className="text-base text-secondary-text shrink-0">{symbol}</span>
       </div>
     </section>
