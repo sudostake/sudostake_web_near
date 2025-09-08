@@ -566,7 +566,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       </div>
 
       {!hasOpenRequest && isOwner && vaultUsdcRegistered !== null && (
-        <div className={`mt-3 rounded border p-3 text-sm ${vaultUsdcRegistered ? "border-emerald-500/30 bg-emerald-100/30 text-emerald-900" : "border-amber-500/30 bg-amber-100/40 text-amber-900"}`}>
+        <div className={`mt-3 rounded border p-3 text-sm ${vaultUsdcRegistered ? "border-emerald-500/30 bg-emerald-100/30 text-emerald-900 dark:text-emerald-100" : "border-amber-500/30 bg-amber-100/40 text-amber-900 dark:text-amber-100"}`}>
           {vaultUsdcRegistered ? (
             <div>Your vault is registered with the default USDC token. You can receive USDC via ft_transfer_call.</div>
           ) : (
