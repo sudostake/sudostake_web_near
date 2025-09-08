@@ -49,7 +49,7 @@ export function Modal({
       const alreadyInside = active ? root.contains(active) : false;
       if (alreadyInside) return;
       const firstFocusable = root.querySelector<HTMLElement>(
-        'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+        'a[href], area[href], input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
       );
       (firstFocusable ?? root).focus();
     });

@@ -999,7 +999,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         )}
                         {etaMs !== null && etaMs > 0 && (
                           <div className="mt-1 text-xs text-red-900/80">
-                            ~{formatDurationShort(etaMs)} remaining (ETA {new Date(Date.now() + etaMs).toLocaleString()})
+                            ~{formatDurationShort(etaMs)} remaining (ETA {new Date(Date.now() + Math.max(0, etaMs)).toLocaleString()})
                           </div>
                         )}
                       </div>

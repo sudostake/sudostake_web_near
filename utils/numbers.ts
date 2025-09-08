@@ -11,7 +11,7 @@ const DEBUG_NUMBERS = ((): boolean => {
 })();
 const warn = (...args: unknown[]) => {
   if (!DEBUG_NUMBERS) return;
-  try { console.warn(...(args as any)); } catch {}
+  try { console.warn(...args); } catch {}
 };
 
 // Attempt to convert using Big.js (handles scientific notation and most cases).
