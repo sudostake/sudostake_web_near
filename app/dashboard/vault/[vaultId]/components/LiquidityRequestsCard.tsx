@@ -45,7 +45,7 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 
 // Guarded NEAR formatter for potentially inconsistent types coming from indexer/view
 // Format a yoctoNEAR amount coming in as string|number|bigint safely, using existing normalization helpers.
-function safeFormatYoctoNear(value: unknown, fracDigits = 5): string {
+function safeFormatYoctoNear(value: string | number | bigint, fracDigits = 5): string {
   try {
     let s: string | null = null;
     if (typeof value === "string") {
@@ -267,13 +267,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const unbondingTotalLabel = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries)) return null;
+      const entries = data?.unstake_entries ?? [];
+      const current = typeof data?.current_epoch === "number" ? data.current_epoch : undefined;
       let sum = BigInt(0);
-      for (const e of data!.unstake_entries!) {
+      for (const e of entries) {
         // Treat entries as still unbonding until the unlock epoch is reached.
-        const current = typeof data?.current_epoch === "number" ? data!.current_epoch! : undefined;
         if (typeof current === "number" && current >= e.epoch_height) continue;
-        const amt = toYoctoBigInt(e.amount);
-        sum += amt;
+        sum += toYoctoBigInt(e.amount);
       }
       if (sum === BigInt(0)) return null;
       return safeFormatYoctoNear(sum.toString(), 5);
@@ -284,9 +284,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const maturedTotalLabel = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return null;
-      const current = data.current_epoch as number;
+      const entries = data.unstake_entries;
+      const current = data.current_epoch;
       let sum = BigInt(0);
-      for (const e of data!.unstake_entries!) {
+      for (const e of entries) {
         if (current >= e.epoch_height) {
           const amt = toYoctoBigInt(e.amount);
           sum += amt;
@@ -301,9 +302,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const maturedYocto = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return BigInt(0);
-      const current = data.current_epoch as number;
+      const entries = data.unstake_entries;
+      const current = data.current_epoch;
       let sum = BigInt(0);
-      for (const e of data!.unstake_entries!) {
+      for (const e of entries) {
         if (current >= e.epoch_height) {
           sum += toYoctoBigInt(e.amount);
         }
@@ -316,7 +318,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const expectedImmediateLabel = useMemo(() => {
     try {
       const avail = BigInt(availableNear?.minimal ?? "0");
-      const imm = remainingYocto !== null ? (avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint)) : avail;
+      const target = remainingYocto ?? avail;
+      const imm = avail < target ? avail : target;
       if (imm === BigInt(0)) return null;
       return safeFormatYoctoNear(imm.toString(), 5);
     } catch { return null; }
@@ -327,7 +330,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     try {
       const avail = BigInt(availableNear?.minimal ?? "0");
       if (remainingYocto === null) return avail;
-      return avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint);
+      return avail < remainingYocto ? avail : remainingYocto;
     } catch { return BigInt(0); }
   }, [availableNear?.minimal, remainingYocto]);
 
@@ -335,9 +338,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const unbondingYocto = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries)) return BigInt(0);
-      const current = typeof data?.current_epoch === "number" ? (data!.current_epoch as number) : null;
+      const current = typeof data?.current_epoch === "number" ? data.current_epoch : null;
       let sum = BigInt(0);
-      for (const e of data!.unstake_entries!) {
+      for (const e of (data?.unstake_entries ?? [])) {
         const amt = toYoctoBigInt(e.amount);
         if (current === null) {
           // Without a current epoch reference, conservatively include all entries as "coming next".
@@ -355,9 +358,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const expectedNextLabel = useMemo(() => {
     try {
       const avail = BigInt(availableNear?.minimal ?? "0");
-      const imm = remainingYocto !== null ? (avail < (remainingYocto as bigint) ? avail : (remainingYocto as bigint)) : avail;
+      const target = remainingYocto ?? avail;
+      const imm = avail < target ? avail : target;
       let total = imm + maturedYocto + unbondingYocto;
-      if (remainingYocto !== null && total > (remainingYocto as bigint)) total = remainingYocto as bigint;
+      if (remainingYocto !== null && total > remainingYocto) total = remainingYocto;
       if (total === BigInt(0)) return null;
       return safeFormatYoctoNear(total.toString(), 5);
     } catch { return null; }
@@ -367,7 +371,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const claimableNowYocto = useMemo(() => {
     try {
       let total = expectedImmediateYocto + maturedYocto;
-      if (remainingYocto !== null && total > (remainingYocto as bigint)) total = remainingYocto as bigint;
+      if (remainingYocto !== null && total > remainingYocto) total = remainingYocto;
       return total;
     } catch { return BigInt(0); }
   }, [expectedImmediateYocto, maturedYocto, remainingYocto]);
@@ -376,15 +380,16 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   }, [claimableNowYocto]);
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
   const closesRepay = true;
-  const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data!.unstake_entries!.length > 0);
+  const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0);
 
   // Collect matured entries to show sources (validator -> amount)
   const maturedEntries = useMemo(() => {
     try {
       if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return [] as Array<{validator: string; amount: string}>;
-      const current = data.current_epoch as number;
+      const entries = data.unstake_entries;
+      const current = data.current_epoch;
       const rows: Array<{validator: string; amount: string}> = [];
-      for (const e of data!.unstake_entries!) {
+      for (const e of entries) {
         if (current >= e.epoch_height) {
           const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
           rows.push({ validator: e.validator, amount: amt });

@@ -57,7 +57,8 @@ function fallbackTruncToString(n: number): string {
 // 1) Big.js toFixed(0) — handles scientific notation and typical integer-like numbers.
 // 2) If it's a safe integer, use native toString.
 // 3) Try BigInt for large integers.
-// 4) Final fallback: Math.trunc + toString to ensure we always return a string.
+// 4) Final fallback: Math.trunc + toString (may cause precision loss for non-integer numbers)
+//    to ensure we always return a string.
 function numberToIntegerString(n: number): string {
   return (
     tryBigJsToIntegerString(n) ??
