@@ -28,6 +28,9 @@ export const STRINGS = {
   attachesOneYocto: "This call attaches a 1 yoctoNEAR deposit and a small network fee.",
   mayTakeTime: "Parts of the process may take time (e.g., unstaking NEAR across epochs). You can close this window and return later.",
   trackProgressHere: "You can track progress in the 'Liquidation in progress' section on this page.",
+  liquidationClosesRepay: "Starting liquidation disables the owner's ability to repay directly.",
+  willBePartial: "Only part of your claim is available now; the rest will be fulfilled as funds become available. You can run 'Process claims' again later.",
+  willSettleNow: "Sufficient balance appears available to settle your claim now.",
   requirements: "Requirements",
   reqLenderOnly: "You must be the lender of this loan.",
   reqExpired: "The loan term must have ended, and it must not have been repaid.",
@@ -69,6 +72,9 @@ export const STRINGS = {
   // Delegate restrictions
   delegateDisabledLiquidation: "Delegation is disabled while liquidation is in progress.",
   delegateDisabledRefunds: "Delegation is disabled while there are pending refund entries.",
+  claimDisabledLiquidation: "Claim is disabled while liquidation is in progress.",
+  undelegateDisabledLiquidation: "Undelegation is disabled while liquidation is in progress.",
+  undelegateDisabledPending: "Undelegation is disabled while a liquidity request is open.",
   pendingRefunds: "Pending refunds",
   refundsAffectDelegation: "Delegation is temporarily unavailable until refunds are resolved.",
   // Simplified liquidation summary

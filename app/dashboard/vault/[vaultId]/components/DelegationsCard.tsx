@@ -16,6 +16,7 @@ type Props = {
   refundsCount?: number;
   refundsLoading?: boolean;
   onRefreshRefunds?: () => void;
+  showClaimDisabledNote?: boolean;
 };
 
 /**
@@ -31,6 +32,7 @@ export function DelegationsCard({
   refundsCount,
   refundsLoading,
   onRefreshRefunds,
+  showClaimDisabledNote,
 }: Props) {
   return (
     <section className="rounded border bg-surface">
@@ -52,6 +54,14 @@ export function DelegationsCard({
           )}
         </div>
       </header>
+
+      {showClaimDisabledNote && (
+        <div className="px-4 pt-3">
+          <div className="rounded border border-red-400/30 bg-red-50 text-red-900 p-2 text-sm">
+            {STRINGS.claimDisabledLiquidation}
+          </div>
+        </div>
+      )}
 
       {typeof refundsCount === "number" && refundsCount > 0 && (
         <div className="px-4 pt-3">

@@ -268,6 +268,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         const amt = toYoctoBigInt(e.amount);
         sum += amt;
       }
+      if (sum === BigInt(0)) return null;
       return safeFormatYoctoNear(sum.toString(), 5);
     } catch { return null; }
   }, [data?.unstake_entries, data?.current_epoch]);
@@ -904,7 +905,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             </div>
           )}
-          {remainingYocto && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {unbondingTotalLabel && (
             <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
               <div className="mt-1 text-sm text-red-900/90">{role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}</div>
@@ -977,7 +978,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
-          {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {unbondingTotalLabel && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
@@ -1199,6 +1200,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           expectedImmediateLabel={expectedImmediateLabel ?? undefined}
           maturedTotalLabel={maturedTotalLabel ?? undefined}
           expectedNextLabel={expectedNextLabel ?? undefined}
+          closesRepay={true}
+          willBePartial={remainingYocto !== null ? claimableNowYocto < (remainingYocto as bigint) : undefined}
         />
       )}
       {/* Post-expiry owner popup */}

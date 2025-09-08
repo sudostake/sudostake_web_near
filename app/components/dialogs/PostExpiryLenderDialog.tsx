@@ -19,6 +19,8 @@ type Props = {
   expectedImmediateLabel?: string | null;
   maturedTotalLabel?: string | null;
   expectedNextLabel?: string | null;
+  closesRepay?: boolean;
+  willBePartial?: boolean;
 };
 
 export function PostExpiryLenderDialog({
@@ -36,6 +38,8 @@ export function PostExpiryLenderDialog({
   expectedImmediateLabel,
   maturedTotalLabel,
   expectedNextLabel,
+  closesRepay,
+  willBePartial,
 }: Props) {
   const [showMore, setShowMore] = React.useState(false);
   return (
@@ -81,6 +85,9 @@ export function PostExpiryLenderDialog({
             <li>{STRINGS.attachesOneYocto}</li>
             <li>{STRINGS.mayTakeTime}</li>
             <li>{STRINGS.trackProgressHere}</li>
+            {closesRepay && (<li>{STRINGS.liquidationClosesRepay}</li>)}
+            {willBePartial === true && (<li>{STRINGS.willBePartial}</li>)}
+            {willBePartial === false && (<li>{STRINGS.willSettleNow}</li>)}
           </ul>
         </div>
         {payoutTo && (

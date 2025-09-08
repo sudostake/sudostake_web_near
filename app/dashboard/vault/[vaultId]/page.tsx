@@ -105,6 +105,14 @@ export default function VaultPage() {
     setDelegateOpen(true);
   };
   const handleUndelegate = (validator: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.undelegateDisabledLiquidation, { variant: "info" });
+      return;
+    }
+    if (data?.state === "pending") {
+      showToast(STRINGS.undelegateDisabledPending, { variant: "info" });
+      return;
+    }
     setUndelegateValidator(validator);
     setUndelegateOpen(true);
   };
@@ -121,6 +129,10 @@ export default function VaultPage() {
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimValidator, setClaimValidator] = useState<string | null>(null);
   const handleUnclaimUnstaked = (validator: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.claimDisabledLiquidation, { variant: "info" });
+      return;
+    }
     setClaimValidator(validator);
     setClaimOpen(true);
   };
@@ -205,8 +217,9 @@ let Body: React.ReactNode;
               ? {
                   onDeposit: handleDeposit,
                   onDelegate: handleDelegate,
-                  onUndelegate: handleUndelegate,
-                  onUnclaimUnstaked: handleUnclaimUnstaked,
+                  onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
+                  // Do not allow claiming unstaked during liquidation
+                  onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
                 }
               : {}
           }
@@ -221,6 +234,7 @@ let Body: React.ReactNode;
             refundsCount={refundCount}
             refundsLoading={refundsLoading}
             onRefreshRefunds={refetchRefunds}
+            showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
           />
         </DelegationsActionsProvider>
 
