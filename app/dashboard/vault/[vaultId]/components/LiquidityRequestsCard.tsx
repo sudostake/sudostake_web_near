@@ -28,7 +28,7 @@ import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLende
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
-import { STRINGS } from "@/utils/strings";
+import { STRINGS, includesMaturedString } from "@/utils/strings";
 // Big is not directly used here anymore; conversions are handled by utils/numbers
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
@@ -615,7 +615,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
                   title="Available after expiry"
                   disabled
-                  aria-disabled
+                  aria-disabled={true}
                 >
                   {`Start liquidation in ${formattedCountdown ?? "—"}`}
                 </button>
@@ -656,7 +656,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     )}
                     {maturedYocto > BigInt(0) && (
                       <div className="text-xs text-secondary-text">
-                        {STRINGS.includesMatured(safeFormatYoctoNear(maturedYocto.toString(), 5))}
+                        {includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}
                       </div>
                     )}
                     <button

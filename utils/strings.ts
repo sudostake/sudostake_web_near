@@ -98,10 +98,17 @@ export const STRINGS = {
   sourceVaultBalanceNow: "Vault balance (available now)",
   sourceMaturedUnbonding: "Matured unbonding",
   noMaturedYet: "No matured entries yet",
-  includesMatured: (amount: string) => `Includes ${amount} NEAR matured`,
+  // Note: dynamic strings should be implemented as functions outside STRINGS
   // Liquidation card: role-specific headings/notes
   ownerLiquidationHeader: "Paying lender from collateral",
   ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
   unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the remaining amount owed to you as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
   unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
 };
+
+/**
+ * Returns the "Includes X NEAR matured" string.
+ */
+export function includesMaturedString(amount: string): string {
+  return `Includes ${amount} NEAR matured`;
+}

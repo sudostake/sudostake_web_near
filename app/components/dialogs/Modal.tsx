@@ -94,7 +94,7 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="p-4 overflow-y-auto" tabIndex={-1} ref={scrollRef}>
+        <div className="p-4 overflow-y-auto" tabIndex={0} ref={scrollRef}>
           {children}
         </div>
         {footer && (

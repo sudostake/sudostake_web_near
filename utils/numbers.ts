@@ -1,5 +1,19 @@
 import Big from "big.js";
 
+// Log warnings only in non-production environments to avoid noisy consoles in prod.
+const DEBUG_NUMBERS = ((): boolean => {
+  try {
+    // In Next.js, process.env.NODE_ENV is statically replaced at build time on the client
+    return typeof process !== "undefined" ? process.env.NODE_ENV !== "production" : true;
+  } catch {
+    return true;
+  }
+})();
+const warn = (...args: unknown[]) => {
+  if (!DEBUG_NUMBERS) return;
+  try { console.warn(...(args as any)); } catch {}
+};
+
 // Attempt to convert using Big.js (handles scientific notation and most cases).
 // Note: Big.js may throw if the input number is non-finite (NaN or ±Infinity),
 // or otherwise not representable. In those cases we fall back to safer strategies
@@ -50,20 +64,39 @@ export function numberToIntegerString(n: number): string {
 // Helpers to normalize various numeric shapes into a BigInt representing yocto amounts
 export function stringToYoctoBigInt(s: string): bigint {
   if (/^\d+$/.test(s)) {
-    try { return BigInt(s); } catch {}
+    try { return BigInt(s); } catch (e) {
+      warn(`[stringToYoctoBigInt] Failed to parse as BigInt:`, s, e);
+      // Fall through to other strategies below.
+    }
   }
-  try { return BigInt(new Big(s).toFixed(0)); } catch {}
+  try { return BigInt(new Big(s).toFixed(0)); } catch (e) {
+    warn(`[stringToYoctoBigInt] Failed Big(s).toFixed(0) -> BigInt:`, s, e);
+  }
   const digits = s.replace(/\D+/g, "");
-  return digits ? BigInt(digits) : BigInt(0);
+  if (digits) {
+    warn(`[stringToYoctoBigInt] Fallback extracting digits:`, { input: s, digits });
+    return BigInt(digits);
+  }
+  warn(`[stringToYoctoBigInt] No digits found; returning 0 for input:`, s);
+  return BigInt(0);
 }
 
 export function numberToYoctoBigInt(n: number): bigint {
-  try { return BigInt(new Big(n).toFixed(0)); } catch {}
+  try { return BigInt(new Big(n).toFixed(0)); } catch (e) {
+    warn(`[numberToYoctoBigInt] Failed Big(n).toFixed(0) -> BigInt:`, n, e);
+  }
   // Use Big(n.toString()) as a fallback to avoid floating-point representation quirks
   // (e.g., scientific notation) when constructing Big from a number directly.
-  try { return BigInt(new Big(n.toString()).toFixed(0)); } catch {}
+  try { return BigInt(new Big(n.toString()).toFixed(0)); } catch (e) {
+    warn(`[numberToYoctoBigInt] Failed Big(n.toString()).toFixed(0) -> BigInt:`, n, e);
+  }
   const digits = n.toString().replace(/\D+/g, "");
-  return digits ? BigInt(digits) : BigInt(0);
+  if (digits) {
+    warn(`[numberToYoctoBigInt] Fallback extracting digits:`, { input: n, digits });
+    return BigInt(digits);
+  }
+  warn(`[numberToYoctoBigInt] No digits found; returning 0 for input:`, n);
+  return BigInt(0);
 }
 
 export function toYoctoBigInt(value: unknown): bigint {
