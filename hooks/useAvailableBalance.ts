@@ -34,7 +34,16 @@ export function useAvailableBalance(
       let rawStr: string;
       if (typeof available === "string") rawStr = available;
       else if (typeof available === "number") {
-        try { rawStr = new Big(available).toFixed(0); } catch { rawStr = String(Math.trunc(available)); }
+        try {
+          rawStr = new Big(available).toFixed(0);
+        } catch {
+          if (Number.isSafeInteger(available)) {
+            rawStr = available.toString();
+          } else {
+            try { rawStr = BigInt(available).toString(); }
+            catch { rawStr = String(Math.trunc(available)); }
+          }
+        }
       } else if (typeof available === "bigint") rawStr = available.toString();
       else rawStr = String(available);
       setBalance(new Balance(rawStr, NATIVE_DECIMALS, NATIVE_TOKEN));

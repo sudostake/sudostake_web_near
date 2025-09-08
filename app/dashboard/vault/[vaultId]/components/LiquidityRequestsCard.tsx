@@ -58,7 +58,11 @@ function safeFormatYoctoNear(value: unknown, fracDigits = 5): string {
     else if (typeof value === "bigint") s = value.toString();
     else if (typeof value === "number" && Number.isFinite(value)) {
       // Convert potential scientific notation into an integer string
-      try { s = new Big(value).toFixed(0); } catch { s = Math.trunc(value).toString(); }
+      try { s = new Big(value).toFixed(0); }
+      catch {
+        try { s = BigInt(value).toString(); }
+        catch { s = value.toString(); }
+      }
     }
     if (!s) return "—";
     return utils.format.formatNearAmount(s, fracDigits);
@@ -80,7 +84,14 @@ function toYoctoBigInt(value: unknown): bigint {
       }
     }
     if (typeof value === "number" && Number.isFinite(value)) {
-      try { return BigInt(new Big(value).toFixed(0)); } catch { return BigInt(Math.trunc(value)); }
+      try { return BigInt(new Big(value).toFixed(0)); }
+      catch {
+        try { return BigInt(new Big(value.toString()).toFixed(0)); }
+        catch {
+          const digits = value.toString().replace(/\D+/g, "");
+          return digits ? BigInt(digits) : BigInt(0);
+        }
+      }
     }
   } catch {}
   return BigInt(0);

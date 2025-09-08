@@ -58,7 +58,8 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
         try {
           amount = new Big(amountRaw).toFixed(0);
         } catch {
-          amount = String(Math.trunc(amountRaw));
+          // Fallback: use BigInt to avoid precision loss from Math.trunc on large values
+          try { amount = BigInt(amountRaw).toString(); } catch { amount = String(Math.trunc(amountRaw)); }
         }
       }
       else if (typeof amountRaw === "bigint") amount = amountRaw.toString();
@@ -140,7 +141,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     let liquidated: string | undefined;
     if (typeof raw === "string") liquidated = raw;
     else if (typeof raw === "number" && Number.isFinite(raw)) {
-      try { liquidated = new Big(raw).toFixed(0); } catch { liquidated = String(Math.trunc(raw)); }
+      try { liquidated = new Big(raw).toFixed(0); } catch { try { liquidated = BigInt(raw).toString(); } catch { liquidated = String(Math.trunc(raw)); } }
     } else if (typeof raw === "bigint") liquidated = raw.toString();
     if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }
