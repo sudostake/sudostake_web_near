@@ -206,10 +206,18 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const { txHash } = await processClaims({ vault: vaultId });
       showToast(STRINGS.processClaimsSuccess, { variant: "success" });
       setPostExpiryOpen(false);
-      // Index side-effect, do not block user
-      void indexAfterProcess({ factoryId, vault: vaultId, txHash }).catch((e) => {
-        console.error("Indexing after process_claims failed", e);
-      });
+      // Refresh local views immediately
+      refetchAvail();
+      refetch();
+      // Kick off indexing; refresh again when done
+      void indexAfterProcess({ factoryId, vault: vaultId, txHash })
+        .then(() => {
+          refetchAvail();
+          refetch();
+        })
+        .catch((e) => {
+          console.error("Indexing after process_claims failed", e);
+        });
     } catch {
       // handled via processError
     }
