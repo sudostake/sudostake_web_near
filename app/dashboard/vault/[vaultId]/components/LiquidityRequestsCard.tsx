@@ -612,9 +612,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               {remainingMs !== null && remainingMs > 0 ? (
                 <button
                   type="button"
-                  onClick={() => setPostExpiryOpen(true)}
                   className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
                   title="Available after expiry"
+                  disabled
+                  aria-disabled
                 >
                   {`Start liquidation in ${formattedCountdown ?? "—"}`}
                 </button>
