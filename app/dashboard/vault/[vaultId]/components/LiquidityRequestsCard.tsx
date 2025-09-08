@@ -979,7 +979,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
           {unbondingTotalLabel && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
-            <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
+            <div className={`mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3${showDetails ? "" : " hidden"}`}>
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
                 {data.unstake_entries.map((e, idx) => {
@@ -1039,7 +1039,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {role !== "activeLender" && (
-          <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
+          <div className={`mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3${showDetails ? "" : " hidden"}`}>
             <div className="font-medium">{STRINGS.nextPayoutSources}</div>
             <div className="mt-2 text-sm space-y-1">
               <div className="flex items-center justify-between">

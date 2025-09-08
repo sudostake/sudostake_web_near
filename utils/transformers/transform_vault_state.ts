@@ -44,7 +44,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
 
   // Accept both Vec<(AccountId, UnstakeEntry)> serialized as an array of pairs,
   // and an object map { [validator]: UnstakeEntry } for forward/backward compatibility.
-  if (Array.isArray(unstake_entries) || (unstake_entries && typeof (unstake_entries as unknown) === "object")) {
+  if (Array.isArray(unstake_entries) || (unstake_entries && typeof unstake_entries === "object")) {
     const entries: TransformedVaultState["unstake_entries"] = [];
     const pushEntry = (validator: unknown, entry: unknown) => {
       const v = typeof validator === "string" ? validator : undefined;
@@ -137,7 +137,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
 
   if (liquidation) {
     const raw = (liquidation as Record<string, unknown>)["liquidated"];
-    let liquidated: string | undefined = undefined;
+    let liquidated: string | undefined;
     if (typeof raw === "string") liquidated = raw;
     else if (typeof raw === "number" && Number.isFinite(raw)) {
       try { liquidated = new Big(raw).toFixed(0); } catch { liquidated = String(Math.trunc(raw)); }
