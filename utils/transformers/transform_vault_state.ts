@@ -4,6 +4,7 @@ import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
 import { getField } from "../object";
 import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
+import { numberToIntegerString } from "@/utils/numbers";
 
 // Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
@@ -24,49 +25,6 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
  *    - "pending" → liquidity request without accepted offer
  *    - "active" → liquidity request with accepted offer
  */
-// Attempt to convert using Big.js (handles scientific notation and most cases)
-function tryBigJsToIntegerString(n: number): string | undefined {
-  try {
-    return new Big(n).toFixed(0);
-  } catch {
-    return undefined;
-  }
-}
-
-// Fallback: if the number is a safe integer, use toString()
-function trySafeIntegerToString(n: number): string | undefined {
-  return Number.isSafeInteger(n) ? n.toString() : undefined;
-}
-
-// Fallback: try to use BigInt for large integers
-function tryBigIntToString(n: number): string | undefined {
-  try {
-    return BigInt(n).toString();
-  } catch {
-    return undefined;
-  }
-}
-
-// Final fallback: use Math.trunc and convert to string
-function fallbackTruncToString(n: number): string {
-  return String(Math.trunc(n));
-}
-
-// Helper to safely convert a JS number to an integer string without precision loss when possible.
-// Strategy (in order):
-// 1) Big.js toFixed(0) — handles scientific notation and typical integer-like numbers.
-// 2) If it's a safe integer, use native toString.
-// 3) Try BigInt for large integers.
-// 4) Final fallback: Math.trunc + toString (may cause precision loss for non-integer numbers)
-//    to ensure we always return a string.
-function numberToIntegerString(n: number): string {
-  return (
-    tryBigJsToIntegerString(n) ??
-    trySafeIntegerToString(n) ??
-    tryBigIntToString(n) ??
-    fallbackTruncToString(n)
-  );
-}
 
 export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {
   // Consume only the subset we care about from the full consolidated on-chain view type.

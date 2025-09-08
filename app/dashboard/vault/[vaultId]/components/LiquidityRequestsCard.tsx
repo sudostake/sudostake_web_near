@@ -11,6 +11,7 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
+import { toYoctoBigInt, normalizeToIntegerString } from "@/utils/numbers";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS, NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -20,7 +21,7 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
-import { formatDurationShort } from "@/utils/time";
+import { formatDurationShort, formatDays } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLenderDialog";
@@ -28,7 +29,7 @@ import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerD
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
-import Big from "big.js";
+// Big is not directly used here anymore; conversions are handled by utils/numbers
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
 
@@ -48,12 +49,8 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 function safeFormatYoctoNear(value: string | number | bigint, fracDigits = 5): string {
   try {
     let s: string | null = null;
-    if (typeof value === "string") {
-      s = /^\d+$/.test(value) ? value : stringToYoctoBigInt(value).toString();
-    } else if (typeof value === "bigint") {
-      s = value.toString();
-    } else if (typeof value === "number" && Number.isFinite(value)) {
-      try { s = new Big(value).toFixed(0); } catch { s = numberToYoctoBigInt(value).toString(); }
+    if (typeof value === "string" || typeof value === "number" || typeof value === "bigint") {
+      s = normalizeToIntegerString(value);
     }
     if (!s) return "—";
     return utils.format.formatNearAmount(s, fracDigits);
@@ -62,29 +59,7 @@ function safeFormatYoctoNear(value: string | number | bigint, fracDigits = 5): s
   }
 }
 
-// Helpers to normalize various numeric shapes into a BigInt representing yocto amounts
-function stringToYoctoBigInt(s: string): bigint {
-  if (/^\d+$/.test(s)) {
-    try { return BigInt(s); } catch {}
-  }
-  try { return BigInt(new Big(s).toFixed(0)); } catch {}
-  const digits = s.replace(/\D+/g, "");
-  return digits ? BigInt(digits) : BigInt(0);
-}
-
-function numberToYoctoBigInt(n: number): bigint {
-  try { return BigInt(new Big(n).toFixed(0)); } catch {}
-  try { return BigInt(new Big(n.toString()).toFixed(0)); } catch {}
-  const digits = n.toString().replace(/\D+/g, "");
-  return digits ? BigInt(digits) : BigInt(0);
-}
-
-function toYoctoBigInt(value: unknown): bigint {
-  if (typeof value === "bigint") return value;
-  if (typeof value === "string") return stringToYoctoBigInt(value);
-  if (typeof value === "number" && Number.isFinite(value)) return numberToYoctoBigInt(value);
-  return BigInt(0);
-}
+// toYoctoBigInt imported from utils/numbers
 
 // Compute unbonding progress percentage (0..100) given remaining epochs to unlock.
 // Returns null if remaining is unknown (null).
@@ -628,7 +603,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
             <div>
               <div className="text-secondary-text">Duration</div>
-              <div className="font-medium">{content.durationDays} {content.durationDays === 1 ? "day" : "days"}</div>
+              <div className="font-medium">{formatDays(content.durationDays)}</div>
             </div>
           </div>
           {/* Countdown line removed: the lender action button below now conveys timing */}
@@ -1350,7 +1325,7 @@ function AcceptConfirm({
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li>
-            On-time repayment (within {durationDays} {durationDays === 1 ? "day" : "days"}) should return a total of
+            On-time repayment (within {formatDays(durationDays)}) should return a total of
             {" "}
             <span className="font-medium">{totalRepay} {tokenSymbol}</span> (principal + interest).
           </li>
