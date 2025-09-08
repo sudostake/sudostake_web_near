@@ -24,6 +24,18 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
  *    - "pending" → liquidity request without accepted offer
  *    - "active" → liquidity request with accepted offer
  */
+// Helper to safely convert a JS number to an integer string without precision loss when possible.
+// Tries Big.js first (handles scientific notation), then falls back to BigInt for large integers,
+// and finally to Math.trunc as a last resort.
+function numberToIntegerString(n: number): string {
+  try {
+    return new Big(n).toFixed(0);
+  } catch {
+    if (Number.isSafeInteger(n)) return n.toString();
+    try { return BigInt(n).toString(); } catch { return String(Math.trunc(n)); }
+  }
+}
+
 export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {
   // Consume only the subset we care about from the full consolidated on-chain view type.
   const { owner, liquidity_request, accepted_offer, liquidation, unstake_entries, current_epoch } = vault_state;
@@ -55,12 +67,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
       let amount: string | undefined;
       if (typeof amountRaw === "string") amount = amountRaw;
       else if (typeof amountRaw === "number" && Number.isFinite(amountRaw)) {
-        try {
-          amount = new Big(amountRaw).toFixed(0);
-        } catch {
-          // Fallback: use BigInt to avoid precision loss from Math.trunc on large values
-          try { amount = BigInt(amountRaw).toString(); } catch { amount = String(Math.trunc(amountRaw)); }
-        }
+        amount = numberToIntegerString(amountRaw);
       }
       else if (typeof amountRaw === "bigint") amount = amountRaw.toString();
       if (amount && epoch !== undefined) entries.push({ validator: v, amount, epoch_height: epoch });
@@ -141,7 +148,7 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     let liquidated: string | undefined;
     if (typeof raw === "string") liquidated = raw;
     else if (typeof raw === "number" && Number.isFinite(raw)) {
-      try { liquidated = new Big(raw).toFixed(0); } catch { try { liquidated = BigInt(raw).toString(); } catch { liquidated = String(Math.trunc(raw)); } }
+      liquidated = numberToIntegerString(raw);
     } else if (typeof raw === "bigint") liquidated = raw.toString();
     if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }

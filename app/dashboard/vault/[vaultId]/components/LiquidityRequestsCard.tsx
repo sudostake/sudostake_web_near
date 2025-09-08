@@ -700,7 +700,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 type="button"
                 onClick={() => setRepayOpen(true)}
                 className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
-                
               >
                 Repay now
               </button>
@@ -1234,7 +1233,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           maturedTotalLabel={maturedTotalLabel ?? undefined}
           expectedNextLabel={expectedNextLabel ?? undefined}
           closesRepay={true}
-          willBePartial={remainingYocto !== null ? claimableNowYocto < (remainingYocto as bigint) : undefined}
+          willBePartial={remainingYocto !== null ? claimableNowYocto < remainingYocto : undefined}
         />
       )}
       {/* Post-expiry owner popup */}
