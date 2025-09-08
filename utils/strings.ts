@@ -52,8 +52,8 @@ export const STRINGS = {
   ownerCollateralRisk: "Liquidation may progressively use your NEAR collateral until the lender’s claim is fully satisfied.",
   // Liquidation progress clarity
   waitingOnUnbondingTitle: "Waiting on unbonding",
-  waitingOnUnbondingBody: "Some collateral is currently unbonding. Once it matures, the contract will claim it and reduce your remaining debt by the expected amount shown below.",
-  ownerWaitingOnUnbondingBody: "Some collateral is currently unbonding. Once it matures, the contract will claim it and reduce the outstanding claim by the expected amount shown below.",
+  waitingOnUnbondingBody: "Some collateral is currently unbonding. Once it matures, the contract will claim it and reduce the remaining amount owed to you by the expected amount shown below.",
+  ownerWaitingOnUnbondingBody: "Some collateral is currently unbonding. Once it matures, the contract will claim it and reduce your remaining debt by the expected amount shown below.",
   expectedNextHint: "‘Expected next’ is what the contract can pay after claiming currently matured funds.",
   youCanRefresh: "Use Refresh to see updated maturity and availability.",
   refresh: "Refresh",
@@ -84,6 +84,6 @@ export const STRINGS = {
   // Liquidation card: role-specific headings/notes
   ownerLiquidationHeader: "Paying lender from collateral",
   ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
-  unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
-  unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the outstanding claim as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
+  unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the remaining amount owed to you as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
+  unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
 };

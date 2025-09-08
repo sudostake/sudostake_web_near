@@ -805,6 +805,17 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 {longestEtaLabel && (
                   <div className="text-xs text-red-900/80 mt-0.5">up to ~{longestEtaLabel}</div>
                 )}
+                {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+                  <div className="mt-1">
+                    <button
+                      type="button"
+                      className="text-xs underline text-primary"
+                      onClick={() => setShowDetails((v) => !v)}
+                    >
+                      {showDetails ? STRINGS.hideDetails : STRINGS.showDetails}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -837,16 +848,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </a>
             </div>
           )}
-          {/* Removed secondary inline refresh to avoid duplication */}
-          <div className="mt-2">
-            <button
-              type="button"
-              className="text-xs underline text-primary"
-              onClick={() => setShowDetails((v) => !v)}
-            >
-              {showDetails ? STRINGS.hideDetails : STRINGS.showDetails}
-            </button>
-          </div>
+          {/* Details toggle moved near the "Waiting to unlock" section */}
           {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
             <div className={(showDetails ? "mt-3" : "mt-3 hidden") + " rounded border border-red-400/30 bg-white/60 text-red-900 p-3"}>
               <div className="font-medium">Currently unbonding</div>
