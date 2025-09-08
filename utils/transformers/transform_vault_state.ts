@@ -51,15 +51,19 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     const pushEntry = (validator: unknown, entry: unknown) => {
       const v = typeof validator === "string" ? validator : undefined;
       if (!v || !entry || typeof entry !== "object") return;
-      const amountRaw = (entry as Record<string, unknown>)["amount"];
-      const epochRaw = (entry as Record<string, unknown>)["epoch_height"];
+      const amountRaw = getField<string | number | bigint>(
+        entry,
+        "amount",
+        (val): val is string | number | bigint =>
+          typeof val === "string" || typeof val === "number" || typeof val === "bigint"
+      );
+      const epochRaw = getField<number>(entry, "epoch_height", isNumber);
       const epoch = typeof epochRaw === "number" && Number.isFinite(epochRaw) ? epochRaw : undefined;
       let amount: string | undefined;
       if (typeof amountRaw === "string") amount = amountRaw;
       else if (typeof amountRaw === "number" && Number.isFinite(amountRaw)) {
         amount = numberToIntegerString(amountRaw);
-      }
-      else if (typeof amountRaw === "bigint") amount = amountRaw.toString();
+      } else if (typeof amountRaw === "bigint") amount = amountRaw.toString();
       if (amount && epoch !== undefined) entries.push({ validator: v, amount, epoch_height: epoch });
     };
 
@@ -134,9 +138,14 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   }
 
   if (liquidation) {
-    const raw = (liquidation as Record<string, unknown>)["liquidated"];
+    const raw = getField<string | number | bigint>(
+      liquidation,
+      "liquidated",
+      (v): v is string | number | bigint =>
+        typeof v === "string" || typeof v === "number" || typeof v === "bigint"
+    );
     let liquidated: string | undefined;
-    if (typeof raw === "string" || typeof raw === "number" || typeof raw === "bigint") {
+    if (raw !== undefined) {
       liquidated = normalizeToIntegerString(raw);
     }
     if (liquidated !== undefined) transformed.liquidation = { liquidated };

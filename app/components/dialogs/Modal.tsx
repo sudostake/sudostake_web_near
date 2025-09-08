@@ -78,7 +78,7 @@ export function Modal({
         onClick={disableBackdropClose ? undefined : onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-full max-w-md max-h-[85vh] rounded bg-surface shadow-lg flex flex-col mx-auto">
+      <div className="relative z-10 w-full max-w-md max-h-modal rounded bg-surface shadow-lg flex flex-col mx-auto">
         <div className="flex items-center justify-between border-b border-foreground/10 p-4 shrink-0">
           <h2 id="modal-title" className="text-base font-medium truncate">
             {title ?? "Dialog"}

@@ -360,10 +360,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   // Collect matured entries to show sources (validator -> amount)
   const maturedEntries = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return [] as Array<{validator: string; amount: string}>;
+      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return [];
       const entries = data.unstake_entries;
       const current = data.current_epoch;
-      const rows: Array<{validator: string; amount: string}> = [];
+      const rows: Array<{ validator: string; amount: string }> = [];
       for (const e of entries) {
         if (current >= e.epoch_height) {
           const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
@@ -371,7 +371,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         }
       }
       return rows;
-    } catch { return [] as Array<{validator: string; amount: string}>; }
+    } catch { return []; }
   }, [data?.unstake_entries, data?.current_epoch]);
 
   // Longest remaining epochs among unbonding entries (to provide a simple worst-case ETA)
