@@ -28,6 +28,11 @@ export default function Dashboard() {
 
   const { balances, loading: balancesLoading, refetch: refetchBalances } = useTokenBalances();
 
+  // Always refresh balances on dashboard entry to show up-to-date totals.
+  React.useEffect(() => {
+    refetchBalances();
+  }, [refetchBalances]);
+
   if (!signedAccountId) {
     return null;
   }
