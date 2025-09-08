@@ -810,17 +810,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </button>
             </div>
           ) : null}
-          {isOwner && data?.state === "active" && !data?.liquidation && remainingMs !== 0 && (
-            <div className="mt-3 text-right">
-              <button
-                type="button"
-                onClick={() => setRepayOpen(true)}
-                className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text"
-              >
-                Repay loan
-              </button>
-            </div>
-          )}
+          {/* Single repay action is shown above in the owner section; avoid duplicating here */}
         </div>
       )}
 
