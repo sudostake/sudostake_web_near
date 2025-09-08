@@ -43,7 +43,15 @@ export function Modal({
 
     // Try to focus the scrollable content container for better keyboard nav
     const raf = requestAnimationFrame(() => {
-      scrollRef.current?.focus();
+      const root = scrollRef.current as HTMLElement | null;
+      if (!root) return;
+      const active = typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null;
+      const alreadyInside = active ? root.contains(active) : false;
+      if (alreadyInside) return;
+      const firstFocusable = root.querySelector<HTMLElement>(
+        'input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+      );
+      (firstFocusable ?? root).focus();
     });
 
     return () => {
