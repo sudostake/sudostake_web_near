@@ -4,7 +4,7 @@ import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
 import { getField } from "../object";
 import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
-import { numberToIntegerString } from "@/utils/numbers";
+import { numberToIntegerString, normalizeToIntegerString } from "@/utils/numbers";
 
 // Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
@@ -136,10 +136,9 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   if (liquidation) {
     const raw = (liquidation as Record<string, unknown>)["liquidated"];
     let liquidated: string | undefined;
-    if (typeof raw === "string") liquidated = raw;
-    else if (typeof raw === "number" && Number.isFinite(raw)) {
-      liquidated = numberToIntegerString(raw);
-    } else if (typeof raw === "bigint") liquidated = raw.toString();
+    if (typeof raw === "string" || typeof raw === "number" || typeof raw === "bigint") {
+      liquidated = normalizeToIntegerString(raw);
+    }
     if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }
 

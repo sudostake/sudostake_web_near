@@ -1073,46 +1073,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         </div>
       )}
 
-      {isOwner && data?.state === "active" && content?.token && content?.amountRaw && content?.interestRaw && (
-        <RepayLoanDialog
-          open={repayOpen}
-          onClose={() => setRepayOpen(false)}
-          vaultId={vaultId}
-          factoryId={factoryId}
-          tokenId={content.token}
-          principalMinimal={content.amountRaw}
-          interestMinimal={content.interestRaw}
-          onSuccess={() => {
-            onAfterRepay?.();
-            setRepayOpen(false);
-          }}
-          onVaultTokenBalanceChange={() => {
-            onAfterTopUp?.();
-          }}
-        />
-      )}
+      {/* Repay dialog consolidated below */}
 
-      {role === "activeLender" && data?.state === "active" && (
-        <PostExpiryLenderDialog
-          open={postExpiryOpen}
-          onClose={() => setPostExpiryOpen(false)}
-          onBegin={onBeginLiquidation}
-          vaultId={vaultId}
-          tokenSymbol={tokenSymbol}
-          totalDueLabel={content?.amountRaw && content?.interestRaw ? formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals) : undefined}
-          collateralNearLabel={content ? utils.format.formatNearAmount(String(data?.liquidity_request?.collateral ?? "0")) : undefined}
-          pending={processPending}
-          error={processError}
-          payoutTo={lenderId ?? undefined}
-          payoutToUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
-          expectedImmediateLabel={expectedImmediateLabel}
-          maturedTotalLabel={maturedYocto > BigInt(0) ? safeFormatYoctoNear(maturedYocto.toString()) : null}
-          expectedNextLabel={expectedNextLabel}
-          closesRepay={closesRepay}
-          willBePartial={willBePartial}
-          inProgress={Boolean(data?.liquidation)}
-        />
-      )}
+      {/* Post-expiry lender popup is rendered below with tighter guards to ensure required data is present */}
 
       {isOwner && hasOpenRequest && vaultRegisteredForToken === false && (
         <div className="mt-3 rounded border border-amber-500/30 bg-amber-100/40 text-amber-900 p-3 text-sm">
@@ -1205,8 +1168,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           expectedImmediateLabel={expectedImmediateLabel ?? undefined}
           maturedTotalLabel={maturedTotalLabel ?? undefined}
           expectedNextLabel={expectedNextLabel ?? undefined}
-          closesRepay={true}
-          willBePartial={remainingYocto !== null ? claimableNowYocto < remainingYocto : undefined}
+          closesRepay={closesRepay}
+          willBePartial={willBePartial}
         />
       )}
       {/* Post-expiry owner popup */}
@@ -1239,6 +1202,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             onAfterRepay?.();
             refetchAvail();
             refetch();
+            setRepayOpen(false);
           }}
           onVaultTokenBalanceChange={() => {
             onAfterTopUp?.();

@@ -59,6 +59,8 @@ export function stringToYoctoBigInt(s: string): bigint {
 
 export function numberToYoctoBigInt(n: number): bigint {
   try { return BigInt(new Big(n).toFixed(0)); } catch {}
+  // Use Big(n.toString()) as a fallback to avoid floating-point representation quirks
+  // (e.g., scientific notation) when constructing Big from a number directly.
   try { return BigInt(new Big(n.toString()).toFixed(0)); } catch {}
   const digits = n.toString().replace(/\D+/g, "");
   return digits ? BigInt(digits) : BigInt(0);
@@ -79,4 +81,3 @@ export function normalizeToIntegerString(value: string | number | bigint): strin
   if (typeof value === "number") return numberToIntegerString(value);
   return value.toString();
 }
-
