@@ -11,8 +11,8 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
-import { toYoctoBigInt, normalizeToIntegerString } from "@/utils/numbers";
-import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS, NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
+import { toYoctoBigInt } from "@/utils/numbers";
+import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS } from "@/utils/constants";
 import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -30,6 +30,9 @@ import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerD
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
 import { STRINGS, includesMaturedString } from "@/utils/strings";
+import { UnbondingList } from "./UnbondingList";
+import { LiquidationSummary } from "./LiquidationSummary";
+import { safeFormatYoctoNear } from "@/utils/formatNear";
 // Big is not directly used here anymore; conversions are handled by utils/numbers
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
@@ -45,31 +48,11 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
   return `${cleaned} ${sym}`;
 }
 
-// Guarded NEAR formatter for potentially inconsistent types coming from indexer/view
-// Format a yoctoNEAR amount coming in as string|number|bigint safely, using existing normalization helpers.
-function safeFormatYoctoNear(value: string | number | bigint, fracDigits = 5): string {
-  try {
-    let s: string | null = null;
-    if (typeof value === "string" || typeof value === "number" || typeof value === "bigint") {
-      s = normalizeToIntegerString(value);
-    }
-    if (!s) return "—";
-    return utils.format.formatNearAmount(s, fracDigits);
-  } catch {
-    return typeof value === "string" ? value : String(value ?? "—");
-  }
-}
+// NEAR formatter moved to utils/formatNear
 
 // toYoctoBigInt imported from utils/numbers
 
-// Compute unbonding progress percentage (0..100) given remaining epochs to unlock.
-// Returns null if remaining is unknown (null).
-function computeUnbondingProgress(remaining: number | null): number | null {
-  if (remaining === null) return null;
-  const done = NUM_EPOCHS_TO_UNLOCK - Math.min(NUM_EPOCHS_TO_UNLOCK, Math.max(0, remaining));
-  const ratio = Math.max(0, Math.min(NUM_EPOCHS_TO_UNLOCK, done)) / NUM_EPOCHS_TO_UNLOCK;
-  return Math.round(ratio * 100);
-}
+// Unbonding progress UI is handled inside UnbondingList for clarity.
 
 export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
@@ -835,16 +818,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
           <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
           {role === "activeLender" && (
-            <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
-              <div className="rounded bg-white/70 border border-red-200/50 p-2">
-                <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
-                <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
-              </div>
-              <div className="rounded bg-white/70 border border-red-200/50 p-2">
-                <div className="text-red-900/80">{STRINGS.expectedNext}</div>
-                <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
-              </div>
-              <div className="text-right">
+            <div>
+              <LiquidationSummary
+                paidSoFarYocto={data.liquidation.liquidated}
+                expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
+              />
+              <div className="mt-2 text-right">
                 <button
                   type="button"
                   className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
@@ -868,19 +847,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
             {role !== "activeLender" && (
-              <div className="rounded bg-white/70 border border-red-200/50 p-2">
-                <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
-                <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
-              </div>
-            )}
-            {role !== "activeLender" && (
-              <div className="rounded bg-white/70 border border-red-200/50 p-2">
-                <div className="text-red-900/80">{STRINGS.expectedNext}</div>
-                <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
-                {lenderId && (
-                  <div className="text-xs text-red-900/80 mt-0.5">{STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span></div>
-                )}
-              </div>
+              <LiquidationSummary
+                paidSoFarYocto={data.liquidation.liquidated}
+                expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
+                showPayoutNote={Boolean(lenderId)}
+                lenderId={lenderId ?? undefined}
+                lenderUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
+              />
             )}
             {unbondingTotalLabel && (
               <div className="rounded bg-white/70 border border-red-200/50 p-2">
@@ -934,58 +907,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
           {unbondingTotalLabel && unbondingEntries.length > 0 && (
-            <div className={`mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3${showDetails ? "" : " hidden"}`}>
-              <div className="font-medium">Currently unbonding</div>
-              <div className="mt-2 space-y-2">
-                {unbondingEntries.map((row, idx) => {
-                  const { validator } = row;
-                  const unlockEpoch = row.unlockEpoch;
-                  const unstakeEpoch = row.unstakeEpoch;
-                  const remaining = row.remaining;
-                  const pct = computeUnbondingProgress(remaining);
-                  const etaMs = remaining === null ? null : remaining * AVERAGE_EPOCH_SECONDS * 1000;
-                  return (
-                    <div key={`${validator}-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                      <div>
-                        <div className="text-red-900/80">Amount</div>
-                        <div className="font-medium">{safeFormatYoctoNear(row.amount)} NEAR</div>
-                      </div>
-                      <div>
-                        <div className="text-red-900/80">Unlock epoch</div>
-                        <div className="font-medium">{unlockEpoch}</div>
-                        {typeof data.current_epoch === "number" && (
-                          <div className="text-xs text-red-900/80">current: {data.current_epoch}</div>
-                        )}
-                        <div className="text-xs text-red-900/80">unstaked at: {unstakeEpoch}</div>
-                      </div>
-                      <div>
-                        <div className="text-red-900/80">Validator</div>
-                        <div className="font-medium truncate" title={validator}>{validator}</div>
-                        {remaining !== null && (
-                          <div className="text-xs text-red-900/80">
-                            {remaining > 0
-                              ? `≈ ${remaining} epoch${remaining === 1 ? "" : "s"} remaining`
-                              : "Unlocks this epoch"}
-                          </div>
-                        )}
-                        {pct !== null && (
-                          <div className="mt-1" aria-label="Unbonding progress">
-                            <div className="h-1.5 w-full bg-red-200 rounded">
-                              <div className="h-1.5 bg-red-500 rounded" style={{ width: `${pct}%` }} />
-                            </div>
-                            <div className="mt-1 text-xs text-red-900/80">{pct}%</div>
-                          </div>
-                        )}
-                        {etaMs !== null && etaMs > 0 && (
-                          <div className="mt-1 text-xs text-red-900/80">
-                            ~{formatDurationShort(etaMs)} remaining (ETA {new Date(Date.now() + Math.max(0, etaMs)).toLocaleString()})
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className={showDetails ? "" : " hidden"}>
+              <UnbondingList
+                entries={unbondingEntries}
+                currentEpoch={typeof data.current_epoch === "number" ? data.current_epoch : null}
+              />
               <div className="mt-2 text-xs text-red-900/80">
                 {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
               </div>
