@@ -246,8 +246,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = typeof data?.current_epoch === "number" ? data.current_epoch : undefined;
       let sum = BigInt(0);
       for (const e of entries) {
-        // Treat entries as still unbonding until the unlock epoch is reached.
-        if (typeof current === "number" && current >= e.epoch_height) continue;
+        // Treat entries as still unbonding until their unlock epoch (from chain) has passed.
+        const unlockEpoch = e.epoch_height;
+        if (typeof current === "number" && current > unlockEpoch) continue;
         sum += toYoctoBigInt(e.amount);
       }
       if (sum === BigInt(0)) return null;
@@ -263,7 +264,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch;
       let sum = BigInt(0);
       for (const e of entries) {
-        if (current >= e.epoch_height) {
+        const unlockEpoch = e.epoch_height;
+        if (current > unlockEpoch) {
           const amt = toYoctoBigInt(e.amount);
           sum += amt;
         }
@@ -281,7 +283,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch;
       let sum = BigInt(0);
       for (const e of entries) {
-        if (current >= e.epoch_height) {
+        const unlockEpoch = e.epoch_height;
+        if (current > unlockEpoch) {
           sum += toYoctoBigInt(e.amount);
         }
       }
@@ -320,9 +323,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         if (current === null) {
           // Without a current epoch reference, conservatively include all entries as "coming next".
           sum += amt;
-        } else if (current < e.epoch_height) {
-          // Current epoch known: include only entries that are still unbonding (not yet matured).
-          sum += amt;
+        } else {
+          const unlockEpoch = e.epoch_height;
+          // Include entries still unbonding (not yet matured): current <= unlockEpoch
+          if (current <= unlockEpoch) {
+            sum += amt;
+          }
         }
       }
       return sum;
@@ -365,7 +371,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch;
       const rows: Array<{ validator: string; amount: string }> = [];
       for (const e of entries) {
-        if (current >= e.epoch_height) {
+        if (current > e.epoch_height) {
           const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
           rows.push({ validator: e.validator, amount: amt });
         }
@@ -382,7 +388,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const curr = data.current_epoch as number;
       let maxRem = 0;
       for (const e of data.unstake_entries) {
-        const rem = Math.max(0, e.epoch_height - curr);
+        const unlockEpoch = e.epoch_height;
+        const rem = Math.max(0, unlockEpoch - curr);
         if (rem > maxRem) maxRem = rem;
       }
       return maxRem;
@@ -962,8 +969,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
                 {data.unstake_entries.map((e, idx) => {
-                  const maturityEpoch = e.epoch_height;
-                  const remaining = typeof data.current_epoch === "number" ? Math.max(0, maturityEpoch - data.current_epoch) : null;
+                  const unlockEpoch = e.epoch_height; // provided by chain view as the target unlock epoch
+                  const unstakeEpoch = Math.max(0, unlockEpoch - NUM_EPOCHS_TO_UNLOCK);
+                  const remaining = typeof data.current_epoch === "number" ? Math.max(0, unlockEpoch - data.current_epoch) : null;
                   const pct = computeUnbondingProgress(remaining);
                   const etaMs = remaining === null ? null : remaining * AVERAGE_EPOCH_SECONDS * 1000;
                   return (
@@ -974,10 +982,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       </div>
                       <div>
                         <div className="text-red-900/80">Unlock epoch</div>
-                        <div className="font-medium">{maturityEpoch}</div>
+                        <div className="font-medium">{unlockEpoch}</div>
                         {typeof data.current_epoch === "number" && (
                           <div className="text-xs text-red-900/80">current: {data.current_epoch}</div>
                         )}
+                        <div className="text-xs text-red-900/80">unstaked at: {unstakeEpoch}</div>
                       </div>
                       <div>
                         <div className="text-red-900/80">Validator</div>
@@ -1161,6 +1170,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           expectedNextLabel={expectedNextLabel ?? undefined}
           closesRepay={closesRepay}
           willBePartial={willBePartial}
+          canProcessNow={hasClaimableNow}
+          inProgress={Boolean(data?.liquidation)}
         />
       )}
       {/* Post-expiry owner popup */}

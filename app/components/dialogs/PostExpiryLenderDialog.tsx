@@ -22,6 +22,7 @@ type Props = {
   closesRepay?: boolean;
   willBePartial?: boolean;
   inProgress?: boolean;
+  canProcessNow?: boolean;
 };
 
 export function PostExpiryLenderDialog({
@@ -42,6 +43,7 @@ export function PostExpiryLenderDialog({
   closesRepay,
   willBePartial,
   inProgress,
+  canProcessNow,
 }: Props) {
   const [showMore, setShowMore] = React.useState(false);
   const title = inProgress ? STRINGS.liquidationInProgress : STRINGS.loanExpired;
@@ -67,7 +69,8 @@ export function PostExpiryLenderDialog({
             type="button"
             className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 w-full sm:w-auto"
             onClick={onBegin}
-            disabled={pending}
+            disabled={pending || canProcessNow === false}
+            title={canProcessNow === false ? STRINGS.nothingAvailableNow : undefined}
           >
             {pending ? STRINGS.processing : primaryCta}
           </button>
