@@ -13,6 +13,7 @@ import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
 import { toYoctoBigInt, normalizeToIntegerString } from "@/utils/numbers";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS, NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
+import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useFtBalance } from "@/hooks/useFtBalance";
@@ -243,12 +244,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     try {
       if (!Array.isArray(data?.unstake_entries)) return null;
       const entries = data?.unstake_entries ?? [];
-      const current = typeof data?.current_epoch === "number" ? data.current_epoch : undefined;
+      const current = typeof data?.current_epoch === "number" ? data.current_epoch : null;
       let sum = BigInt(0);
       for (const e of entries) {
-        // Treat entries as still unbonding until their unlock epoch (from chain) has passed.
-        const unlockEpoch = e.epoch_height;
-        if (typeof current === "number" && current > unlockEpoch) continue;
+        const info = analyzeUnstakeEntry(e.epoch_height, current);
+        if (!info.unbonding) continue;
         sum += toYoctoBigInt(e.amount);
       }
       if (sum === BigInt(0)) return null;
@@ -264,8 +264,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch;
       let sum = BigInt(0);
       for (const e of entries) {
-        const unlockEpoch = e.epoch_height;
-        if (current > unlockEpoch) {
+        const info = analyzeUnstakeEntry(e.epoch_height, current);
+        if (info.matured) {
           const amt = toYoctoBigInt(e.amount);
           sum += amt;
         }
@@ -283,8 +283,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const current = data.current_epoch;
       let sum = BigInt(0);
       for (const e of entries) {
-        const unlockEpoch = e.epoch_height;
-        if (current > unlockEpoch) {
+        const info = analyzeUnstakeEntry(e.epoch_height, current);
+        if (info.matured) {
           sum += toYoctoBigInt(e.amount);
         }
       }
@@ -320,16 +320,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       let sum = BigInt(0);
       for (const e of (data?.unstake_entries ?? [])) {
         const amt = toYoctoBigInt(e.amount);
-        if (current === null) {
-          // Without a current epoch reference, conservatively include all entries as "coming next".
-          sum += amt;
-        } else {
-          const unlockEpoch = e.epoch_height;
-          // Include entries still unbonding (not yet matured): current <= unlockEpoch
-          if (current <= unlockEpoch) {
-            sum += amt;
-          }
-        }
+        const info = analyzeUnstakeEntry(e.epoch_height, current);
+        if (info.unbonding) sum += amt;
       }
       return sum;
     } catch { return BigInt(0); }
@@ -380,6 +372,23 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     } catch { return []; }
   }, [data?.unstake_entries, data?.current_epoch]);
 
+  // Entries that are currently unbonding (for the summary list)
+  const unbondingEntries = useMemo(() => {
+    try {
+      if (!Array.isArray(data?.unstake_entries)) return [] as Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }>;
+      const curr = typeof data?.current_epoch === "number" ? data.current_epoch : null;
+      const rows: Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }> = [];
+      for (const e of data.unstake_entries) {
+        const info = analyzeUnstakeEntry(e.epoch_height, curr);
+        if (!info.unbonding) continue;
+        const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
+        rows.push({ validator: e.validator, amount: amt, unlockEpoch: info.unlockEpoch, unstakeEpoch: info.unstakeEpoch, remaining: info.remaining });
+      }
+      rows.sort((a, b) => a.unlockEpoch - b.unlockEpoch);
+      return rows;
+    } catch { return []; }
+  }, [data?.unstake_entries, data?.current_epoch]);
+
   // Longest remaining epochs among unbonding entries (to provide a simple worst-case ETA)
   const longestRemainingEpochs = useMemo(() => {
     try {
@@ -388,8 +397,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const curr = data.current_epoch as number;
       let maxRem = 0;
       for (const e of data.unstake_entries) {
-        const unlockEpoch = e.epoch_height;
-        const rem = Math.max(0, unlockEpoch - curr);
+        const info = analyzeUnstakeEntry(e.epoch_height, curr);
+        const rem = info.remaining ?? 0;
         if (rem > maxRem) maxRem = rem;
       }
       return maxRem;
@@ -826,59 +835,16 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
           <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
           {role === "activeLender" && (
-            <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
-              <div className="text-sm font-medium mb-2">{STRINGS.nextPayoutSources}</div>
-              <div className="text-sm space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="text-secondary-text">{STRINGS.availableNow}</div>
-                  <div className="font-medium">{claimableNowLabel} NEAR</div>
-                </div>
-                {!hasClaimableNow && (
-                  <div className="text-xs text-secondary-text">
-                    {STRINGS.nothingAvailableNow}
-                    {expectedNextLabel && (
-                      <>
-                        {" · "}{STRINGS.expectedNext}: {expectedNextLabel} NEAR
-                      </>
-                    )}
-                  </div>
-                )}
-                {/* Simplified: detailed sources are covered by the Waiting to unlock section */}
-                {(remainingTargetLabel || collateralLabel) && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    {remainingTargetLabel && (
-                      <div>
-                        <div className="text-secondary-text">Remaining</div>
-                        <div className="font-medium mt-0.5">{remainingTargetLabel} NEAR</div>
-                      </div>
-                    )}
-                    {collateralLabel && (
-                      <div>
-                        <div className="text-secondary-text">Target</div>
-                        <div className="font-medium mt-0.5">{collateralLabel} NEAR</div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                <div className="text-xs text-secondary-text">
-                  {STRINGS.paidSoFar}: <span className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</span>
-                </div>
-                {lenderId && (
-                  <div className="text-xs text-secondary-text">
-                    {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
-                    <a
-                      href={explorerAccountUrl(network, lenderId)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-2 underline text-primary"
-                    >
-                      {STRINGS.viewAccountOnExplorer}
-                    </a>
-                  </div>
-                )}
-                {processError && (
-                  <div className="text-xs text-red-600">{processError}</div>
-                )}
+            <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
+              <div className="rounded bg-white/70 border border-red-200/50 p-2">
+                <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
+                <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated)} NEAR</div>
+              </div>
+              <div className="rounded bg-white/70 border border-red-200/50 p-2">
+                <div className="text-red-900/80">{STRINGS.expectedNext}</div>
+                <div className="font-medium">{expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"} NEAR</div>
+              </div>
+              <div className="text-right">
                 <button
                   type="button"
                   className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
@@ -888,6 +854,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 >
                   {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
                 </button>
+                {processError && (
+                  <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
+                )}
               </div>
             </div>
           )}
@@ -964,21 +933,22 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
-          {unbondingTotalLabel && Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
+          {unbondingTotalLabel && unbondingEntries.length > 0 && (
             <div className={`mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3${showDetails ? "" : " hidden"}`}>
               <div className="font-medium">Currently unbonding</div>
               <div className="mt-2 space-y-2">
-                {data.unstake_entries.map((e, idx) => {
-                  const unlockEpoch = e.epoch_height; // provided by chain view as the target unlock epoch
-                  const unstakeEpoch = Math.max(0, unlockEpoch - NUM_EPOCHS_TO_UNLOCK);
-                  const remaining = typeof data.current_epoch === "number" ? Math.max(0, unlockEpoch - data.current_epoch) : null;
+                {unbondingEntries.map((row, idx) => {
+                  const { validator } = row;
+                  const unlockEpoch = row.unlockEpoch;
+                  const unstakeEpoch = row.unstakeEpoch;
+                  const remaining = row.remaining;
                   const pct = computeUnbondingProgress(remaining);
                   const etaMs = remaining === null ? null : remaining * AVERAGE_EPOCH_SECONDS * 1000;
                   return (
-                    <div key={`${e.validator}-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+                    <div key={`${validator}-${idx}`} className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                       <div>
                         <div className="text-red-900/80">Amount</div>
-                        <div className="font-medium">{safeFormatYoctoNear(e.amount)} NEAR</div>
+                        <div className="font-medium">{safeFormatYoctoNear(row.amount)} NEAR</div>
                       </div>
                       <div>
                         <div className="text-red-900/80">Unlock epoch</div>
@@ -990,7 +960,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       </div>
                       <div>
                         <div className="text-red-900/80">Validator</div>
-                        <div className="font-medium truncate" title={e.validator}>{e.validator}</div>
+                        <div className="font-medium truncate" title={validator}>{validator}</div>
                         {remaining !== null && (
                           <div className="text-xs text-red-900/80">
                             {remaining > 0
