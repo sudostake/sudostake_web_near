@@ -168,21 +168,32 @@ export default function VaultPage() {
               {String(vaultId)}
             </a>
             {data?.owner && (
-              <span className="truncate">· Owner: <span className="font-mono">{data.owner}</span></span>
+              <span className="truncate">
+                · Owner:
+                <a
+                  href={explorerAccountUrl(network, String(data.owner))}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline ml-1"
+                  title={String(data.owner)}
+                >
+                  <span className="font-mono">{data.owner}</span>
+                </a>
+              </span>
             )}
           </div>
           <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
             <span className="shrink-0">Contract Balance:</span>
             <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-              {vaultNear}
+              {vaultNearLoading ? "Loading…" : vaultNear}
             </span>
             <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
           </div>
           {usdcId && (
             <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
               <span className="shrink-0">USDC Balance:</span>
-              <span className="truncate" title={`${vaultUsdc?.toDisplay()} USDC`}>
-                {vaultUsdc?.toDisplay()}
+              <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
+                {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
               </span>
               <span className="text-secondary-text shrink-0">USDC</span>
             </div>
