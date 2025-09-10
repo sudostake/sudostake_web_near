@@ -24,6 +24,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort, formatDays } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
+import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLenderDialog";
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
@@ -60,6 +61,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const [repayOpen, setRepayOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const { data, refetch, loading: vaultLoading } = useVault(factoryId, vaultId);
+  const { data: delData } = useVaultDelegations(factoryId, vaultId);
   const { balance: availableNear, loading: availLoading, refetch: refetchAvail } = useAvailableBalance(vaultId);
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
@@ -225,55 +227,54 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
   const unbondingTotalLabel = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries)) return null;
-      const entries = data?.unstake_entries ?? [];
-      const current = typeof data?.current_epoch === "number" ? data.current_epoch : null;
+      const summary = delData?.summary ?? [];
+      if (summary.length === 0) return null;
       let sum = BigInt(0);
-      for (const e of entries) {
-        const info = analyzeUnstakeEntry(e.epoch_height, current);
-        if (!info.unbonding) continue;
-        sum += toYoctoBigInt(e.amount);
+      for (const s of summary) {
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        // Treat entries as unbonding when not withdrawable yet
+        if (s.can_withdraw) continue;
+        // Require unstaked_at and current_epoch to be present to confirm unbonding window
+        const info = s.unstaked_at !== undefined
+          ? analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null)
+          : null;
+        if (info && !info.unbonding) continue;
+        sum += BigInt(s.unstaked_balance.minimal);
       }
       if (sum === BigInt(0)) return null;
       return safeFormatYoctoNear(sum.toString(), 5);
     } catch { return null; }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Matured (claimable) total: entries whose unlock epoch has passed
   const maturedTotalLabel = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return null;
-      const entries = data.unstake_entries;
-      const current = data.current_epoch;
+      const summary = delData?.summary ?? [];
+      if (summary.length === 0) return null;
       let sum = BigInt(0);
-      for (const e of entries) {
-        const info = analyzeUnstakeEntry(e.epoch_height, current);
-        if (info.matured) {
-          const amt = toYoctoBigInt(e.amount);
-          sum += amt;
-        }
+      for (const s of summary) {
+        if (!s.can_withdraw) continue;
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        sum += BigInt(s.unstaked_balance.minimal);
       }
       if (sum === BigInt(0)) return null;
       return safeFormatYoctoNear(sum.toString(), 5);
     } catch { return null; }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Matured total as BigInt for calculations
   const maturedYocto = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return BigInt(0);
-      const entries = data.unstake_entries;
-      const current = data.current_epoch;
+      const summary = delData?.summary ?? [];
       let sum = BigInt(0);
-      for (const e of entries) {
-        const info = analyzeUnstakeEntry(e.epoch_height, current);
-        if (info.matured) {
-          sum += toYoctoBigInt(e.amount);
-        }
+      for (const s of summary) {
+        if (!s.can_withdraw) continue;
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        sum += BigInt(s.unstaked_balance.minimal);
       }
       return sum;
     } catch { return BigInt(0); }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Expected immediate payout now (capped by remaining target)
   const expectedImmediateLabel = useMemo(() => {
@@ -298,17 +299,21 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   // Unbonding (not yet matured) as BigInt for calculations
   const unbondingYocto = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries)) return BigInt(0);
-      const current = typeof data?.current_epoch === "number" ? data.current_epoch : null;
+      const summary = delData?.summary ?? [];
       let sum = BigInt(0);
-      for (const e of (data?.unstake_entries ?? [])) {
-        const amt = toYoctoBigInt(e.amount);
-        const info = analyzeUnstakeEntry(e.epoch_height, current);
-        if (info.unbonding) sum += amt;
+      for (const s of summary) {
+        if (s.can_withdraw) continue;
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        // If epochs are present, ensure still unbonding
+        if (s.unstaked_at !== undefined) {
+          const info = analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null);
+          if (!info.unbonding) continue;
+        }
+        sum += BigInt(s.unstaked_balance.minimal);
       }
       return sum;
     } catch { return BigInt(0); }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Expected next total (immediate + matured + current unbonding, capped by remaining target)
   const expectedNextLabel = useMemo(() => {
@@ -341,52 +346,52 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   // Collect matured entries to show sources (validator -> amount)
   const maturedEntries = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries) || typeof data?.current_epoch !== "number") return [];
-      const entries = data.unstake_entries;
-      const current = data.current_epoch;
+      const summary = delData?.summary ?? [];
       const rows: Array<{ validator: string; amount: string }> = [];
-      for (const e of entries) {
-        if (current > e.epoch_height) {
-          const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
-          rows.push({ validator: e.validator, amount: amt });
-        }
+      for (const s of summary) {
+        if (!s.can_withdraw) continue;
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        rows.push({ validator: s.validator, amount: s.unstaked_balance.minimal });
       }
       return rows;
     } catch { return []; }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Entries that are currently unbonding (for the summary list)
   const unbondingEntries = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries)) return [] as Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }>;
-      const curr = typeof data?.current_epoch === "number" ? data.current_epoch : null;
+      const summary = delData?.summary ?? [];
+      if (summary.length === 0) return [] as Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }>;
       const rows: Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }> = [];
-      for (const e of data.unstake_entries) {
-        const info = analyzeUnstakeEntry(e.epoch_height, curr);
+      for (const s of summary) {
+        if (s.can_withdraw) continue;
+        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
+        if (s.unstaked_at === undefined) continue;
+        const info = analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null);
         if (!info.unbonding) continue;
-        const amt = typeof e.amount === "string" ? e.amount : String(e.amount);
-        rows.push({ validator: e.validator, amount: amt, unlockEpoch: info.unlockEpoch, unstakeEpoch: info.unstakeEpoch, remaining: info.remaining });
+        rows.push({ validator: s.validator, amount: s.unstaked_balance.minimal, unlockEpoch: info.unlockEpoch, unstakeEpoch: info.unstakeEpoch, remaining: info.remaining });
       }
       rows.sort((a, b) => a.unlockEpoch - b.unlockEpoch);
       return rows;
     } catch { return []; }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary]);
 
   // Longest remaining epochs among unbonding entries (to provide a simple worst-case ETA)
   const longestRemainingEpochs = useMemo(() => {
     try {
-      if (!Array.isArray(data?.unstake_entries)) return null;
-      if (typeof data?.current_epoch !== "number") return null;
-      const curr = data.current_epoch as number;
+      const summary = delData?.summary ?? [];
+      const curr = typeof delData?.current_epoch === "number" ? delData.current_epoch : null;
+      if (curr === null) return null;
       let maxRem = 0;
-      for (const e of data.unstake_entries) {
-        const info = analyzeUnstakeEntry(e.epoch_height, curr);
+      for (const s of summary) {
+        if (s.unstaked_at === undefined) continue;
+        const info = analyzeUnstakeEntry(s.unstaked_at, curr);
         const rem = info.remaining ?? 0;
         if (rem > maxRem) maxRem = rem;
       }
       return maxRem;
     } catch { return null; }
-  }, [data?.unstake_entries, data?.current_epoch]);
+  }, [delData?.summary, delData?.current_epoch]);
   const longestEtaMs = useMemo(() => (longestRemainingEpochs === null ? null : longestRemainingEpochs * AVERAGE_EPOCH_SECONDS * 1000), [longestRemainingEpochs]);
   const longestEtaLabel = useMemo(() => (longestEtaMs && longestEtaMs > 0 ? formatDurationShort(longestEtaMs) : null), [longestEtaMs]);
 
@@ -910,7 +915,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             <div className={showDetails ? "" : " hidden"}>
               <UnbondingList
                 entries={unbondingEntries}
-                currentEpoch={typeof data.current_epoch === "number" ? data.current_epoch : null}
+                currentEpoch={typeof delData?.current_epoch === "number" ? delData.current_epoch : null}
               />
               <div className="mt-2 text-xs text-red-900/80">
                 {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}

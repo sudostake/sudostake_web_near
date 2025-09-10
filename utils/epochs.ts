@@ -19,7 +19,8 @@ export function analyzeUnstakeEntry(
   const unstakeEpoch = Math.max(0, entryEpoch);
   const unlockEpoch = unstakeEpoch + epochsToUnlock;
   const remaining = currentEpoch === null ? null : Math.max(0, unlockEpoch - currentEpoch);
-  const matured = currentEpoch !== null && currentEpoch > unlockEpoch;
-  const unbonding = currentEpoch === null || currentEpoch <= unlockEpoch;
+  // Contract: claimable when current_epoch >= entry.epoch_height + epochsToUnlock
+  const matured = currentEpoch !== null && currentEpoch >= unlockEpoch;
+  const unbonding = currentEpoch === null || currentEpoch < unlockEpoch;
   return { unlockEpoch, unstakeEpoch, remaining, matured, unbonding };
 }
