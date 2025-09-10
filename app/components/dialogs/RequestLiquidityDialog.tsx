@@ -9,6 +9,8 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { utils } from "near-api-js";
 import { useFtStorage } from "@/hooks/useFtStorage";
+import { Button } from "@/app/components/ui/Button";
+import { Input } from "@/app/components/ui/Input";
 
 type Props = {
   open: boolean;
@@ -202,22 +204,12 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-            onClick={resetAndClose}
-            disabled={pending}
-          >
+          <Button variant="secondary" onClick={resetAndClose} disabled={pending}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={!canSubmit || pending}
-            onClick={confirm}
-          >
+          </Button>
+          <Button onClick={confirm} disabled={!canSubmit || pending}>
             {pending ? "Submitting..." : "Continue"}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -225,82 +217,64 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <label className="block text-sm">
-          <span className="text-secondary-text">Token (NEP-141)</span>
-          <input
-            type="text"
-            placeholder="e.g. usdc.tkn.primitives.testnet"
-            className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-          />
-        </label>
+        <Input
+          label="Token (NEP-141)"
+          type="text"
+          placeholder="e.g. usdc.tkn.primitives.testnet"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <label className="block text-sm">
-            <span className="text-secondary-text">Amount (token)</span>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              inputMode="decimal"
-              placeholder="0.0"
-              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="text-secondary-text">Interest (token)</span>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              inputMode="decimal"
-              placeholder="e.g. 1.25"
-              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-              value={interestToken}
-              onChange={(e) => setInterestToken(e.target.value)}
-            />
-          </label>
+          <Input
+            label="Amount (token)"
+            type="number"
+            min={0}
+            step="any"
+            inputMode="decimal"
+            placeholder="0.0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+          <Input
+            label="Interest (token)"
+            type="number"
+            min={0}
+            step="any"
+            inputMode="decimal"
+            placeholder="e.g. 1.25"
+            value={interestToken}
+            onChange={(e) => setInterestToken(e.target.value)}
+          />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="block text-sm">
             <span className="text-secondary-text">Collateral (NEAR)</span>
-            <input
+            <Input
               type="number"
-              min="0"
+              min={0}
               step="any"
               inputMode="decimal"
               placeholder="0.0"
-              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
               value={collateralNear}
               onChange={(e) => clampCollateral(e.target.value)}
             />
             <div className="mt-1 flex items-center justify-between text-xs text-secondary-text">
               <span>Max available (staked): {maxCollateralNear} NEAR</span>
-              <button
-                type="button"
-                className="underline disabled:opacity-50"
-                onClick={() => setCollateralNear(maxCollateralNear)}
-                disabled={maxCollateralYocto === "0"}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setCollateralNear(maxCollateralNear)} disabled={maxCollateralYocto === "0"}>
                 Max
-              </button>
+              </Button>
             </div>
           </label>
-          <label className="block text-sm">
-            <span className="text-secondary-text">Duration (days)</span>
-            <input
-              type="number"
-              min="1"
-              step="1"
-              inputMode="numeric"
-              placeholder="7"
-              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-              value={durationDays}
-              onChange={(e) => setDurationDays(e.target.value)}
-            />
-          </label>
+          <Input
+            label="Duration (days)"
+            type="number"
+            min={1}
+            step={1}
+            inputMode="numeric"
+            placeholder="7"
+            value={durationDays}
+            onChange={(e) => setDurationDays(e.target.value)}
+          />
         </div>
         {!isRegistered && (
           <div className="rounded border border-amber-500/30 bg-amber-100/40 text-amber-900 p-3 text-sm">
@@ -315,14 +289,9 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               )}
             </div>
             <div className="mt-2">
-              <button
-                type="button"
-                onClick={onRegister}
-                disabled={regPending || checkingRegistration || !minStorageDeposit}
-                className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-50"
-              >
+              <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit}>
                 {regPending ? "Registering…" : "Register vault with token"}
-              </button>
+              </Button>
               {token && (
                 <a
                   href={explorerAccountUrl(network, token)}

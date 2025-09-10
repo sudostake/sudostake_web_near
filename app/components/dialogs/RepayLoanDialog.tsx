@@ -19,6 +19,7 @@ import { useTokenRegistration } from "@/hooks/useTokenRegistration";
 import { explorerAccountUrl } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
 import { sumMinimal } from "@/utils/amounts";
+import { Button } from "@/app/components/ui/Button";
 
 const TOP_UP_MEMO = "Vault top-up for loan repayment";
 const COPY_FEEDBACK_MS = 1600;
@@ -176,23 +177,16 @@ export function RepayLoanDialog({
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-            onClick={onClose}
-            disabled={pending}
-          >
+          <Button variant="secondary" onClick={onClose} disabled={pending}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
+          </Button>
+          <Button
+            onClick={confirm}
             disabled={pending || balLoading || missingMinimal !== "0"}
             title={missingMinimal !== "0" ? `Missing ${missingLabel} ${symbol} on vault` : undefined}
-            onClick={confirm}
           >
             {pending ? "Repaying…" : "Repay now"}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -357,14 +351,9 @@ function TopUpSection({
       </div>
       {vaultRegistered === false ? (
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={onRegisterVault}
-            disabled={regPending || !vaultMinDeposit}
-            className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-          >
+          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit}>
             {regPending ? "Registering…" : STRINGS.registerVaultWithToken}
-          </button>
+          </Button>
           {vaultMinDeposit && (
             <div className="mt-1 text-xs text-amber-900">
               Requires ~{utils.format.formatNearAmount(vaultMinDeposit)} NEAR storage deposit
@@ -373,27 +362,16 @@ function TopUpSection({
         </div>
       ) : ownerRegistered === false ? (
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={onRegisterOwner}
-            disabled={regPending || !ownerMinDeposit}
-            className="inline-flex items-center gap-2 px-3 h-8 rounded border bg-surface disabled:opacity-50"
-          >
+          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit}>
             {regPending ? "Registering…" : STRINGS.registerAccountWithToken}
-          </button>
+          </Button>
           {regError && <div className="mt-1 text-xs text-red-700">{regError}</div>}
         </div>
       ) : (
         <div className="mt-2">
-          <button
-            type="button"
-            onClick={onTopUp}
-            disabled={transferPending || ownerBalLoading || !ownerHasEnough}
-            className="inline-flex items-center gap-2 px-3 h-8 rounded bg-primary text-primary-text disabled:opacity-50"
-            title={topUpTooltip}
-          >
+          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip}>
             {transferPending ? STRINGS.transferring : STRINGS.topUpToVault(missingLabel, symbol)}
-          </button>
+          </Button>
           {transferError && <div className="mt-1 text-xs text-red-700">{transferError}</div>}
         </div>
       )}

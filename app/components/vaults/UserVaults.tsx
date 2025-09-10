@@ -9,6 +9,7 @@ import { CreateVaultButton } from "../CreateVaultButton";
 import { useUserVaults } from "@/hooks/useUserVaults";
 import { useUserVaultsSummaries } from "@/hooks/useUserVaultsSummaries";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
+import { Input } from "@/app/components/ui/Input";
 
 export type UserVaultsProps = {
   owner: string;
@@ -46,14 +47,14 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVau
         right={
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <label className="sr-only" htmlFor="vault-search">Search vaults</label>
-            <input
+            <Input
               id="vault-search"
               type="text"
               inputMode="search"
               placeholder="Search vaults"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 min-w-0 sm:w-64 rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+              className="sm:w-64"
             />
             <CreateVaultButton className="shrink-0" onClick={onCreate} />
           </div>

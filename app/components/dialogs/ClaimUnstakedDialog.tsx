@@ -7,6 +7,7 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { NATIVE_TOKEN } from "@/utils/constants";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import { Button } from "@/app/components/ui/Button";
 
 /**
  * Dialog for claiming unstaked NEAR tokens from a vault contract for a validator.
@@ -60,22 +61,12 @@ export function ClaimUnstakedDialog({
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-            onClick={resetAndClose}
-            disabled={pending}
-          >
+          <Button variant="secondary" onClick={resetAndClose} disabled={pending}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={pending}
-            onClick={confirm}
-          >
+          </Button>
+          <Button onClick={confirm} disabled={pending}>
             {pending ? "Claiming..." : "Continue"}
-          </button>
+          </Button>
         </div>
       }
     >

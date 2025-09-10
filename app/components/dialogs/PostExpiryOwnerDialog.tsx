@@ -3,6 +3,7 @@
 import React from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { STRINGS } from "@/utils/strings";
+import { Button } from "@/app/components/ui/Button";
 
 type Props = {
   open: boolean;
@@ -34,22 +35,12 @@ export function PostExpiryOwnerDialog({
       title={STRINGS.loanExpired}
       footer={
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90 disabled:opacity-60 w-full sm:w-auto"
-            onClick={onClose}
-            disabled={pending}
-          >
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={onClose} disabled={pending}>
             {STRINGS.close}
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 w-full sm:w-auto"
-            onClick={onRepay}
-            disabled={pending}
-          >
+          </Button>
+          <Button className="w-full sm:w-auto" onClick={onRepay} disabled={pending}>
             {STRINGS.ownerRepayNow}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -98,4 +89,3 @@ export function PostExpiryOwnerDialog({
     </Modal>
   );
 }
-

@@ -7,6 +7,7 @@ import { VAULT_CREATION_FEE } from "@/utils/constants";
 import { getActiveFactoryId } from "@/utils/networks";
 import { useCreateVault } from "@/hooks/useCreateVault";
 import { useIndexVault } from "@/hooks/useIndexVault";
+import { Button } from "@/app/components/ui/Button";
 
 export function CreateVaultDialog({
   open,
@@ -41,21 +42,12 @@ export function CreateVaultDialog({
           Total cost: <span className="font-medium text-foreground">{feeNear} NEAR</span>
         </p>
         <div className="flex items-center justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded border bg-surface hover:bg-surface/90"
-          >
+          <Button variant="secondary" onClick={onClose}>
             Cancel
-          </button>
-          <button
-            type="button"
-            onClick={confirm}
-            disabled={pending || indexing}
-            className="px-4 py-2 rounded bg-primary text-primary-text hover:opacity-90 disabled:opacity-50"
-          >
+          </Button>
+          <Button onClick={confirm} disabled={pending || indexing}>
             {pending || indexing ? "Creating..." : "Create Vault"}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
