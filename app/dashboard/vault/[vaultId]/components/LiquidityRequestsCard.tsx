@@ -821,7 +821,19 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
         <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
-          <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
+          <div className="flex items-center gap-2">
+            <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
+            {role === "activeLender" && (
+              <span className="text-[10px] uppercase tracking-wide rounded px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                Expired
+              </span>
+            )}
+          </div>
+          {role === "activeLender" && (
+            <div className="mt-1 text-xs text-red-900/80">
+              Loan term ended{expiryDate ? ` on ${new Date(expiryDate).toLocaleString()}` : ""}. Liquidation has started to settle your claim.
+            </div>
+          )}
           {role === "activeLender" && (
             <div>
               <LiquidationSummary
