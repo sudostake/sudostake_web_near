@@ -36,7 +36,7 @@ export function DelegationsCard({
 }: Props) {
   return (
     <section className="rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60">
-      <header className="flex items-center justify-between px-4 py-3 border-b">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
         <h2 className="text-base font-medium">Delegations</h2>
         <div className="text-xs text-secondary-text">
           {loading || refundsLoading ? (

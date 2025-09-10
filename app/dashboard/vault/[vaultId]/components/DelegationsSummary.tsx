@@ -203,7 +203,7 @@ export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntr
         <div className="col-span-3 text-right" role="columnheader">Staked</div>
         <div className="col-span-3 text-right" role="columnheader">Unstaked</div>
       </div>
-      <ul className="divide-y" role="rowgroup">
+      <ul className="divide-y divide-foreground/10" role="rowgroup">
         {entries.map((entry) => (
           <SummaryItem key={entry.validator} entry={entry} />
         ))}
