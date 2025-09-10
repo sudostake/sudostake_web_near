@@ -3,6 +3,7 @@
 
 import React from "react";
 import { Balance } from "@/utils/balance";
+import { Button } from "@/app/components/ui/Button";
 
 export interface MaxAvailableProps {
   /** True while the balance is loading. */
@@ -32,15 +33,9 @@ export function MaxAvailable({
       <div>
         {label}: {loading ? "…" : balance.toDisplay()} {balance.symbol}
       </div>
-      <button
-        type="button"
-        className="underline disabled:no-underline disabled:opacity-60"
-        disabled={loading}
-        onClick={onClick}
-        aria-label={buttonAriaLabel}
-      >
+      <Button variant="ghost" size="sm" disabled={loading} onClick={onClick} aria-label={buttonAriaLabel}>
         Max
-      </button>
+      </Button>
     </div>
   );
 }

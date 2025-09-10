@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
 
 export type ErrorMessageProps = {
   message: string;
@@ -9,16 +11,13 @@ export type ErrorMessageProps = {
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <div role="alert" className="max-w-xl mx-auto p-4 bg-red-100 text-red-800 rounded-lg">
-      <p className="font-medium">Error: {message}</p>
+    <Card role="alert" className="max-w-xl mx-auto p-4">
+      <p className="font-medium text-foreground">Error: <span className="font-normal">{message}</span></p>
       {onRetry && (
-        <button
-          onClick={onRetry}
-          className="mt-2 px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
+        <Button className="mt-2" onClick={onRetry}>
           Retry
-        </button>
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

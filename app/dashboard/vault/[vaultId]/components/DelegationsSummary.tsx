@@ -4,6 +4,10 @@ import React from "react";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { useDelegationsActions } from "./DelegationsActionsContext";
+import { STRINGS } from "@/utils/strings";
+import { shortAmount } from "@/utils/format";
+import { analyzeUnstakeEntry } from "@/utils/epochs";
+import { EpochDetails } from "./EpochDetails";
 
 // Enum representing the delegation summary status for a validator entry
 export enum DelegationStatus {
@@ -30,6 +34,35 @@ function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
   return null;
 }
 
+function statusPillClass(status: DelegationStatus | null): string {
+  const base = "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
+  switch (status) {
+    case DelegationStatus.Withdrawable:
+      return `${base} bg-emerald-100 text-emerald-800 ring-emerald-300/50 dark:bg-emerald-800/50 dark:text-emerald-100 dark:ring-emerald-500/40`;
+    case DelegationStatus.Unstaking:
+      return `${base} bg-amber-100 text-amber-800 ring-amber-300/50 dark:bg-amber-800/50 dark:text-amber-100 dark:ring-amber-500/40`;
+    case DelegationStatus.Active:
+      return `${base} bg-blue-100 text-blue-800 ring-blue-300/50 dark:bg-blue-800/50 dark:text-blue-100 dark:ring-blue-500/40`;
+    default:
+      return `${base} bg-background`;
+  }
+}
+
+function statusLabel(status: DelegationStatus | null): string {
+  switch (status) {
+    case DelegationStatus.Withdrawable:
+      return "Ready to withdraw";
+    case DelegationStatus.Unstaking:
+      return "Unstaking";
+    case DelegationStatus.Active:
+      return "Active";
+    default:
+      return "";
+  }
+}
+
+// shortAmount moved to utils/format
+
 function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
   const status = summaryStatus(entry);
@@ -39,38 +72,88 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const canClaim = Boolean(onUnclaimUnstaked) && status === DelegationStatus.Withdrawable;
   const canDelegate = Boolean(onDelegate);
 
+  const [showMore, setShowMore] = React.useState(false);
+
+  // Compute epoch info for ETA/details when available
+  const epochDetails = React.useMemo(() => {
+    if (entry.unstaked_at === undefined) return null;
+    const current = entry.current_epoch ?? null;
+    const info = analyzeUnstakeEntry(entry.unstaked_at, current);
+    return info;
+  }, [entry.unstaked_at, entry.current_epoch]);
+
   return (
-    <li className="py-3" key={entry.validator}>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
+    <li className="py-3" key={entry.validator} role="row">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 items-start">
+        {/* Validator + status */}
+        <div className="sm:col-span-6 min-w-0" role="cell">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-mono text-sm truncate" title={entry.validator}>
               {truncateAccount(entry.validator)}
             </span>
-            {status && (
-              <span className="text-[10px] uppercase tracking-wide rounded bg-background px-2 py-0.5">
-                {status}
-              </span>
-            )}
-          </div>
-          <div className="mt-1 text-xs text-secondary-text flex flex-wrap items-center gap-x-3 gap-y-1">
-            <span className="inline-flex items-baseline gap-1">
-              <span className="opacity-70">staked</span>
-              <span className="font-mono">{entry.staked_balance.toDisplay()}</span>
-            </span>
-            <span className="inline-flex items-baseline gap-1">
-              <span className="opacity-70">unstaked</span>
-              <span className="font-mono">{entry.unstaked_balance.toDisplay()}</span>
-            </span>
+            {status && <span className={statusPillClass(status)}>{statusLabel(status)}</span>}
           </div>
           {entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
             <div className="mt-1 text-[11px] text-secondary-text opacity-80">
-              epoch {entry.current_epoch} • unstaked at {entry.unstaked_at}
+              current epoch {entry.current_epoch} • unstaked epoch {entry.unstaked_at}
+            </div>
+          )}
+
+          {/* Mobile-only balances */}
+          <div className="mt-2 grid grid-cols-2 gap-3 sm:hidden">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-secondary-text">Staked</div>
+              <div className="font-mono text-sm break-all" title={entry.staked_balance.toDisplay()}>
+                {shortAmount(entry.staked_balance.toDisplay(), 4)}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-secondary-text">Unstaked</div>
+              <div className="font-mono text-sm break-all" title={entry.unstaked_balance.toDisplay()}>
+                {shortAmount(entry.unstaked_balance.toDisplay(), 4)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop balances */}
+        <div className="hidden sm:block sm:col-span-3" role="cell">
+          <div className="font-mono text-sm text-right tabular-nums" title={entry.staked_balance.toDisplay()}>
+            {shortAmount(entry.staked_balance.toDisplay(), 6)}
+          </div>
+        </div>
+        <div className="hidden sm:block sm:col-span-3" role="cell">
+          <div className="font-mono text-sm text-right tabular-nums" title={entry.unstaked_balance.toDisplay()}>
+            {shortAmount(entry.unstaked_balance.toDisplay(), 6)}
+          </div>
+        </div>
+
+      </div>
+      {/* Optional per-entry more details */}
+      {epochDetails && (
+        <div className="mt-2">
+          <button
+            type="button"
+            className="text-[11px] underline text-primary"
+            onClick={() => setShowMore((v) => !v)}
+          >
+            {showMore ? STRINGS.hideDetails : STRINGS.showDetails}
+          </button>
+          {showMore && (
+            <div className="mt-2">
+              <EpochDetails
+                unlockEpoch={epochDetails.unlockEpoch}
+                remaining={epochDetails.remaining}
+                availableNow={entry.can_withdraw}
+                unstakeEpoch={entry.unstaked_at}
+              />
             </div>
           )}
         </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+      )}
+      {/* Actions row: full width at bottom */}
+      <div className="mt-2 pt-2 border-t border-foreground/10">
+        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
           {canClaim && (
             <button
               type="button"
@@ -111,10 +194,20 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
 export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
   return (
-    <ul className="divide-y">
-      {entries.map((entry) => (
-        <SummaryItem key={entry.validator} entry={entry} />
-      ))}
-    </ul>
+    <div className="space-y-1" role="table" aria-label="Delegations summary">
+      <div
+        className="hidden sm:grid grid-cols-12 gap-6 text-[11px] uppercase tracking-wide text-secondary-text px-1"
+        role="row"
+      >
+        <div className="col-span-6" role="columnheader">Validator</div>
+        <div className="col-span-3 text-right" role="columnheader">Staked</div>
+        <div className="col-span-3 text-right" role="columnheader">Unstaked</div>
+      </div>
+      <ul className="divide-y divide-foreground/10" role="rowgroup">
+        {entries.map((entry) => (
+          <SummaryItem key={entry.validator} entry={entry} />
+        ))}
+      </ul>
+    </div>
   );
 }

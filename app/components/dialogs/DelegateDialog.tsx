@@ -9,6 +9,8 @@ import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
 import Big from "big.js";
 import { MaxAvailable } from "@/app/components/MaxAvailable";
 import { Balance } from "@/utils/balance";
+import { Button } from "@/app/components/ui/Button";
+import { Input } from "@/app/components/ui/Input";
 
 // Default validators endpoint (network-aware)
 const DEFAULT_VALIDATORS_ROUTE = "/api/validators";
@@ -134,22 +136,12 @@ export function DelegateDialog({
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-            onClick={resetAndClose}
-            disabled={pending}
-          >
+          <Button variant="secondary" onClick={resetAndClose} disabled={pending}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={disableContinue || pending}
-            onClick={confirm}
-          >
+          </Button>
+          <Button onClick={confirm} disabled={disableContinue || pending}>
             {pending ? "Delegating..." : "Continue"}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -174,19 +166,16 @@ export function DelegateDialog({
             </select>
           </label>
         )}
-        <label className="block text-sm">
-          <span className="text-secondary-text">Amount ({balance.symbol})</span>
-          <input
-            type="number"
-            min="0"
-            step="any"
-            inputMode="decimal"
-            placeholder="0.0"
-            className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        </label>
+        <Input
+          label={`Amount (${balance.symbol})`}
+          type="number"
+          min={0}
+          step="any"
+          inputMode="decimal"
+          placeholder="0.0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
         {(localError || error) && (
           <div className="text-xs text-red-500">{localError ?? error}</div>
         )}

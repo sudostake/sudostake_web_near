@@ -17,6 +17,7 @@ function ChevronDownIcon() {
 }
 import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { Button } from "@/app/components/ui/Button";
 
 /**
  * Navigation bar with Login/Logout button.
@@ -68,39 +69,37 @@ export function Navigation() {
             SudoStake
           </Link>
           {!signedAccountId ? (
-            <button
-              type="button"
-              className="px-3 py-2 rounded bg-primary text-primary-text text-sm"
-              onClick={onLogin}
-            >
+            <Button size="sm" onClick={onLogin}>
               Login
-            </button>
+            </Button>
           ) : (
             <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                className="inline-flex items-center gap-2 rounded border bg-surface hover:bg-surface/90 py-2 pl-3 pr-2 text-sm"
+              <Button
+                variant="secondary"
+                size="sm"
+                className="inline-flex items-center gap-2 pl-3 pr-2"
                 aria-haspopup="menu"
                 aria-expanded={menuOpen || undefined}
                 onClick={() => setMenuOpen((o) => !o)}
               >
                 <span className="font-mono" title={signedAccountId}>{accountShort}</span>
                 <ChevronDownIcon />
-              </button>
+              </Button>
               {menuOpen && (
                 <div
                   role="menu"
                   className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1 z-50"
                 >
-                  <button
+                  <Button
                     role="menuitem"
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-background inline-flex items-center gap-2"
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start px-3 py-2 text-sm"
                     onClick={onLogout}
                   >
                     <LogoutIcon />
                     <span>Logout</span>
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

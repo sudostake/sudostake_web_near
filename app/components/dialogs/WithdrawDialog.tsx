@@ -8,6 +8,8 @@ import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId } from "@/utils/networks";
 import { parseNumber } from "@/utils/format";
 import { MaxAvailable } from "@/app/components/MaxAvailable";
+import { Button } from "@/app/components/ui/Button";
+import { Input } from "@/app/components/ui/Input";
 
 export function WithdrawDialog({
   open,
@@ -62,22 +64,12 @@ export function WithdrawDialog({
       disableBackdropClose={withdrawing}
       footer={
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90"
-            onClick={resetAndClose}
-            disabled={withdrawing}
-          >
+          <Button variant="secondary" onClick={resetAndClose} disabled={withdrawing}>
             Cancel
-          </button>
-          <button
-            type="button"
-            className="rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={disableContinue || withdrawing}
-            onClick={confirm}
-          >
+          </Button>
+          <Button onClick={confirm} disabled={disableContinue || withdrawing}>
             {withdrawing ? "Withdrawing..." : "Continue"}
-          </button>
+          </Button>
         </div>
       }
     >
@@ -85,19 +77,16 @@ export function WithdrawDialog({
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <label className="block text-sm">
-          <span className="text-secondary-text">Amount</span>
-          <input
-            type="number"
-            min="0"
-            step="any"
-            inputMode="decimal"
-            placeholder="0.0"
-            className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        </label>
+        <Input
+          label="Amount"
+          type="number"
+          min={0}
+          step="any"
+          inputMode="decimal"
+          placeholder="0.0"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
         {withdrawError && (
           <div className="text-xs text-red-500">{withdrawError}</div>
         )}
