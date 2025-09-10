@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getActiveFactoryId } from "@/utils/networks";
+import { getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
@@ -157,6 +157,20 @@ export default function VaultPage() {
         <BackButton onClick={() => router.back()} />
         <div className="min-w-0">
           <h1 className="text-lg font-semibold truncate" title={String(vaultId)}>{vaultShortName}</h1>
+          <div className="text-xs text-secondary-text mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
+            <a
+              href={explorerAccountUrl(network, String(vaultId))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline truncate"
+              title={String(vaultId)}
+            >
+              {String(vaultId)}
+            </a>
+            {data?.owner && (
+              <span className="truncate">· Owner: <span className="font-mono">{data.owner}</span></span>
+            )}
+          </div>
           <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
             <span className="shrink-0">Contract Balance:</span>
             <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
