@@ -1,4 +1,4 @@
-import { NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
+import { NUM_EPOCHS_TO_UNLOCK } from "./constants";
 
 /**
  * Canonical analyzer for an unstake entry's epoch timing.

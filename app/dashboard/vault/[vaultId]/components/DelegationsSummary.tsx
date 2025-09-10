@@ -5,6 +5,7 @@ import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { useDelegationsActions } from "./DelegationsActionsContext";
 import { STRINGS } from "@/utils/strings";
+import { shortAmount } from "@/utils/format";
 import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { EpochDetails } from "./EpochDetails";
 
@@ -60,13 +61,7 @@ function statusLabel(status: DelegationStatus | null): string {
   }
 }
 
-function shortAmount(display: string, maxDecimals = 6): string {
-  // Expecting a decimal string, potentially very long. Trim fractional part for legibility.
-  const [intPart, fracPart] = display.split(".");
-  if (!fracPart) return intPart;
-  const trimmed = fracPart.slice(0, maxDecimals).replace(/0+$/, "");
-  return trimmed.length > 0 ? `${intPart}.${trimmed}` : intPart;
-}
+// shortAmount moved to utils/format
 
 function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
