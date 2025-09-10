@@ -831,6 +831,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   ? "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
                   : "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200"
               }
+              title={expiryDate ? formatDateTime(expiryDate) : undefined}
             >
               Expired
             </span>
