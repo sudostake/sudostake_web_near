@@ -2,17 +2,18 @@
 
 import React from "react";
 import { AVERAGE_EPOCH_SECONDS, NUM_EPOCHS_TO_UNLOCK } from "@/utils/constants";
+import { STRINGS } from "@/utils/strings";
+import { formatDateTime } from "@/utils/datetime";
 import { formatDurationShort } from "@/utils/time";
 
 type Props = {
   unlockEpoch: number;
   remaining: number | null;
-  currentEpoch?: number | null;
   availableNow?: boolean;
   className?: string;
 };
 
-export function EpochDetails({ unlockEpoch, remaining, currentEpoch, availableNow, className }: Props) {
+export function EpochDetails({ unlockEpoch, remaining, availableNow, className }: Props) {
   const etaMs = React.useMemo(() => {
     if (availableNow) return 0;
     if (remaining === null) return null;
@@ -29,23 +30,23 @@ export function EpochDetails({ unlockEpoch, remaining, currentEpoch, availableNo
   return (
     <div className={className ?? "grid grid-cols-1 sm:grid-cols-3 gap-2 text-[12px] text-secondary-text"}>
       <div>
-        <div className="uppercase tracking-wide">Unlock epoch</div>
+        <div className="uppercase tracking-wide">{STRINGS.unlockEpochLabel}</div>
         <div className="font-mono text-sm text-foreground">{unlockEpoch}</div>
       </div>
       <div>
-        <div className="uppercase tracking-wide">Remaining</div>
+        <div className="uppercase tracking-wide">{STRINGS.remainingLabel}</div>
         <div className="font-mono text-sm text-foreground">
           {remaining ?? "—"}
           {remaining !== null ? (remaining === 1 ? " epoch" : " epochs") : ""}
         </div>
       </div>
       <div>
-        <div className="uppercase tracking-wide">ETA</div>
+        <div className="uppercase tracking-wide">{STRINGS.etaLabel}</div>
         <div className="font-mono text-sm text-foreground">
           {availableNow
-            ? "Available now"
+            ? STRINGS.availableNowLabel
             : etaMs && etaMs > 0
-            ? `~${formatDurationShort(etaMs)} (by ${new Date(Date.now() + Math.max(0, etaMs)).toLocaleString()})`
+            ? `~${formatDurationShort(etaMs)} (by ${formatDateTime(new Date(Date.now() + Math.max(0, etaMs)))})`
             : "—"}
         </div>
       </div>

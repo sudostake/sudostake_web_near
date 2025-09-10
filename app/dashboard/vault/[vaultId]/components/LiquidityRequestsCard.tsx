@@ -13,6 +13,8 @@ import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
 import { toYoctoBigInt } from "@/utils/numbers";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS } from "@/utils/constants";
+import { formatDateTime } from "@/utils/datetime";
+import { STRINGS as STR } from "@/utils/strings";
 import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -833,10 +835,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               Expired
             </span>
           </div>
-          <div
-            className={`mt-1 text-xs ${role === "activeLender" ? "text-amber-900/80" : "text-red-900/80"}`}
-          >
-            Loan term ended{expiryDate ? ` on ${new Date(expiryDate).toLocaleString()}` : ""}. Liquidation is in progress.
+          <div className={`mt-1 text-xs ${role === "activeLender" ? "text-amber-900/80" : "text-red-900/80"}`}>
+            {STR.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STR.liquidationInProgress}
           </div>
           {role === "activeLender" && (
             <div>

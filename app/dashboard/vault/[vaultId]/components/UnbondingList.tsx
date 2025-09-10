@@ -44,7 +44,6 @@ export function UnbondingList({ entries, currentEpoch }: Props) {
                 <EpochDetails
                   unlockEpoch={unlockEpoch}
                   remaining={remaining}
-                  currentEpoch={typeof currentEpoch === "number" ? currentEpoch : null}
                 />
                 <div className="mt-1 text-[11px] text-red-900/80">Unstaked epoch: {unstakeEpoch}</div>
               </div>

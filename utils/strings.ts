@@ -98,6 +98,11 @@ export const STRINGS = {
   sourceVaultBalanceNow: "Vault balance (available now)",
   sourceMaturedUnbonding: "Matured unbonding",
   noMaturedYet: "No matured entries yet",
+  // Epoch / ETA labels
+  unlockEpochLabel: "Unlock epoch",
+  remainingLabel: "Remaining",
+  etaLabel: "ETA",
+  availableNowLabel: "Available now",
   // Note: dynamic strings should be implemented as functions outside STRINGS
   // Liquidation card: role-specific headings/notes
   ownerLiquidationHeader: "Paying lender from collateral",

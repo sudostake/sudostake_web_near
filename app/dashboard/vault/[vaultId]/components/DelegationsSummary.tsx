@@ -4,6 +4,7 @@ import React from "react";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { useDelegationsActions } from "./DelegationsActionsContext";
+import { STRINGS } from "@/utils/strings";
 import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { EpochDetails } from "./EpochDetails";
 
@@ -141,14 +142,13 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
             className="text-[11px] underline text-primary"
             onClick={() => setShowMore((v) => !v)}
           >
-            {showMore ? "Hide details" : "Show more"}
+            {showMore ? STRINGS.hideDetails : STRINGS.showDetails}
           </button>
           {showMore && (
             <div className="mt-2">
               <EpochDetails
                 unlockEpoch={epochDetails.unlockEpoch}
                 remaining={epochDetails.remaining}
-                currentEpoch={entry.current_epoch ?? null}
                 availableNow={entry.can_withdraw}
               />
             </div>
