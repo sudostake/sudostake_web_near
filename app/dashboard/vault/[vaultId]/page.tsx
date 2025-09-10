@@ -167,6 +167,16 @@ export default function VaultPage() {
             >
               {String(vaultId)}
             </a>
+            <button
+              type="button"
+              className="underline"
+              onClick={() => {
+                try { navigator.clipboard?.writeText(String(vaultId)); showToast(STRINGS.copied); }
+                catch { showToast(STRINGS.copied); }
+              }}
+            >
+              {STRINGS.copy}
+            </button>
             {data?.owner && (
               <span className="truncate">
                 · Owner:
@@ -179,6 +189,16 @@ export default function VaultPage() {
                 >
                   <span className="font-mono">{data.owner}</span>
                 </a>
+                <button
+                  type="button"
+                  className="underline ml-2"
+                  onClick={() => {
+                    try { navigator.clipboard?.writeText(String(data.owner)); showToast(STRINGS.copied); }
+                    catch { showToast(STRINGS.copied); }
+                  }}
+                >
+                  {STRINGS.copy}
+                </button>
               </span>
             )}
           </div>

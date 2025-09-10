@@ -145,6 +145,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
                 unlockEpoch={epochDetails.unlockEpoch}
                 remaining={epochDetails.remaining}
                 availableNow={entry.can_withdraw}
+                unstakeEpoch={entry.unstaked_at}
               />
             </div>
           )}

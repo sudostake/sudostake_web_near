@@ -11,9 +11,10 @@ type Props = {
   remaining: number | null;
   availableNow?: boolean;
   className?: string;
+  unstakeEpoch?: number;
 };
 
-export function EpochDetails({ unlockEpoch, remaining, availableNow, className }: Props) {
+export function EpochDetails({ unlockEpoch, remaining, availableNow, className, unstakeEpoch }: Props) {
   const etaMs = React.useMemo(() => {
     if (availableNow) return 0;
     if (remaining === null) return null;
@@ -57,6 +58,9 @@ export function EpochDetails({ unlockEpoch, remaining, availableNow, className }
           </div>
           <div className="mt-1 text-[11px] text-secondary-text">{pct}%</div>
         </div>
+      )}
+      {typeof unstakeEpoch === 'number' && (
+        <div className="sm:col-span-3 text-[11px]">Unstaked epoch: {unstakeEpoch}</div>
       )}
     </div>
   );

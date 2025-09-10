@@ -18,6 +18,9 @@ function testFormatMinimalTokenAmount() {
   assert.strictEqual(formatMinimalTokenAmount('123', 6), '0.000123', 'pad small minimal');
   assert.strictEqual(formatMinimalTokenAmount('-12345', 3), '-12.345', 'negative minimal');
   assert.strictEqual(formatMinimalTokenAmount('0000', 0), '0', 'decimals 0 and zeros');
+  assert.strictEqual(formatMinimalTokenAmount('1', 0), '1', 'decimals 0 basic');
+  assert.strictEqual(formatMinimalTokenAmount('1000000', 6), '1', 'trim all fractional zeros');
+  assert.strictEqual(formatMinimalTokenAmount('1000001', 6), '1.000001', 'preserve non-zero fraction');
 }
 
 function testParseNumber() {
@@ -34,4 +37,3 @@ function run() {
 }
 
 run();
-
