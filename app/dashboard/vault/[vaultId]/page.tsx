@@ -173,8 +173,12 @@ export default function VaultPage() {
               title={STRINGS.copy}
               className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
               onClick={() => {
-                try { navigator.clipboard?.writeText(String(vaultId)); showToast(STRINGS.copied); }
-                catch { showToast(STRINGS.copied); }
+                try {
+                  navigator.clipboard?.writeText(String(vaultId));
+                  showToast(STRINGS.copied);
+                } catch {
+                  showToast(STRINGS.copyFailed, { variant: 'error' });
+                }
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 opacity-80" aria-hidden="true">
@@ -200,8 +204,12 @@ export default function VaultPage() {
                   title={STRINGS.copy}
                   className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 ml-1"
                   onClick={() => {
-                    try { navigator.clipboard?.writeText(String(data.owner)); showToast(STRINGS.copied); }
-                    catch { showToast(STRINGS.copied); }
+                    try {
+                      navigator.clipboard?.writeText(String(data.owner));
+                      showToast(STRINGS.copied);
+                    } catch {
+                      showToast(STRINGS.copyFailed, { variant: 'error' });
+                    }
                   }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 opacity-80" aria-hidden="true">

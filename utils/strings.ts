@@ -9,6 +9,7 @@ export const STRINGS = {
   viewVaultOnExplorer: "View vault on Explorer",
   copied: "Copied",
   copy: "Copy",
+  copyFailed: "Copy failed",
   vaultRegisteredSuccess: "Vault registered with token",
   accountRegisteredSuccess: "Registration successful",
   repaySuccess: "Loan repaid successfully",

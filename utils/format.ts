@@ -14,9 +14,10 @@ export function shortAmount(display: string, maxDecimals = 6): string {
  * Parse a human display number string into a JS number.
  * Strips common formatting like commas and spaces. Returns NaN if not parseable.
  */
-export function parseNumber(input: string): number {
+export function parseNumber(input: string | number | null | undefined): number {
   if (typeof input !== 'string') return Number.NaN;
-  const cleaned = input.replace(/[_,\s]/g, '').replace(/,/g, '');
+  // Remove underscores, commas, and whitespace
+  const cleaned = input.replace(/[_,\s]/g, '');
   const n = Number.parseFloat(cleaned);
   return Number.isFinite(n) ? n : Number.NaN;
 }

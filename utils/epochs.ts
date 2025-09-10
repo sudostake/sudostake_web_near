@@ -6,8 +6,8 @@ import { NUM_EPOCHS_TO_UNLOCK } from "./constants";
  * Assumptions:
  * - entryEpoch is the target unlock epoch provided by the on-chain view.
  * - currentEpoch is the current chain epoch (or null if unknown).
- * - An entry is considered matured only after the unlock epoch has passed: current > unlock.
- * - While current <= unlock, the entry is still unbonding.
+ * - An entry is considered matured at the unlock epoch or later: current >= unlock.
+ * - While current < unlock, the entry is still unbonding.
  */
 export function analyzeUnstakeEntry(
   entryEpoch: number,
@@ -15,7 +15,7 @@ export function analyzeUnstakeEntry(
   epochsToUnlock: number = NUM_EPOCHS_TO_UNLOCK
 ) {
   // Contract semantics: entryEpoch is the epoch when unstake happened.
-  // Funds become claimable only after current > entryEpoch + epochsToUnlock.
+  // Funds become claimable when current_epoch >= entry_epoch + epochsToUnlock.
   const unstakeEpoch = Math.max(0, entryEpoch);
   const unlockEpoch = unstakeEpoch + epochsToUnlock;
   const remaining = currentEpoch === null ? null : Math.max(0, unlockEpoch - currentEpoch);
