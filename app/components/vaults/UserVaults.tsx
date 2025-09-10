@@ -8,6 +8,7 @@ import { EmptyState } from "./EmptyState";
 import { CreateVaultButton } from "../CreateVaultButton";
 import { useUserVaults } from "@/hooks/useUserVaults";
 import { useUserVaultsSummaries } from "@/hooks/useUserVaultsSummaries";
+import { SectionHeader } from "@/app/components/ui/SectionHeader";
 
 export type UserVaultsProps = {
   owner: string;
@@ -34,27 +35,30 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVau
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-6">
-        <div>
-          <h2 className="text-lg font-semibold">Your Vaults</h2>
-          <div className="text-sm text-secondary-text mt-1">
+      <SectionHeader
+        className="mt-6"
+        title="Your Vaults"
+        caption={
+          <>
             {(data ?? []).length} vault{(data ?? []).length === 1 ? "" : "s"}
+          </>
+        }
+        right={
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <label className="sr-only" htmlFor="vault-search">Search vaults</label>
+            <input
+              id="vault-search"
+              type="text"
+              inputMode="search"
+              placeholder="Search vaults"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1 min-w-0 sm:w-64 rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <CreateVaultButton className="shrink-0" onClick={onCreate} />
           </div>
-        </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="sr-only" htmlFor="vault-search">Search vaults</label>
-          <input
-            id="vault-search"
-            type="text"
-            inputMode="search"
-            placeholder="Search vaults"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 min-w-0 sm:w-64 rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
-          />
-          <CreateVaultButton className="shrink-0" onClick={onCreate} />
-        </div>
-      </div>
+        }
+      />
       {query && filtered.length === 0 ? (
         <div className="text-sm text-secondary-text mt-3">No vaults match “{query}”.</div>
       ) : null}

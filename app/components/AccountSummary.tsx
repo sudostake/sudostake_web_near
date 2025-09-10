@@ -4,6 +4,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 import { Balance } from "@/utils/balance";
 import { getActiveNetwork } from "@/utils/networks";
+import { Card } from "@/app/components/ui/Card";
 
 export function AccountSummary({
   near,
@@ -19,9 +20,9 @@ export function AccountSummary({
   const usdcLabel = network === "mainnet" ? "USDC" : "USDC (Testnet)";
 
   return (
-    <div className="w-full md:max-w-2xl md:mx-auto bg-surface p-4 rounded-lg shadow">
+    <Card className="w-full md:max-w-2xl md:mx-auto p-4">
       <div className="text-center mb-4">
-        <div className="text-lg font-semibold text-primary">{signedAccountId}</div>
+        <div className="text-lg font-semibold text-foreground">{signedAccountId}</div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="text-center">
@@ -37,7 +38,7 @@ export function AccountSummary({
           </div>
         </div>
         <div className="text-center">
-        <div className="text-sm text-secondary-text">{usdcLabel}</div>
+          <div className="text-sm text-secondary-text">{usdcLabel}</div>
           <div className="text-xl font-medium min-h-7">
             {loading ? (
               <div className="h-7 w-32 mx-auto rounded bg-background animate-pulse" aria-hidden />
@@ -47,6 +48,6 @@ export function AccountSummary({
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

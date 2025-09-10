@@ -22,8 +22,8 @@ type Props = {
 export function UnbondingList({ entries }: Props) {
   if (!Array.isArray(entries) || entries.length === 0) return null;
   return (
-    <div className="mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3">
-      <div className="font-medium">Currently unbonding</div>
+    <div className="mt-3 rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60 p-3">
+      <div className="font-medium text-foreground">Currently unbonding</div>
       <div className="mt-2 space-y-2">
         {entries.map((row, idx) => {
           const { validator, unlockEpoch, unstakeEpoch, remaining } = row;
@@ -31,11 +31,11 @@ export function UnbondingList({ entries }: Props) {
             <div key={`${validator}-${idx}`} className="text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
-                  <div className="text-red-900/80">Amount</div>
+                  <div className="text-secondary-text">Amount</div>
                   <div className="font-medium">{safeFormatYoctoNear(row.amount)} NEAR</div>
                 </div>
                 <div className="sm:col-span-2">
-                  <div className="text-red-900/80">Validator</div>
+                  <div className="text-secondary-text">Validator</div>
                   <div className="font-medium truncate" title={validator}>{validator}</div>
                 </div>
               </div>

@@ -36,6 +36,8 @@ import { STRINGS, includesMaturedString } from "@/utils/strings";
 import { UnbondingList } from "./UnbondingList";
 import { LiquidationSummary } from "./LiquidationSummary";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
+import { Card } from "@/app/components/ui/Card";
+import { Badge } from "@/app/components/ui/Badge";
 // Big is not directly used here anymore; conversions are handled by utils/numbers
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
@@ -692,7 +694,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
-            <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2 text-xs">
+            <div className="mt-2 rounded border border-foreground/20 bg-background/80 text-foreground p-2 text-xs dark:bg-background/60">
               The loan duration has ended. Repayment is still possible until liquidation is triggered.
             </div>
           )}
@@ -749,12 +751,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     >
                       Learn more
                     </a>
-                    {storageError && <div className="mt-1 text-xs text-red-600">{storageError}</div>}
+                    {storageError && <div className="mt-1 text-xs text-red-600 dark:text-red-300">{storageError}</div>}
                   </div>
                 </div>
               )}
               {vaultRegisteredForToken === false && (
-                <div className="text-left text-sm text-red-700 bg-red-100/70 border border-red-500/30 rounded p-2">
+                <div className="text-left text-sm rounded p-2 border border-red-300/40 bg-red-50 text-red-900 dark:bg-red-900/30 dark:text-red-100 dark:border-red-500/30">
                   This vault is not registered with this token contract yet. Lending is disabled until the vault owner registers the vault with this token.
                   <div className="mt-1">
                     <a
@@ -822,21 +824,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
-        <div className="mt-4 rounded border border-red-400/30 bg-red-50 text-red-900 p-3">
+        <div className="mt-4 rounded border border-zinc-300/40 bg-zinc-50 text-zinc-900 p-3 dark:border-foreground/20 dark:bg-background/70 dark:text-foreground">
           <div className="flex items-center gap-2">
             <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
-            <span
-              className={
-                role === "activeLender"
-                  ? "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200"
-                  : "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200"
-              }
-              title={expiryDate ? formatDateTime(expiryDate) : undefined}
-            >
-              Expired
-            </span>
+            <Badge variant={role === "activeLender" ? "warn" : "danger"} title={expiryDate ? formatDateTime(expiryDate) : undefined}>Expired</Badge>
           </div>
-          <div className={`mt-1 text-xs ${role === "activeLender" ? "text-amber-900/80" : "text-red-900/80"}`}>
+          <div className={`mt-1 text-xs ${role === "activeLender" ? "text-zinc-700 dark:text-zinc-300" : "text-zinc-700 dark:text-zinc-300"}`}>
             {STR.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STR.liquidationInProgress}
           </div>
           {role === "activeLender" && (
@@ -862,10 +855,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           )}
           {unbondingTotalLabel && (
-            <div className="mt-2 rounded border border-red-300/30 bg-white/80 text-red-900 p-3">
+            <Card className="mt-2">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
-              <div className="mt-1 text-sm text-red-900/90">{role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}</div>
-            </div>
+              <div className="mt-1 text-sm text-secondary-text">
+                {role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}
+              </div>
+            </Card>
           )}
           <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
             {role !== "activeLender" && (
@@ -878,11 +873,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               />
             )}
             {unbondingTotalLabel && (
-              <div className="rounded bg-white/70 border border-red-200/50 p-2">
-                <div className="text-red-900/80">{STRINGS.waitingToUnlock}</div>
+              <Card className="p-2">
+                <div className="text-secondary-text">{STRINGS.waitingToUnlock}</div>
                 <div className="font-medium">{unbondingTotalLabel} NEAR</div>
                 {longestEtaLabel && (
-                  <div className="text-xs text-red-900/80 mt-0.5">up to ~{longestEtaLabel}</div>
+                  <div className="text-xs text-secondary-text mt-0.5">up to ~{longestEtaLabel}</div>
                 )}
                 {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
                   <div className="mt-1">
@@ -895,27 +890,27 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     </button>
                   </div>
                 )}
-              </div>
+              </Card>
             )}
           </div>
           {role !== "activeLender" && (remainingTargetLabel || collateralLabel) && (
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
               {remainingTargetLabel && (
                 <div>
-                  <div className="text-red-900/80">Remaining</div>
+                  <div className="text-secondary-text">Remaining</div>
                   <div className="font-medium">{remainingTargetLabel} NEAR</div>
                 </div>
               )}
               {collateralLabel && (
                 <div>
-                  <div className="text-red-900/80">Target</div>
+                  <div className="text-secondary-text">Target</div>
                   <div className="font-medium">{collateralLabel} NEAR</div>
                 </div>
               )}
             </div>
           )}
           {role !== "activeLender" && lenderId && (
-            <div className="mt-1 text-xs text-red-900/80">
+            <div className="mt-1 text-xs text-secondary-text">
               {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
               <a
                 href={explorerAccountUrl(network, lenderId)}
@@ -931,21 +926,21 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           {unbondingTotalLabel && unbondingEntries.length > 0 && (
             <div className={showDetails ? "" : " hidden"}>
               <UnbondingList entries={unbondingEntries} />
-              <div className="mt-2 text-xs text-red-900/80">
+              <div className="mt-2 text-xs text-secondary-text">
                 {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
               </div>
             </div>
           )}
           {role !== "activeLender" && (
-          <div className={`mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3${showDetails ? "" : " hidden"}`}>
+          <Card className={`mt-3 ${showDetails ? "" : " hidden"}`}>
             <div className="font-medium">{STRINGS.nextPayoutSources}</div>
             <div className="mt-2 text-sm space-y-1">
               <div className="flex items-center justify-between">
-                <div className="text-red-900/80">{STRINGS.sourceVaultBalanceNow}</div>
+                <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
                 <div className="font-medium">{safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR</div>
               </div>
               <div className="mt-2">
-                <div className="text-red-900/80">{STRINGS.sourceMaturedUnbonding}</div>
+                <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
                 {maturedEntries.length > 0 ? (
                   <ul className="mt-1 text-sm space-y-1">
                     {maturedEntries.map((m, idx) => (
@@ -956,16 +951,16 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     ))}
                   </ul>
                 ) : (
-                  <div className="text-xs text-red-900/80">{STRINGS.noMaturedYet}</div>
+                  <div className="text-xs text-secondary-text">{STRINGS.noMaturedYet}</div>
                 )}
               </div>
             </div>
-          </div>
+          </Card>
           )}
           {role === "activeLender" ? (
-            <div className="mt-2 text-xs text-red-900/90">{STRINGS.lenderLiquidationNote}</div>
+            <div className="mt-2 text-xs text-secondary-text">{STRINGS.lenderLiquidationNote}</div>
           ) : isOwner ? (
-            <div className="mt-2 text-xs text-red-900/90">{STRINGS.ownerLiquidationNote}</div>
+            <div className="mt-2 text-xs text-secondary-text">{STRINGS.ownerLiquidationNote}</div>
           ) : null}
           {role !== "activeLender" && !isOwner && (
             <div className="mt-2 text-right">

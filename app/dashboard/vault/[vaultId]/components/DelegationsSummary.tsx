@@ -35,14 +35,14 @@ function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
 }
 
 function statusPillClass(status: DelegationStatus | null): string {
-  const base = "text-[10px] uppercase tracking-wide rounded px-2 py-0.5";
+  const base = "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
   switch (status) {
     case DelegationStatus.Withdrawable:
-      return `${base} bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200`;
+      return `${base} bg-emerald-100 text-emerald-800 ring-emerald-300/50 dark:bg-emerald-800/50 dark:text-emerald-100 dark:ring-emerald-500/40`;
     case DelegationStatus.Unstaking:
-      return `${base} bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200`;
+      return `${base} bg-amber-100 text-amber-800 ring-amber-300/50 dark:bg-amber-800/50 dark:text-amber-100 dark:ring-amber-500/40`;
     case DelegationStatus.Active:
-      return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200`;
+      return `${base} bg-blue-100 text-blue-800 ring-blue-300/50 dark:bg-blue-800/50 dark:text-blue-100 dark:ring-blue-500/40`;
     default:
       return `${base} bg-background`;
   }
@@ -83,10 +83,10 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   }, [entry.unstaked_at, entry.current_epoch]);
 
   return (
-    <li className="py-3" key={entry.validator}>
+    <li className="py-3" key={entry.validator} role="row">
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 items-start">
         {/* Validator + status */}
-        <div className="sm:col-span-6 min-w-0">
+        <div className="sm:col-span-6 min-w-0" role="cell">
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-mono text-sm truncate" title={entry.validator}>
               {truncateAccount(entry.validator)}
@@ -117,12 +117,12 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
         </div>
 
         {/* Desktop balances */}
-        <div className="hidden sm:block sm:col-span-3">
+        <div className="hidden sm:block sm:col-span-3" role="cell">
           <div className="font-mono text-sm text-right tabular-nums" title={entry.staked_balance.toDisplay()}>
             {shortAmount(entry.staked_balance.toDisplay(), 6)}
           </div>
         </div>
-        <div className="hidden sm:block sm:col-span-3">
+        <div className="hidden sm:block sm:col-span-3" role="cell">
           <div className="font-mono text-sm text-right tabular-nums" title={entry.unstaked_balance.toDisplay()}>
             {shortAmount(entry.unstaked_balance.toDisplay(), 6)}
           </div>
@@ -194,13 +194,16 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
 export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
   return (
-    <div className="space-y-1">
-      <div className="hidden sm:grid grid-cols-12 gap-6 text-[11px] uppercase tracking-wide text-secondary-text px-1">
-        <div className="col-span-6">Validator</div>
-        <div className="col-span-3 text-right">Staked</div>
-        <div className="col-span-3 text-right">Unstaked</div>
+    <div className="space-y-1" role="table" aria-label="Delegations summary">
+      <div
+        className="hidden sm:grid grid-cols-12 gap-6 text-[11px] uppercase tracking-wide text-secondary-text px-1"
+        role="row"
+      >
+        <div className="col-span-6" role="columnheader">Validator</div>
+        <div className="col-span-3 text-right" role="columnheader">Staked</div>
+        <div className="col-span-3 text-right" role="columnheader">Unstaked</div>
       </div>
-      <ul className="divide-y">
+      <ul className="divide-y" role="rowgroup">
         {entries.map((entry) => (
           <SummaryItem key={entry.validator} entry={entry} />
         ))}

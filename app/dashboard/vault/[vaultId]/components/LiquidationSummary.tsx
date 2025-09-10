@@ -21,15 +21,15 @@ export function LiquidationSummary({
 }: Props) {
   return (
     <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
-      <div className="rounded bg-white/70 border border-red-200/50 p-2">
-        <div className="text-red-900/80">{STRINGS.paidSoFar}</div>
+      <div className="rounded border border-foreground/20 bg-background/80 p-2 text-foreground dark:bg-background/60">
+        <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
         <div className="font-medium">{safeFormatYoctoNear(paidSoFarYocto)} NEAR</div>
       </div>
-      <div className="rounded bg-white/70 border border-red-200/50 p-2">
-        <div className="text-red-900/80">{STRINGS.expectedNext}</div>
+      <div className="rounded border border-foreground/20 bg-background/80 p-2 text-foreground dark:bg-background/60">
+        <div className="text-secondary-text">{STRINGS.expectedNext}</div>
         <div className="font-medium">{expectedNextLabel ?? "0"} NEAR</div>
         {showPayoutNote && lenderId && (
-          <div className="text-xs text-red-900/80 mt-0.5">
+          <div className="text-xs text-secondary-text mt-0.5">
             {STRINGS.payoutsGoTo}{" "}
             <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
             {lenderUrl && (
@@ -43,4 +43,3 @@ export function LiquidationSummary({
     </div>
   );
 }
-

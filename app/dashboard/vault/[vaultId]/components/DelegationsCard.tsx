@@ -35,7 +35,7 @@ export function DelegationsCard({
   showClaimDisabledNote,
 }: Props) {
   return (
-    <section className="rounded border bg-surface">
+    <section className="rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60">
       <header className="flex items-center justify-between px-4 py-3 border-b">
         <h2 className="text-base font-medium">Delegations</h2>
         <div className="text-xs text-secondary-text">
@@ -57,7 +57,7 @@ export function DelegationsCard({
 
       {showClaimDisabledNote && (
         <div className="px-4 pt-3">
-          <div className="rounded border border-red-400/30 bg-red-50 text-red-900 p-2 text-sm">
+          <div className="rounded border border-red-300/40 bg-red-50 text-red-900 p-2 text-sm dark:bg-red-900/30 dark:text-red-100 dark:border-red-500/30">
             {STRINGS.claimDisabledLiquidation}
           </div>
         </div>
@@ -65,7 +65,7 @@ export function DelegationsCard({
 
       {typeof refundsCount === "number" && refundsCount > 0 && (
         <div className="px-4 pt-3">
-          <div className="rounded border border-amber-400/30 bg-amber-100/60 text-amber-900 p-2 text-sm">
+          <div className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 p-2 text-sm dark:bg-amber-900/30 dark:text-amber-100 dark:border-amber-500/30">
             <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
           </div>
         </div>

@@ -25,6 +25,7 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
+import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
 
 
@@ -167,25 +168,7 @@ export default function VaultPage() {
             >
               {String(vaultId)}
             </a>
-            <button
-              type="button"
-              aria-label={STRINGS.copy}
-              title={STRINGS.copy}
-              className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40"
-              onClick={() => {
-                try {
-                  navigator.clipboard?.writeText(String(vaultId));
-                  showToast(STRINGS.copied);
-                } catch {
-                  showToast(STRINGS.copyFailed, { variant: 'error' });
-                }
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 opacity-80" aria-hidden="true">
-                <path d="M16 1H6a2 2 0 0 0-2 2v10h2V3h10V1z"/>
-                <path d="M18 5H10a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 14H10V7h8v12z"/>
-              </svg>
-            </button>
+            <CopyButton value={String(vaultId)} />
             {data?.owner && (
               <span className="truncate">
                 · Owner:
@@ -198,25 +181,7 @@ export default function VaultPage() {
                 >
                   <span className="font-mono">{data.owner}</span>
                 </a>
-                <button
-                  type="button"
-                  aria-label={STRINGS.copy}
-                  title={STRINGS.copy}
-                  className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 ml-1"
-                  onClick={() => {
-                    try {
-                      navigator.clipboard?.writeText(String(data.owner));
-                      showToast(STRINGS.copied);
-                    } catch {
-                      showToast(STRINGS.copyFailed, { variant: 'error' });
-                    }
-                  }}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4 opacity-80" aria-hidden="true">
-                    <path d="M16 1H6a2 2 0 0 0-2 2v10h2V3h10V1z"/>
-                    <path d="M18 5H10a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 14H10V7h8v12z"/>
-                  </svg>
-                </button>
+                <CopyButton value={String(data.owner)} className="ml-1" />
               </span>
             )}
           </div>
