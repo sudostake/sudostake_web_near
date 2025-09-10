@@ -2,6 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { Badge } from "@/app/components/ui/Badge";
+import { Card } from "@/app/components/ui/Card";
+import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useState } from "react";
 
 export type VaultSummary = { id: string; state: "idle" | "pending" | "active" };
@@ -12,19 +15,7 @@ export type VaultListProps = {
 };
 
 export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
-  const [copied, setCopied] = useState<string | null>(
-    null,
-  );
-
-  const copy = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    e.preventDefault();
-    try {
-      await navigator.clipboard.writeText(id);
-      setCopied(id);
-      setTimeout(() => setCopied((prev) => (prev === id ? null : prev)), 1200);
-    } catch {}
-  };
+  const [copied] = useState<string | null>(null);
 
   const initials = (id: string) => {
     // Use first two visible characters before a dot if possible
@@ -39,20 +30,13 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
 
   const badge = (state?: VaultSummary["state"]) => {
     if (!state || state === "idle") return null;
-    const label = state === "pending" ? "Request open" : "Active loan";
-    const cls =
-      state === "pending"
-        ? "bg-amber-100 text-amber-900 border-amber-400/30"
-        : "bg-emerald-100 text-emerald-900 border-emerald-400/30";
-    return (
-      <span className={`ml-2 inline-flex items-center rounded border px-2 py-0.5 text-xs ${cls}`}>
-        {label}
-      </span>
-    );
+    const label: string = state === "pending" ? "Request open" : "Active loan";
+    const variant: "warn" | "success" = state === "pending" ? "warn" : "success";
+    return <Badge variant={variant} className="ml-2">{label}</Badge>;
   };
 
   const ItemInner = ({ id }: { id: string }) => (
-    <div className="flex items-center justify-between gap-3 rounded border bg-surface hover:bg-surface/90 p-3">
+    <Card className="flex items-center justify-between gap-3 hover:bg-background/70">
       <div className="flex items-center gap-3 min-w-0">
         <div
           aria-hidden
@@ -68,25 +52,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <button
-          type="button"
-          aria-label="Copy vault ID"
-          title={copied === id ? "Copied" : "Copy"}
-          className="rounded p-1 hover:bg-background/60"
-          onClick={(e) => copy(e, id)}
-        >
-          {/* Copy icon */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            className="h-4 w-4"
-          >
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-          </svg>
-        </button>
+        <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
         <span aria-hidden className="text-secondary-text">|</span>
         <span aria-hidden className="text-secondary-text hidden sm:inline text-sm">Open</span>
         <svg
@@ -99,7 +65,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
           <path d="M5 12h14M13 5l7 7-7 7" />
         </svg>
       </div>
-    </div>
+    </Card>
   );
 
   return (
