@@ -929,10 +929,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           {/* Details toggle moved near the "Waiting to unlock" section */}
           {unbondingTotalLabel && unbondingEntries.length > 0 && (
             <div className={showDetails ? "" : " hidden"}>
-              <UnbondingList
-                entries={unbondingEntries}
-                currentEpoch={typeof delData?.current_epoch === "number" ? delData.current_epoch : null}
-              />
+              <UnbondingList entries={unbondingEntries} />
               <div className="mt-2 text-xs text-red-900/80">
                 {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
               </div>

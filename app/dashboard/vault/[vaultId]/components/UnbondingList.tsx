@@ -17,10 +17,9 @@ export type UnbondingEntryRow = {
 
 type Props = {
   entries: UnbondingEntryRow[];
-  currentEpoch: number | null;
 };
 
-export function UnbondingList({ entries, currentEpoch }: Props) {
+export function UnbondingList({ entries }: Props) {
   if (!Array.isArray(entries) || entries.length === 0) return null;
   return (
     <div className="mt-3 rounded border border-red-400/30 bg-white/60 text-red-900 p-3">
