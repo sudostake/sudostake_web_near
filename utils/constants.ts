@@ -24,3 +24,8 @@ export const SECONDS_PER_DAY = 86_400;
 export const SECONDS_PER_HOUR = 3_600;
 /** Contract-level action identifiers used in FT transfer messages. */
 export const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;
+
+/** Approximate epoch duration on NEAR mainnet/testnet (12 hours). */
+export const AVERAGE_EPOCH_SECONDS = 43_200; // 12h
+/** Number of epochs required before unstaked NEAR becomes withdrawable (mirrors contract). */
+export const NUM_EPOCHS_TO_UNLOCK = 4;

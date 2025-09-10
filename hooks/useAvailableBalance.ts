@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { utils } from "near-api-js";
+import Big from "big.js";
 import { Balance } from "@/utils/balance";
 import { NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
 
@@ -13,6 +14,9 @@ export function useAvailableBalance(
   vaultId?: string | null
 ): { balance: Balance; loading: boolean; refetch: () => void } {
   const { viewFunction } = useWalletSelector();
+  // Stabilize viewFunction to avoid effect churn if its identity changes
+  const viewFnRef = useRef(viewFunction);
+  useEffect(() => { viewFnRef.current = viewFunction; }, [viewFunction]);
   const [balance, setBalance] = useState<Balance>(
     new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN)
   );
@@ -25,19 +29,33 @@ export function useAvailableBalance(
     if (!vaultId) return;
     setLoading(true);
     try {
-      const available = await viewFunction({
+      const available = await viewFnRef.current({
         contractId: vaultId,
         method: "view_available_balance",
         args: {},
       });
-      const rawStr = typeof available === "string" ? available : String(available);
+      let rawStr: string;
+      if (typeof available === "string") rawStr = available;
+      else if (typeof available === "number") {
+        try {
+          rawStr = new Big(available).toFixed(0);
+        } catch {
+          if (Number.isSafeInteger(available)) {
+            rawStr = available.toString();
+          } else {
+            try { rawStr = BigInt(available).toString(); }
+            catch { rawStr = String(Math.trunc(available)); }
+          }
+        }
+      } else if (typeof available === "bigint") rawStr = available.toString();
+      else rawStr = String(available);
       setBalance(new Balance(rawStr, NATIVE_DECIMALS, NATIVE_TOKEN));
     } catch {
       setBalance(new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN));
     } finally {
       setLoading(false);
     }
-  }, [vaultId, viewFunction, version]);
+  }, [vaultId, version]);
 
   useEffect(() => {
     void fetchBalance();

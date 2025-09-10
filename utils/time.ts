@@ -26,3 +26,12 @@ export function formatDurationShort(remainingMs: number): string {
   return parts.join(" ");
 }
 
+// Returns the correct label for a number of days ("day" vs "days").
+export function dayLabel(days: number): string {
+  return days === 1 ? "day" : "days";
+}
+
+// Convenience: formats as "<n> day(s)" with correct pluralization.
+export function formatDays(days: number): string {
+  return `${days} ${dayLabel(days)}`;
+}

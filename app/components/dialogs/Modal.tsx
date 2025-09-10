@@ -1,6 +1,6 @@
 "use client";
 
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { PropsWithChildren, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 
 export type ModalProps = PropsWithChildren<{
@@ -19,6 +19,7 @@ export function Modal({
   disableBackdropClose,
   footer,
 }: ModalProps) {
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (e: KeyboardEvent) => {
@@ -40,8 +41,22 @@ export function Modal({
       body.style.overflow = "hidden";
     }
 
+    // Try to focus the scrollable content container for better keyboard nav
+    const raf = requestAnimationFrame(() => {
+      const root = scrollRef.current as HTMLElement | null;
+      if (!root) return;
+      const active = typeof document !== "undefined" ? (document.activeElement as HTMLElement | null) : null;
+      const alreadyInside = active ? root.contains(active) : false;
+      if (alreadyInside) return;
+      const firstFocusable = root.querySelector<HTMLElement>(
+        'a[href], area[href], input, select, textarea, button, [tabindex]:not([tabindex="-1"])'
+      );
+      (firstFocusable ?? root).focus();
+    });
+
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      cancelAnimationFrame(raf);
       if (body) {
         body.style.overflow = prevOverflow;
         if (adjusted) body.style.paddingRight = prevPaddingRight;
@@ -63,8 +78,8 @@ export function Modal({
         onClick={disableBackdropClose ? undefined : onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-full max-w-md rounded bg-surface shadow-lg">
-        <div className="flex items-center justify-between border-b border-foreground/10 p-4">
+      <div className="relative z-10 w-full max-w-md max-h-modal rounded bg-surface shadow-lg flex flex-col mx-auto">
+        <div className="flex items-center justify-between border-b border-foreground/10 p-4 shrink-0">
           <h2 id="modal-title" className="text-base font-medium truncate">
             {title ?? "Dialog"}
           </h2>
@@ -79,8 +94,14 @@ export function Modal({
             </svg>
           </button>
         </div>
-        <div className="p-4">{children}</div>
-        {footer && <div className="border-t border-foreground/10 p-3 text-right">{footer}</div>}
+        <div className="p-4 overflow-y-auto" tabIndex={0} ref={scrollRef}>
+          {children}
+        </div>
+        {footer && (
+          <div className="border-t border-foreground/10 p-3 text-right shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

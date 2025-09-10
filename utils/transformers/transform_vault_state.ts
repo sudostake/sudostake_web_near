@@ -1,8 +1,10 @@
 import { Timestamp } from "firebase-admin/firestore";
+import Big from "big.js";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 import type { TransformedVaultState } from "@/utils/types/transformed_vault_state";
 import { getField } from "../object";
 import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
+import { numberToIntegerString, normalizeToIntegerString } from "@/utils/numbers";
 
 // Note: We avoid non-null assertions by validating inline so TypeScript can narrow types.
 
@@ -23,9 +25,10 @@ import { isString, isNumber, isAcceptedAt, isNonEmptyString } from "../guards";
  *    - "pending" → liquidity request without accepted offer
  *    - "active" → liquidity request with accepted offer
  */
+
 export function transformVaultState(vault_state: VaultViewState): TransformedVaultState {
   // Consume only the subset we care about from the full consolidated on-chain view type.
-  const { owner, liquidity_request, accepted_offer, liquidation } = vault_state;
+  const { owner, liquidity_request, accepted_offer, liquidation, unstake_entries, current_epoch } = vault_state;
 
   let state: "pending" | "active" | "idle" = "idle";
   if (liquidity_request) {
@@ -36,6 +39,47 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
     owner,
     state,
   };
+
+  if (typeof current_epoch === "number" && Number.isFinite(current_epoch)) {
+    transformed.current_epoch = current_epoch;
+  }
+
+  // Accept both Vec<(AccountId, UnstakeEntry)> serialized as an array of pairs,
+  // and an object map { [validator]: UnstakeEntry } for forward/backward compatibility.
+  if (Array.isArray(unstake_entries) || (unstake_entries && typeof unstake_entries === "object")) {
+    const entries: TransformedVaultState["unstake_entries"] = [];
+    const pushEntry = (validator: unknown, entry: unknown) => {
+      const v = typeof validator === "string" ? validator : undefined;
+      if (!v || !entry || typeof entry !== "object") return;
+      const amountRaw = getField<string | number | bigint>(
+        entry,
+        "amount",
+        (val): val is string | number | bigint =>
+          typeof val === "string" || typeof val === "number" || typeof val === "bigint"
+      );
+      const epochRaw = getField<number>(entry, "epoch_height", isNumber);
+      const epoch = typeof epochRaw === "number" && Number.isFinite(epochRaw) ? epochRaw : undefined;
+      let amount: string | undefined;
+      if (typeof amountRaw === "string") amount = amountRaw;
+      else if (typeof amountRaw === "number" && Number.isFinite(amountRaw)) {
+        amount = numberToIntegerString(amountRaw);
+      } else if (typeof amountRaw === "bigint") amount = amountRaw.toString();
+      if (amount && epoch !== undefined) entries.push({ validator: v, amount, epoch_height: epoch });
+    };
+
+    if (Array.isArray(unstake_entries)) {
+      for (const pair of unstake_entries) {
+        if (Array.isArray(pair) && pair.length >= 2) {
+          pushEntry(pair[0], pair[1]);
+        }
+      }
+    } else {
+      for (const [validator, entry] of Object.entries(unstake_entries as Record<string, unknown>)) {
+        pushEntry(validator, entry);
+      }
+    }
+    if (entries.length > 0) transformed.unstake_entries = entries;
+  }
 
   if (liquidity_request) {
     // These fields are the subset we care about from the contract's liquidity_request
@@ -94,7 +138,16 @@ export function transformVaultState(vault_state: VaultViewState): TransformedVau
   }
 
   if (liquidation) {
-    const liquidated = getField<string>(liquidation, "liquidated", isString);
+    const raw = getField<string | number | bigint>(
+      liquidation,
+      "liquidated",
+      (v): v is string | number | bigint =>
+        typeof v === "string" || typeof v === "number" || typeof v === "bigint"
+    );
+    let liquidated: string | undefined;
+    if (raw !== undefined) {
+      liquidated = normalizeToIntegerString(raw);
+    }
     if (liquidated !== undefined) transformed.liquidation = { liquidated };
   }
 

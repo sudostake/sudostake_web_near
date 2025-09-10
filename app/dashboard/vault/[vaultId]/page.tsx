@@ -23,6 +23,9 @@ import { useViewerRole } from "@/hooks/useViewerRole";
 import { useAccountFtBalance } from "@/hooks/useAccountFtBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
+import { showToast } from "@/utils/toast";
+import { STRINGS } from "@/utils/strings";
+import { useRefundEntries } from "@/hooks/useRefundEntries";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -55,6 +58,8 @@ export default function VaultPage() {
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
     useAvailableBalance(vaultId);
 
+  const { count: refundCount, loading: refundsLoading, refetch: refetchRefunds } = useRefundEntries(vaultId);
+
   // Vault USDC balance for display when funded
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const { balance: vaultUsdc, loading: vaultUsdcLoading, refetch: refetchVaultUsdc } = useAccountFtBalance(vaultId, usdcId, "USDC");
@@ -73,12 +78,41 @@ export default function VaultPage() {
   const [undelegateOpen, setUndelegateOpen] = useState(false);
   const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
   const handleDeposit = () => setDepositOpen(true);
-  const handleWithdraw = () => setWithdrawOpen(true);
+  const withdrawBlockReason = useMemo(() => {
+    if (data?.liquidation) return STRINGS.withdrawDisabledLiquidation;
+    if (data?.state === "active") return STRINGS.withdrawDisabledActive;
+    if (data?.state === "pending") return STRINGS.withdrawDisabledPending;
+    return null;
+  }, [data?.liquidation, data?.state]);
+
+  const handleWithdraw = () => {
+    if (withdrawBlockReason) {
+      showToast(withdrawBlockReason, { variant: "info" });
+      return;
+    }
+    setWithdrawOpen(true);
+  };
   const handleDelegate = (validator?: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.delegateDisabledLiquidation, { variant: "info" });
+      return;
+    }
+    if ((refundCount ?? 0) > 0) {
+      showToast(STRINGS.delegateDisabledRefunds, { variant: "info" });
+      return;
+    }
     setDelegateValidator(validator ?? null);
     setDelegateOpen(true);
   };
   const handleUndelegate = (validator: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.undelegateDisabledLiquidation, { variant: "info" });
+      return;
+    }
+    if (data?.state === "pending") {
+      showToast(STRINGS.undelegateDisabledPending, { variant: "info" });
+      return;
+    }
     setUndelegateValidator(validator);
     setUndelegateOpen(true);
   };
@@ -95,6 +129,10 @@ export default function VaultPage() {
   const [claimOpen, setClaimOpen] = useState(false);
   const [claimValidator, setClaimValidator] = useState<string | null>(null);
   const handleUnclaimUnstaked = (validator: string) => {
+    if (data?.liquidation) {
+      showToast(STRINGS.claimDisabledLiquidation, { variant: "info" });
+      return;
+    }
     setClaimValidator(validator);
     setClaimOpen(true);
   };
@@ -120,19 +158,16 @@ export default function VaultPage() {
           <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
           <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
             <span className="shrink-0">Contract Balance:</span>
-            <span
-              className="truncate"
-            title={`${vaultNearLoading ? "…" : vaultNear} ${NATIVE_TOKEN}`}
-            >
-              {vaultNearLoading ? "…" : vaultNear}
+            <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+              {vaultNear}
             </span>
             <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
           </div>
           {usdcId && (
             <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
               <span className="shrink-0">USDC Balance:</span>
-              <span className="truncate" title={`${vaultUsdcLoading ? "…" : vaultUsdc?.toDisplay()} USDC`}>
-                {vaultUsdcLoading ? "…" : vaultUsdc?.toDisplay()}
+              <span className="truncate" title={`${vaultUsdc?.toDisplay()} USDC`}>
+                {vaultUsdc?.toDisplay()}
               </span>
               <span className="text-secondary-text shrink-0">USDC</span>
             </div>
@@ -179,8 +214,9 @@ let Body: React.ReactNode;
               ? {
                   onDeposit: handleDeposit,
                   onDelegate: handleDelegate,
-                  onUndelegate: handleUndelegate,
-                  onUnclaimUnstaked: handleUnclaimUnstaked,
+                  onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
+                  // Do not allow claiming unstaked during liquidation
+                  onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
                 }
               : {}
           }
@@ -192,6 +228,10 @@ let Body: React.ReactNode;
             refetch={refetchDeleg}
             availableBalance={availBalance}
             availableLoading={availLoading}
+            refundsCount={refundCount}
+            refundsLoading={refundsLoading}
+            onRefreshRefunds={refetchRefunds}
+            showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
           />
         </DelegationsActionsProvider>
 

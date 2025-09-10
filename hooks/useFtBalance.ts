@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 export function useFtBalance(tokenId?: string | null) {
   const { signedAccountId, viewFunction } = useWalletSelector();
+  const viewFnRef = useRef(viewFunction);
+  useEffect(() => { viewFnRef.current = viewFunction; }, [viewFunction]);
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +16,7 @@ export function useFtBalance(tokenId?: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const res = await viewFunction({
+      const res = await viewFnRef.current({
         contractId: tokenId,
         method: "ft_balance_of",
         args: { account_id: signedAccountId },
@@ -27,7 +29,7 @@ export function useFtBalance(tokenId?: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [tokenId, signedAccountId, viewFunction]);
+  }, [tokenId, signedAccountId]);
 
   useEffect(() => {
     void load();
@@ -35,4 +37,3 @@ export function useFtBalance(tokenId?: string | null) {
 
   return { balance, loading, error, refetch: load };
 }
-
