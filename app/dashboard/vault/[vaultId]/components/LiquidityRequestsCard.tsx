@@ -15,7 +15,6 @@ import { toYoctoBigInt } from "@/utils/numbers";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS } from "@/utils/constants";
 import { formatDateTime } from "@/utils/datetime";
 import { STRINGS as STR } from "@/utils/strings";
-import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useFtBalance } from "@/hooks/useFtBalance";
@@ -38,6 +37,14 @@ import { LiquidationSummary } from "./LiquidationSummary";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
+import {
+  computeRemainingYocto,
+  computeMaturedTotals,
+  computeUnbondingTotals,
+  computeExpectedImmediate,
+  computeExpectedNext,
+  computeClaimableNow,
+} from "@/utils/liquidation";
 // Big is not directly used here anymore; conversions are handled by utils/numbers
 
 type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
@@ -208,194 +215,40 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const collateralYocto = data?.liquidity_request?.collateral;
   const liquidatedYocto = data?.liquidation?.liquidated;
   const collateralLabel = useMemo(() => (collateralYocto ? safeFormatYoctoNear(collateralYocto, 5) : null), [collateralYocto]);
-  // liquidated label can be derived inline where needed; avoid keeping an unused memoized value
-  const remainingTargetLabel = useMemo(() => {
-    try {
-      if (!collateralYocto) return null;
-      const col = toYoctoBigInt(collateralYocto);
-      const liq = toYoctoBigInt(liquidatedYocto ?? "0");
-      const rem = col > liq ? col - liq : BigInt(0);
-      return safeFormatYoctoNear(rem.toString(), 5);
-    } catch { return null; }
-  }, [collateralYocto, liquidatedYocto]);
+  const remainingYocto = useMemo(
+    () => computeRemainingYocto(collateralYocto, liquidatedYocto),
+    [collateralYocto, liquidatedYocto]
+  );
+  const remainingTargetLabel = useMemo(
+    () => (remainingYocto === null ? null : safeFormatYoctoNear(remainingYocto.toString(), 5)),
+    [remainingYocto]
+  );
 
-  // Remaining target as BigInt (yocto)
-  const remainingYocto = useMemo(() => {
-    try {
-      if (!collateralYocto) return null;
-      const col = toYoctoBigInt(collateralYocto);
-      const liq = toYoctoBigInt(liquidatedYocto ?? "0");
-      return col > liq ? col - liq : BigInt(0);
-    } catch { return null; }
-  }, [collateralYocto, liquidatedYocto]);
-
-  const unbondingTotalLabel = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      if (summary.length === 0) return null;
-      let sum = BigInt(0);
-      for (const s of summary) {
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        // Treat entries as unbonding when not withdrawable yet
-        if (s.can_withdraw) continue;
-        // Require unstaked_at and current_epoch to be present to confirm unbonding window
-        const info = s.unstaked_at !== undefined
-          ? analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null)
-          : null;
-        if (info && !info.unbonding) continue;
-        sum += BigInt(s.unstaked_balance.minimal);
-      }
-      if (sum === BigInt(0)) return null;
-      return safeFormatYoctoNear(sum.toString(), 5);
-    } catch { return null; }
-  }, [delData?.summary]);
-
-  // Matured (claimable) total: entries whose unlock epoch has passed
-  const maturedTotalLabel = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      if (summary.length === 0) return null;
-      let sum = BigInt(0);
-      for (const s of summary) {
-        if (!s.can_withdraw) continue;
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        sum += BigInt(s.unstaked_balance.minimal);
-      }
-      if (sum === BigInt(0)) return null;
-      return safeFormatYoctoNear(sum.toString(), 5);
-    } catch { return null; }
-  }, [delData?.summary]);
-
-  // Matured total as BigInt for calculations
-  const maturedYocto = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      let sum = BigInt(0);
-      for (const s of summary) {
-        if (!s.can_withdraw) continue;
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        sum += BigInt(s.unstaked_balance.minimal);
-      }
-      return sum;
-    } catch { return BigInt(0); }
-  }, [delData?.summary]);
-
-  // Expected immediate payout now (capped by remaining target)
-  const expectedImmediateLabel = useMemo(() => {
-    try {
-      const avail = BigInt(availableNear?.minimal ?? "0");
-      const target = remainingYocto ?? avail;
-      const imm = avail < target ? avail : target;
-      if (imm === BigInt(0)) return null;
-      return safeFormatYoctoNear(imm.toString(), 5);
-    } catch { return null; }
-  }, [availableNear?.minimal, remainingYocto]);
-
-  // BigInt versions for logic
-  const expectedImmediateYocto = useMemo(() => {
-    try {
-      const avail = BigInt(availableNear?.minimal ?? "0");
-      if (remainingYocto === null) return avail;
-      return avail < remainingYocto ? avail : remainingYocto;
-    } catch { return BigInt(0); }
-  }, [availableNear?.minimal, remainingYocto]);
-
-  // Unbonding (not yet matured) as BigInt for calculations
-  const unbondingYocto = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      let sum = BigInt(0);
-      for (const s of summary) {
-        if (s.can_withdraw) continue;
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        // If epochs are present, ensure still unbonding
-        if (s.unstaked_at !== undefined) {
-          const info = analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null);
-          if (!info.unbonding) continue;
-        }
-        sum += BigInt(s.unstaked_balance.minimal);
-      }
-      return sum;
-    } catch { return BigInt(0); }
-  }, [delData?.summary]);
-
-  // Expected next total (immediate + matured + current unbonding, capped by remaining target)
-  const expectedNextLabel = useMemo(() => {
-    try {
-      const avail = BigInt(availableNear?.minimal ?? "0");
-      const target = remainingYocto ?? avail;
-      const imm = avail < target ? avail : target;
-      let total = imm + maturedYocto + unbondingYocto;
-      if (remainingYocto !== null && total > remainingYocto) total = remainingYocto;
-      if (total === BigInt(0)) return null;
-      return safeFormatYoctoNear(total.toString(), 5);
-    } catch { return null; }
-  }, [availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto]);
-
-  // Claimable now (available vault balance + matured unbonding), capped by remaining target
-  const claimableNowYocto = useMemo(() => {
-    try {
-      let total = expectedImmediateYocto + maturedYocto;
-      if (remainingYocto !== null && total > remainingYocto) total = remainingYocto;
-      return total;
-    } catch { return BigInt(0); }
-  }, [expectedImmediateYocto, maturedYocto, remainingYocto]);
-  const claimableNowLabel = useMemo(() => {
-    try { return safeFormatYoctoNear(claimableNowYocto.toString(), 5); } catch { return "0"; }
-  }, [claimableNowYocto]);
+  const { maturedYocto, maturedTotalLabel, maturedEntries } = useMemo(
+    () => computeMaturedTotals(delData?.summary),
+    [delData?.summary]
+  );
+  const { unbondingYocto, unbondingTotalLabel, unbondingEntries, longestRemainingEpochs } = useMemo(
+    () => computeUnbondingTotals(delData?.summary, delData?.current_epoch ?? null),
+    [delData?.summary, delData?.current_epoch]
+  );
+  const { yocto: expectedImmediateYocto, label: expectedImmediateLabel } = useMemo(
+    () => computeExpectedImmediate(availableNear?.minimal, remainingYocto),
+    [availableNear?.minimal, remainingYocto]
+  );
+  const { yocto: expectedNextYocto, label: expectedNextLabel } = useMemo(
+    () => computeExpectedNext(availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto),
+    [availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto]
+  );
+  const { yocto: claimableNowYocto, label: claimableNowLabel } = useMemo(
+    () => computeClaimableNow(expectedImmediateYocto, maturedYocto, remainingYocto),
+    [expectedImmediateYocto, maturedYocto, remainingYocto]
+  );
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
   const closesRepay = true;
   const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0);
 
-  // Collect matured entries to show sources (validator -> amount)
-  const maturedEntries = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      const rows: Array<{ validator: string; amount: string }> = [];
-      for (const s of summary) {
-        if (!s.can_withdraw) continue;
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        rows.push({ validator: s.validator, amount: s.unstaked_balance.minimal });
-      }
-      return rows;
-    } catch { return []; }
-  }, [delData?.summary]);
-
-  // Entries that are currently unbonding (for the summary list)
-  const unbondingEntries = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      if (summary.length === 0) return [] as Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }>;
-      const rows: Array<{ validator: string; amount: string; unlockEpoch: number; unstakeEpoch: number; remaining: number | null }> = [];
-      for (const s of summary) {
-        if (s.can_withdraw) continue;
-        if (!s.unstaked_balance || !s.unstaked_balance.minimal) continue;
-        if (s.unstaked_at === undefined) continue;
-        const info = analyzeUnstakeEntry(s.unstaked_at, s.current_epoch ?? null);
-        if (!info.unbonding) continue;
-        rows.push({ validator: s.validator, amount: s.unstaked_balance.minimal, unlockEpoch: info.unlockEpoch, unstakeEpoch: info.unstakeEpoch, remaining: info.remaining });
-      }
-      rows.sort((a, b) => a.unlockEpoch - b.unlockEpoch);
-      return rows;
-    } catch { return []; }
-  }, [delData?.summary]);
-
-  // Longest remaining epochs among unbonding entries (to provide a simple worst-case ETA)
-  const longestRemainingEpochs = useMemo(() => {
-    try {
-      const summary = delData?.summary ?? [];
-      const curr = typeof delData?.current_epoch === "number" ? delData.current_epoch : null;
-      if (curr === null) return null;
-      let maxRem = 0;
-      for (const s of summary) {
-        if (s.unstaked_at === undefined) continue;
-        const info = analyzeUnstakeEntry(s.unstaked_at, curr);
-        const rem = info.remaining ?? 0;
-        if (rem > maxRem) maxRem = rem;
-      }
-      return maxRem;
-    } catch { return null; }
-  }, [delData?.summary, delData?.current_epoch]);
+  // longestRemainingEpochs is provided by computeUnbondingTotals
   const longestEtaMs = useMemo(() => (longestRemainingEpochs === null ? null : longestRemainingEpochs * AVERAGE_EPOCH_SECONDS * 1000), [longestRemainingEpochs]);
   const longestEtaLabel = useMemo(() => (longestEtaMs && longestEtaMs > 0 ? formatDurationShort(longestEtaMs) : null), [longestEtaMs]);
 
@@ -837,6 +690,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <LiquidationSummary
                 paidSoFarYocto={data.liquidation.liquidated}
                 expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
+                expectedImmediateLabel={expectedImmediateLabel ?? undefined}
+                maturedTotalLabel={maturedTotalLabel ?? undefined}
+                unbondingTotalLabel={unbondingTotalLabel ?? undefined}
               />
               <div className="mt-2 text-right">
                 <button
@@ -867,6 +723,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <LiquidationSummary
                 paidSoFarYocto={data.liquidation.liquidated}
                 expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
+                expectedImmediateLabel={expectedImmediateLabel ?? undefined}
+                maturedTotalLabel={maturedTotalLabel ?? undefined}
+                unbondingTotalLabel={unbondingTotalLabel ?? undefined}
                 showPayoutNote={Boolean(lenderId)}
                 lenderId={lenderId ?? undefined}
                 lenderUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
@@ -934,13 +793,18 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           {role !== "activeLender" && (
           <Card className={`mt-3 ${showDetails ? "" : " hidden"}`}>
             <div className="font-medium">{STRINGS.nextPayoutSources}</div>
-            <div className="mt-2 text-sm space-y-1">
+            <div className="mt-2 text-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="text-secondary-text">{STRINGS.availableNow}</div>
+                <div className="font-medium">{claimableNowLabel} NEAR</div>
+              </div>
+              <div className="h-px bg-foreground/10" />
               <div className="flex items-center justify-between">
                 <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
                 <div className="font-medium">{safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR</div>
               </div>
-              <div className="mt-2">
-                <div className="text-secondary-text">{STRINGS.sourceMaturedUnbonding}</div>
+              <div className="mt-1">
+                <div className="text-secondary-text">{STRINGS.maturedClaimableNow}</div>
                 {maturedEntries.length > 0 ? (
                   <ul className="mt-1 text-sm space-y-1">
                     {maturedEntries.map((m, idx) => (

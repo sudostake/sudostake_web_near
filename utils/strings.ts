@@ -97,7 +97,8 @@ export const STRINGS = {
   hideDetails: "Hide details",
   nextPayoutSources: "Where the next payout comes from",
   sourceVaultBalanceNow: "Vault balance (available now)",
-  sourceMaturedUnbonding: "Matured unbonding",
+  sourceMaturedUnbonding: "Matured (claimable now)",
+  maturedClaimableNow: "Matured (claimable now)",
   noMaturedYet: "No matured entries yet",
   // Epoch / ETA labels
   unlockEpochLabel: "Unlock epoch",
