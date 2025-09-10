@@ -149,13 +149,14 @@ export default function VaultPage() {
     refetch: refetchDeleg,
   } = useVaultDelegations(factoryId, vaultId);
 
+  const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
+
   const Header = (
     <header className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
       <div className="flex items-center gap-3">
         <BackButton onClick={() => router.back()} />
         <div className="min-w-0">
-          <div className="text-sm text-secondary-text">Vault</div>
-          <h1 className="text-lg font-semibold truncate">{vaultId}</h1>
+          <h1 className="text-lg font-semibold truncate" title={String(vaultId)}>{vaultShortName}</h1>
           <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
             <span className="shrink-0">Contract Balance:</span>
             <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
