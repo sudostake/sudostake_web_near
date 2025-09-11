@@ -9,6 +9,7 @@ import type { PendingFilters as FiltersValue } from "./PendingFilters";
 import { getTokenDecimals } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import Big from "big.js";
+import type { PendingRequest } from "@/utils/data/pending";
 
 export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const { data, loading, error, refetch } = usePendingRequests(factoryId);
@@ -17,10 +18,11 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const network = networkFromFactoryId(factoryId);
 
   // Client-side filtering/sorting for v1
+  type WithRequest = PendingRequest & { liquidity_request: NonNullable<PendingRequest["liquidity_request"]> };
   const filtered = useMemo(() => {
-    const list = (data ?? []).filter((d) => Boolean(d.liquidity_request));
+    const lrList: WithRequest[] = (data ?? []).filter((d): d is WithRequest => Boolean(d.liquidity_request)) as WithRequest[];
     const q = filters.q.trim().toLowerCase();
-    let next = list.filter((d) => {
+    let next: WithRequest[] = lrList.filter((d) => {
       const id = d.id.toLowerCase();
       const owner = (d.owner ?? "").toLowerCase();
       if (q && !(id.includes(q) || owner.includes(q))) return false;
@@ -39,7 +41,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       return true;
     });
 
-    const byAmountDesc = (a: any, b: any) => {
+    const byAmountDesc = (a: WithRequest, b: WithRequest) => {
       try {
         const da = getTokenDecimals(a.liquidity_request.token, network);
         const db = getTokenDecimals(b.liquidity_request.token, network);
@@ -48,14 +50,14 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
         return vb.cmp(va);
       } catch { return 0; }
     };
-    const byAprDesc = (a: any, b: any) => {
+    const byAprDesc = (a: WithRequest, b: WithRequest) => {
       try {
         const aprA = new Big(a.liquidity_request.interest).div(a.liquidity_request.amount).times(365).div(Math.max(1, Math.round(a.liquidity_request.duration/86400)));
         const aprB = new Big(b.liquidity_request.interest).div(b.liquidity_request.amount).times(365).div(Math.max(1, Math.round(b.liquidity_request.duration/86400)));
         return aprB.cmp(aprA);
       } catch { return 0; }
     };
-    const byTermAsc = (a: any, b: any) => Math.max(1, Math.round(a.liquidity_request.duration/86400)) - Math.max(1, Math.round(b.liquidity_request.duration/86400));
+    const byTermAsc = (a: WithRequest, b: WithRequest) => Math.max(1, Math.round(a.liquidity_request.duration/86400)) - Math.max(1, Math.round(b.liquidity_request.duration/86400));
 
     switch (filters.sort) {
       case "amount_desc":

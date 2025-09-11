@@ -44,16 +44,17 @@ export function subscribePendingRequests(
           const state: unknown = d.get("state");
           const owner: unknown = d.get("owner");
           const lr: unknown = d.get("liquidity_request");
-          const liquidity_request =
-            lr && typeof lr === "object"
-              ? {
-                  token: String((lr as any).token ?? ""),
-                  amount: String((lr as any).amount ?? "0"),
-                  interest: String((lr as any).interest ?? "0"),
-                  collateral: String((lr as any).collateral ?? "0"),
-                  duration: Number((lr as any).duration ?? 0),
-                }
-              : undefined;
+          let liquidity_request: PendingRequest["liquidity_request"] | undefined;
+          if (lr && typeof lr === "object") {
+            const o = lr as Record<string, unknown>;
+            const token = typeof o.token === "string" ? o.token : "";
+            const amount = typeof o.amount === "string" ? o.amount : "0";
+            const interest = typeof o.interest === "string" ? o.interest : "0";
+            const collateral = typeof o.collateral === "string" ? o.collateral : "0";
+            const durationVal = o.duration;
+            const duration = typeof durationVal === "number" ? durationVal : Number(durationVal ?? 0);
+            liquidity_request = { token, amount, interest, collateral, duration };
+          }
           return {
             id: d.id,
             state: isVaultState(state) ? state : undefined,
@@ -95,7 +96,7 @@ export async function fetchPendingRequestsApi(factoryId: string): Promise<Pendin
       : undefined;
     return {
       id: String(doc["id"] ?? ""),
-      state: isVaultState(doc["state"]) ? (doc["state"] as any) : undefined,
+      state: isVaultState(doc["state"]) ? (doc["state"] as PendingRequest["state"]) : undefined,
       owner: typeof doc["owner"] === "string" ? (doc["owner"] as string) : undefined,
       ...(liquidity_request ? { liquidity_request } : {}),
     } as PendingRequest;

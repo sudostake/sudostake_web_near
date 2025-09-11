@@ -44,8 +44,9 @@ export function useAccountBalance(
         setBalance(utils.format.formatNearAmount(acct.amount));
       })
       .catch((e: unknown) => {
-        if (typeof e === "object" && e !== null && "message" in e && typeof (e as any).message === "string") {
-          setError((e as { message: string }).message);
+        if (typeof e === "object" && e !== null) {
+          const msg = (e as { message?: unknown }).message;
+          setError(typeof msg === "string" ? msg : String(e));
         } else {
           setError(String(e));
         }
