@@ -89,7 +89,7 @@ function subscribeViaApi(
   intervalMs = 10_000
 ): Unsubscribe {
   const hasName = (v: unknown): v is { name: string } =>
-    typeof v === "object" && v !== null && "name" in (v as Record<string, unknown>);
+    typeof v === "object" && v !== null && "name" in v;
   const isAbortError = (v: unknown): boolean =>
     (typeof DOMException !== "undefined" && v instanceof DOMException && v.name === "AbortError") ||
     (v instanceof Error && v.name === "AbortError") ||

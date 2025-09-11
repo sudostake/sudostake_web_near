@@ -7,6 +7,7 @@ import { ErrorMessage } from "./ErrorMessage";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
 import { Input } from "@/app/components/ui/Input";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
+import { DEFAULT_VAULT_STATE } from "@/utils/constants";
 
 export type LenderPositionsProps = {
   lender: string | null | undefined;
@@ -66,7 +67,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick }: LenderPosit
         <VaultList
           vaultIds={filtered}
           onVaultClick={onVaultClick}
-          summaries={(data ?? []).map((d) => ({ id: d.id, state: d.state ?? "idle" }))}
+          summaries={(data ?? []).map((d) => ({ id: d.id, state: d.state ?? DEFAULT_VAULT_STATE }))}
         />
       </div>
     </div>
