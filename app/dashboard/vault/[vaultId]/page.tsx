@@ -151,62 +151,7 @@ export default function VaultPage() {
   } = useVaultDelegations(factoryId, vaultId);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
-
-  const Header = (
-    <header className="sticky top-0 z-30 -mx-4 px-4 py-3 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:mx-0 sm:rounded">
-      <div className="flex items-center gap-3">
-        <BackButton onClick={() => router.back()} />
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold truncate" title={String(vaultId)}>{vaultShortName}</h1>
-          <div className="text-xs text-secondary-text mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
-            <a
-              href={explorerAccountUrl(network, String(vaultId))}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline truncate"
-              title={String(vaultId)}
-            >
-              {String(vaultId)}
-            </a>
-            <CopyButton value={String(vaultId)} />
-            {data?.owner && (
-              <span className="truncate">
-                Owner:
-                <a
-                  href={explorerAccountUrl(network, String(data.owner))}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline ml-1"
-                  title={String(data.owner)}
-                >
-                  <span className="font-mono">{data.owner}</span>
-                </a>
-                <CopyButton value={String(data.owner)} className="ml-1" />
-              </span>
-            )}
-          </div>
-          <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
-            <span className="shrink-0">Contract Balance:</span>
-            <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-              {vaultNearLoading ? "Loading…" : vaultNear}
-            </span>
-            <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
-          </div>
-          {usdcId && (
-            <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
-              <span className="shrink-0">USDC Balance:</span>
-              <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
-                {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
-              </span>
-              <span className="text-secondary-text shrink-0">USDC</span>
-            </div>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-
-let Body: React.ReactNode;
+  let Body: React.ReactNode;
   if (error) {
     Body = (
       <div className="p-4 text-center text-sm text-red-500" role="alert" aria-live="polite">
@@ -287,7 +232,61 @@ let Body: React.ReactNode;
   return (
     <div className="min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
       <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
-        {Header}
+        <header className="sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ top: "var(--nav-height, 56px)" }}>
+          <div className="w-full max-w-2xl mx-auto">
+            <div className="-mx-4 px-4 py-3 sm:mx-0 sm:rounded">
+              <div className="flex items-center gap-3">
+                <BackButton onClick={() => router.back()} />
+                <div className="min-w-0">
+                  <h1 className="text-lg font-semibold truncate" title={String(vaultId)}>{vaultShortName}</h1>
+                  <div className="text-xs text-secondary-text mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
+                    <a
+                      href={explorerAccountUrl(network, String(vaultId))}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline truncate"
+                      title={String(vaultId)}
+                    >
+                      {String(vaultId)}
+                    </a>
+                    <CopyButton value={String(vaultId)} />
+                    {data?.owner && (
+                      <span className="truncate">
+                        Owner:
+                        <a
+                          href={explorerAccountUrl(network, String(data.owner))}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline ml-1"
+                          title={String(data.owner)}
+                        >
+                          <span className="font-mono">{data.owner}</span>
+                        </a>
+                        <CopyButton value={String(data.owner)} className="ml-1" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
+                    <span className="shrink-0">Contract Balance:</span>
+                    <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+                      {vaultNearLoading ? "Loading…" : vaultNear}
+                    </span>
+                    <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
+                  </div>
+                  {usdcId && (
+                    <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
+                      <span className="shrink-0">USDC Balance:</span>
+                      <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
+                        {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
+                      </span>
+                      <span className="text-secondary-text shrink-0">USDC</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
         {Body}
         {isOwner && (
           <>

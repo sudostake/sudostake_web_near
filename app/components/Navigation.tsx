@@ -26,6 +26,7 @@ export function Navigation() {
   const { signedAccountId, signIn, signOut } = useWalletSelector();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
   const accountShort = useMemo(() => {
     if (!signedAccountId) return "";
     if (signedAccountId.length <= 20) return signedAccountId;
@@ -54,11 +55,27 @@ export function Navigation() {
       document.removeEventListener("keydown", onKey);
     };
   }, [menuOpen]);
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const setVar = () => {
+      const h = el.offsetHeight || 56;
+      document.documentElement.style.setProperty('--nav-height', h + 'px');
+    };
+    setVar();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(setVar) : null;
+    if (ro) ro.observe(el);
+    window.addEventListener('resize', setVar);
+    return () => {
+      window.removeEventListener('resize', setVar);
+      if (ro) ro.disconnect();
+    };
+  }, []);
 
   return (
     <>
       {/* Ensure the account dropdown overlays sticky page headers (vault view uses z-30). */}
-      <nav
+      <nav ref={navRef}
         className={[
           "fixed top-0 left-0 right-0 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
         ].join(" ")}
@@ -106,7 +123,7 @@ export function Navigation() {
           )}
         </div>
       </nav>
-      <div aria-hidden className="h-14" />
+      <div aria-hidden style={{ height: "var(--nav-height, 56px)" }} />
     </>
   );
 }
