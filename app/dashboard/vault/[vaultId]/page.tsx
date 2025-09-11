@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
@@ -151,6 +151,26 @@ export default function VaultPage() {
   } = useVaultDelegations(factoryId, vaultId);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
+  // Track whether the sticky header is currently affixed to the top to toggle a bottom shadow
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const sentinel = document.getElementById("vault-header-sentinel");
+    if (!sentinel) return;
+    const rootStyles = getComputedStyle(document.documentElement);
+    const navVar = rootStyles.getPropertyValue("--nav-height").trim();
+    const navPx = navVar.endsWith("px") ? Number(navVar.replace("px", "")) : Number(navVar || 56);
+    const rootMargin = `-${isNaN(navPx) ? 56 : navPx}px 0px 0px 0px`;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const next = entry.intersectionRatio < 1; // becomes < 1 once it starts moving out
+        setStuck((prev) => (prev !== next ? next : prev));
+      },
+      { root: null, rootMargin, threshold: [1] }
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, []);
   let Body: React.ReactNode;
   if (error) {
     Body = (
@@ -232,7 +252,15 @@ export default function VaultPage() {
   return (
     <div className="min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
       <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
-        <header className="sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60" style={{ top: "var(--nav-height, 56px)" }}>
+        {/* Sentinel used to detect when the sticky header is affixed to the top */}
+        <div id="vault-header-sentinel" aria-hidden className="h-px" />
+        <header
+          className={[
+            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative",
+            stuck ? "border-b border-foreground/10" : "",
+          ].join(" ")}
+          style={{ top: "var(--nav-height, 56px)" }}
+        >
           <div className="w-full max-w-2xl mx-auto">
             <div className="-mx-4 px-4 py-3 sm:mx-0 sm:rounded">
               <div className="flex items-center gap-3">
@@ -286,6 +314,14 @@ export default function VaultPage() {
               </div>
             </div>
           </div>
+          {/* Subtle bottom gradient to emphasize separation; adapts to theme via CSS vars */}
+          <div
+            aria-hidden
+            className={[
+              "pointer-events-none absolute inset-x-0 bottom-0 h-3 bg-gradient-to-b from-foreground/15 to-transparent transition-opacity will-change-opacity",
+              stuck ? "opacity-100" : "opacity-0",
+            ].join(" ")}
+          />
         </header>
         {Body}
         {isOwner && (
