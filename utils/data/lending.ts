@@ -11,6 +11,10 @@ export type LenderPosition = {
 
 export type Unsubscribe = () => void;
 
+// Shared type guard for LenderPosition.state
+const isLenderState = (v: unknown): v is LenderPosition["state"] =>
+  v === "idle" || v === "pending" || v === "active";
+
 // Firestore-backed subscription. The view layer does not need to know whether
 // data comes from Firestore or API; this utility can be swapped for an API
 // fetch/polling strategy without changing consumers.
@@ -36,9 +40,7 @@ export function subscribeLenderPositions(
       onData(
         docs.map((d) => {
           const state = d.get("state") as unknown;
-          const isState = (v: unknown): v is LenderPosition["state"] =>
-            v === "idle" || v === "pending" || v === "active";
-          return { id: d.id, state: isState(state) ? state : undefined };
+          return { id: d.id, state: isLenderState(state) ? state : undefined };
         })
       );
     },
@@ -66,11 +68,9 @@ export async function fetchLenderPositionsApi(
     throw new Error(`Failed to fetch lender positions: ${JSON.stringify(details)}`);
   }
   const arr = (await res.json()) as Array<Record<string, unknown>>;
-  const isState = (v: unknown): v is LenderPosition["state"] =>
-    v === "idle" || v === "pending" || v === "active";
   return arr.map((doc) => ({
     id: String(doc["id"] ?? ""),
-    state: isState(doc["state"]) ? doc["state"] : undefined,
+    state: isLenderState(doc["state"]) ? doc["state"] : undefined,
   }));
 }
 
@@ -124,6 +124,6 @@ export function subscribeLenderPositionsDataSource(
 ): Unsubscribe {
   if (USE_API) {
     return subscribeViaApi(factoryId, lender, onData, onError);
-    }
+  }
   return subscribeLenderPositions(factoryId, lender, onData, onError);
 }

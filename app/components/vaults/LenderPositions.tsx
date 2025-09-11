@@ -9,8 +9,8 @@ import { Input } from "@/app/components/ui/Input";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
 
 export type LenderPositionsProps = {
-  lender: string;
-  factoryId: string;
+  lender: string | null | undefined;
+  factoryId: string | null | undefined;
   onVaultClick?: (vaultId: string) => void;
 };
 
@@ -25,6 +25,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick }: LenderPosit
     return list.filter((id) => id.toLowerCase().includes(q));
   }, [data, query]);
 
+  if (!lender || !factoryId) return null;
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
   if (loading || data === null) return <LoadingSpinner />;
   if ((data ?? []).length === 0)
