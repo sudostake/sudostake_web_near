@@ -693,6 +693,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 expectedImmediateLabel={expectedImmediateLabel ?? undefined}
                 maturedTotalLabel={maturedTotalLabel ?? undefined}
                 unbondingTotalLabel={unbondingTotalLabel ?? undefined}
+                remainingLabel={remainingTargetLabel ?? undefined}
               />
               <div className="mt-2 text-right">
                 <button

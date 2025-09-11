@@ -13,6 +13,7 @@ type Props = {
   showPayoutNote?: boolean;
   lenderId?: string | null;
   lenderUrl?: string | null;
+  remainingLabel?: string | null;
 };
 
 export function LiquidationSummary({
@@ -24,6 +25,7 @@ export function LiquidationSummary({
   showPayoutNote,
   lenderId,
   lenderUrl,
+  remainingLabel,
 }: Props) {
   return (
     <div className="mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
@@ -39,8 +41,8 @@ export function LiquidationSummary({
           </div>
         )}
         <div>
-          <div className="text-secondary-text">{STRINGS.expectedNext}</div>
-          <div className="font-medium">{expectedNextLabel ?? "0"} NEAR</div>
+          <div className="text-secondary-text">{remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext}</div>
+          <div className="font-medium">{(remainingLabel ?? expectedNextLabel ?? "0")} NEAR</div>
         </div>
       </div>
       {(maturedTotalLabel || unbondingTotalLabel) && (
