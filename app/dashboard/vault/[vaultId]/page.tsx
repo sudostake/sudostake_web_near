@@ -171,7 +171,7 @@ export default function VaultPage() {
             <CopyButton value={String(vaultId)} />
             {data?.owner && (
               <span className="truncate">
-                · Owner:
+                Owner:
                 <a
                   href={explorerAccountUrl(network, String(data.owner))}
                   target="_blank"
