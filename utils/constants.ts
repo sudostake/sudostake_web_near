@@ -29,3 +29,6 @@ export const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;
 export const AVERAGE_EPOCH_SECONDS = 43_200; // 12h
 /** Number of epochs required before unstaked NEAR becomes withdrawable (mirrors contract). */
 export const NUM_EPOCHS_TO_UNLOCK = 4;
+
+/** Default vault state used for UI fallbacks. */
+export const DEFAULT_VAULT_STATE = "idle" as const;
