@@ -6,6 +6,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
 import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
+import { LenderPositions } from "../components/vaults/LenderPositions";
 import { getActiveNetwork, factoryContract } from "@/utils/networks";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 
@@ -53,6 +54,10 @@ export default function Dashboard() {
             factoryId={factoryId}
             onCreate={() => setShowCreate(true)}
           />
+        </div>
+        {/* Lending positions for the connected user */}
+        <div className="mt-6">
+          <LenderPositions lender={signedAccountId} factoryId={factoryId} />
         </div>
       </main>
       <CreateVaultDialog
