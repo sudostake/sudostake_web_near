@@ -82,9 +82,14 @@ export function Navigation() {
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
         <div className="flex items-center justify-between px-4 py-3 md:mx-auto md:max-w-2xl">
-          <Link href="/" className="text-xl font-bold">
-            SudoStake
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-xl font-bold">
+              SudoStake
+            </Link>
+            <Link href="/discover" className="text-sm text-secondary-text hover:underline">
+              Discover
+            </Link>
+          </div>
           {!signedAccountId ? (
             <Button size="sm" onClick={onLogin}>
               Login
