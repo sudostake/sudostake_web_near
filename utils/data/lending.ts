@@ -33,13 +33,15 @@ export function subscribeLenderPositions(
     q,
     (snap) => {
       const docs = snap.docs.slice().sort((a, b) => {
-        const aMs = tsToMillis(a.get("accepted_offer.accepted_at") as unknown) ?? 0;
-        const bMs = tsToMillis(b.get("accepted_offer.accepted_at") as unknown) ?? 0;
+        const aVal: unknown = a.get("accepted_offer.accepted_at");
+        const bVal: unknown = b.get("accepted_offer.accepted_at");
+        const aMs = tsToMillis(aVal) ?? 0;
+        const bMs = tsToMillis(bVal) ?? 0;
         return bMs - aMs;
       });
       onData(
         docs.map((d) => {
-          const state = d.get("state") as unknown;
+          const state: unknown = d.get("state");
           return { id: d.id, state: isLenderState(state) ? state : undefined };
         })
       );
@@ -86,6 +88,12 @@ function subscribeViaApi(
   onError: (err: Error) => void,
   intervalMs = 10_000
 ): Unsubscribe {
+  const hasName = (v: unknown): v is { name: string } =>
+    typeof v === "object" && v !== null && "name" in (v as Record<string, unknown>);
+  const isAbortError = (v: unknown): boolean =>
+    (typeof DOMException !== "undefined" && v instanceof DOMException && v.name === "AbortError") ||
+    (v instanceof Error && v.name === "AbortError") ||
+    (hasName(v) && (v as { name: string }).name === "AbortError");
   let stopped = false;
   let timer: ReturnType<typeof setInterval> | null = null;
   let inFlight: AbortController | null = null;
@@ -99,7 +107,7 @@ function subscribeViaApi(
       const list = await fetchLenderPositionsApi(factoryId, lender);
       if (!stopped) onData(list);
     } catch (e: unknown) {
-      if ((e as any)?.name === "AbortError") return;
+      if (isAbortError(e)) return;
       if (!stopped) onError(e instanceof Error ? e : new Error(String(e)));
     }
   };
