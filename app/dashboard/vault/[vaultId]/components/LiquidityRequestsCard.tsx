@@ -17,6 +17,7 @@ import { formatDateTime } from "@/utils/datetime";
 import { STRINGS as STR } from "@/utils/strings";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
+import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
 import { useFtBalance } from "@/hooks/useFtBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
@@ -78,6 +79,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
   const { acceptLiquidity, pending, error: acceptError } = useAcceptLiquidityRequest();
+  const { cancelLiquidityRequest, pending: cancelPending, error: cancelError, success: cancelSuccess } = useCancelLiquidityRequest();
   const { indexVault } = useIndexVault();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const { storageBalanceOf, storageBounds, registerStorage, pending: storagePending, error: storageError } = useFtStorage();
@@ -343,10 +345,17 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     return () => { cancelled = true; };
   }, [isOwner, hasOpenRequest, storageBalanceOf, usdcId, vaultId]);
 
-  // TODO: Implement cancel request mutation (factory/vault contract) in a follow-up PR.
   const onCancel = async () => {
-    // Placeholder: intentionally no-op for this release.
-    return;
+    try {
+      const { txHash } = await cancelLiquidityRequest({ vault: vaultId });
+      // re-index to reflect cancellation
+      await indexVault({ factoryId, vault: vaultId, txHash });
+      refetch();
+      refetchAvail();
+      showToast("Request cancelled", { variant: "success" });
+    } catch {
+      // error surfaced below via cancelError
+    }
   };
 
   const onAccept = async () => {
@@ -558,12 +567,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <button
                 type="button"
                 onClick={onCancel}
-                disabled={true}
-                title="Cancel will be available in the next update"
+                disabled={cancelPending}
                 className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface disabled:opacity-50"
               >
-                Cancel request (soon)
+                {cancelPending ? "Cancelling…" : "Cancel request"}
               </button>
+              {cancelError && <div className="mt-2 text-xs text-red-600">{cancelError}</div>}
             </div>
           ) : data?.state === "pending" && role === "potentialLender" ? (
             <div className="mt-3 text-right space-y-2">
