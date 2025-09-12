@@ -22,7 +22,7 @@ import { Button } from "@/app/components/ui/Button";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { useTokenMetadata } from "@/hooks/useTokenMetadata";
 import { formatDurationFromSeconds } from "@/utils/time";
-import { SECONDS_PER_YEAR } from "@/utils/constants";
+import { calculateApr } from "@/utils/finance";
 
 type Props = {
   item: PendingRequest;
@@ -47,11 +47,9 @@ export function PendingRequestCard({ item, factoryId }: Props) {
     try {
       if (!lr) return "—";
       const amount = new Big(lr.amount);
-      const interest = new Big(lr.interest);
-      if (amount.lte(0)) return "—";
-      const seconds = Math.max(1, durationSeconds);
-      const apr = interest.div(amount).times(SECONDS_PER_YEAR).div(seconds).times(100);
-      return `${apr.round(2, 0 /* RoundDown */).toString()}%`;
+      if (amount.lte(0) || durationSeconds <= 0) return "—";
+      const aprPct = calculateApr(lr.interest, lr.amount, durationSeconds).times(100);
+      return `${aprPct.round(2, 0 /* RoundDown */).toString()}%`;
     } catch { return "—"; }
   }, [lr, durationSeconds]);
 

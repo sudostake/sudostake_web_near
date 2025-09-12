@@ -11,6 +11,7 @@ import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import Big from "big.js";
 import type { PendingRequest } from "@/utils/data/pending";
 import { Button } from "@/app/components/ui/Button";
+import { calculateApr } from "@/utils/finance";
 
 export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const { data, loading, error, refetch } = usePendingRequests(factoryId);
@@ -54,11 +55,8 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     };
     const byAprDesc = (a: WithRequest, b: WithRequest) => {
       try {
-        // TODO: APR calculation is duplicated across components (e.g., PendingRequestCard, AcceptLiquidityConfirm).
-        // Extract into a shared utility like `calculateApr(interest, amount, durationSeconds)`
-        // to ensure consistency and simplify maintenance.
-        const aprA = new Big(a.liquidity_request.interest).div(a.liquidity_request.amount).times(365).div(Math.max(1, Math.round(a.liquidity_request.duration/86400)));
-        const aprB = new Big(b.liquidity_request.interest).div(b.liquidity_request.amount).times(365).div(Math.max(1, Math.round(b.liquidity_request.duration/86400)));
+        const aprA = calculateApr(a.liquidity_request.interest, a.liquidity_request.amount, a.liquidity_request.duration);
+        const aprB = calculateApr(b.liquidity_request.interest, b.liquidity_request.amount, b.liquidity_request.duration);
         return aprB.cmp(aprA);
       } catch { return 0; }
     };

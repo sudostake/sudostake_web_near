@@ -40,11 +40,13 @@ export function formatDays(days: number): string {
 // Examples: 90061 -> "1d 1h", 5400 -> "1h 30m", 45 -> "45s"
 export function formatDurationFromSeconds(totalSeconds: number): string {
   try {
-    let s = Math.max(0, Math.floor(totalSeconds));
-    const days = Math.floor(s / SECONDS_PER_DAY); s -= days * SECONDS_PER_DAY;
-    const hours = Math.floor(s / SECONDS_PER_HOUR); s -= hours * SECONDS_PER_HOUR;
-    const minutes = Math.floor(s / 60); s -= minutes * 60;
-    const seconds = s;
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const days = Math.floor(s / SECONDS_PER_DAY);
+    const afterDays = s % SECONDS_PER_DAY;
+    const hours = Math.floor(afterDays / SECONDS_PER_HOUR);
+    const afterHours = afterDays % SECONDS_PER_HOUR;
+    const minutes = Math.floor(afterHours / 60);
+    const seconds = afterHours % 60;
     const parts: string[] = [];
     if (days > 0) {
       parts.push(`${days}d`);
