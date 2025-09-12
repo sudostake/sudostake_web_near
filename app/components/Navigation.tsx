@@ -15,6 +15,22 @@ function ChevronDownIcon() {
     </svg>
   );
 }
+function DiscoverIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      className="w-5 h-5"
+    >
+      {/* Compass icon */}
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v0m0 0a9 9 0 1 1 0 18 9 9 0 0 1 0-18Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M14.121 9.879l-1.06 3.182a1 1 0 0 1-.66.66l-3.182 1.06a.25.25 0 0 1-.316-.316l1.06-3.182a1 1 0 0 1 .66-.66l3.182-1.06a.25.25 0 0 1 .316.316Z" />
+    </svg>
+  );
+}
 import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
@@ -86,46 +102,58 @@ export function Navigation() {
             <Link href="/" className="text-xl font-bold">
               SudoStake
             </Link>
-            <Link href="/discover" className="text-sm text-secondary-text hover:underline">
+            <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
               Discover
             </Link>
           </div>
-          {!signedAccountId ? (
-            <Button size="sm" onClick={onLogin}>
-              Login
-            </Button>
-          ) : (
-            <div className="relative" ref={menuRef}>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="inline-flex items-center gap-2 pl-3 pr-2"
-                aria-haspopup="menu"
-                aria-expanded={menuOpen || undefined}
-                onClick={() => setMenuOpen((o) => !o)}
-              >
-                <span className="font-mono" title={signedAccountId}>{accountShort}</span>
-                <ChevronDownIcon />
+          <div className="flex items-center gap-2">
+            {/* Mobile discover shortcut */}
+            <Link
+              href="/discover"
+              aria-label="Discover"
+              className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40"
+            >
+              <DiscoverIcon />
+              <span className="sr-only">Discover</span>
+            </Link>
+
+            {!signedAccountId ? (
+              <Button size="sm" onClick={onLogin}>
+                Login
               </Button>
-              {menuOpen && (
-                <div
-                  role="menu"
-                  className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1 z-50"
+            ) : (
+              <div className="relative" ref={menuRef}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center gap-2 pl-3 pr-2"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen || undefined}
+                  onClick={() => setMenuOpen((o) => !o)}
                 >
-                  <Button
-                    role="menuitem"
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start px-3 py-2 text-sm"
-                    onClick={onLogout}
+                  <span className="font-mono" title={signedAccountId}>{accountShort}</span>
+                  <ChevronDownIcon />
+                </Button>
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1 z-50"
                   >
-                    <LogoutIcon />
-                    <span>Logout</span>
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
+                    <Button
+                      role="menuitem"
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start px-3 py-2 text-sm"
+                      onClick={onLogout}
+                    >
+                      <LogoutIcon />
+                      <span>Logout</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </nav>
       <div aria-hidden style={{ height: "var(--nav-height, 56px)" }} />

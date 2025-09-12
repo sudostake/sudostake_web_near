@@ -10,10 +10,12 @@ import { getTokenDecimals } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import Big from "big.js";
 import type { PendingRequest } from "@/utils/data/pending";
+import { Button } from "@/app/components/ui/Button";
 
 export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const { data, loading, error, refetch } = usePendingRequests(factoryId);
   const [filters, setFilters] = useState<FiltersValue>({ q: "", token: null, minAmount: "", maxDays: "", sort: "updated_desc" });
+  const [showFilters, setShowFilters] = useState(true);
 
   const network = networkFromFactoryId(factoryId);
 
@@ -77,16 +79,84 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     return next;
   }, [data, filters, network]);
 
+  // Persist toggle state and default collapsed on first visit
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = window.localStorage.getItem("discover:filters:open");
+    if (saved === null) {
+      setShowFilters(false); // default collapsed on all screens
+    } else {
+      setShowFilters(saved === "1");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("discover:filters:open", showFilters ? "1" : "0");
+    } catch {}
+  }, [showFilters]);
+
+  const activeFilterCount = useMemo(() => {
+    let n = 0;
+    if (filters.q.trim()) n++;
+    if (filters.token) n++;
+    if (filters.minAmount.trim()) n++;
+    if (filters.maxDays.trim()) n++;
+    // sort not counted; default is "updated_desc"
+    return n;
+  }, [filters]);
+
+  function FunnelIcon() {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h18M6 10h12m-7 5h2" />
+      </svg>
+    );
+  }
+
+  const clearFilters = () =>
+    setFilters({ q: "", token: null, minAmount: "", maxDays: "", sort: "updated_desc" });
+
   return (
     <div>
       <SectionHeader
         title="Discover Requests"
         caption={<>{(data ?? []).length} open</>}
-        right={null}
+        right={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowFilters((v) => !v)}
+              className="inline-flex items-center gap-2"
+              aria-expanded={showFilters || undefined}
+              aria-controls="discover-filters"
+            >
+              <FunnelIcon />
+              <span className="hidden sm:inline">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="text-xs text-secondary-text">({activeFilterCount})</span>
+              )}
+            </Button>
+            {activeFilterCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-sm"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        }
       />
-      <div className="mt-3">
-        <PendingFilters value={filters} onChange={setFilters} />
-      </div>
+      {showFilters && (
+        <div id="discover-filters" className="mt-3">
+          <PendingFilters value={filters} onChange={setFilters} />
+        </div>
+      )}
       {error && (
         <div className="mt-3 text-sm text-red-600" role="alert">
           {error}
