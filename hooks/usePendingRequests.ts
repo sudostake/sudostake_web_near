@@ -38,7 +38,7 @@ export function usePendingRequests(
         setLoading(false);
       },
       (err) => {
-        setError(err?.message ?? "Failed to subscribe to pending requests");
+        setError(err.message);
         setData(null);
         setLoading(false);
       }
@@ -49,4 +49,3 @@ export function usePendingRequests(
 
   return { data, loading, error, refetch };
 }
-

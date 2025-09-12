@@ -7,6 +7,7 @@ import { formatDurationFromSeconds } from "@/utils/time";
 import { Button } from "@/app/components/ui/Button";
 import Big from "big.js";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
+import { SECONDS_PER_YEAR } from "@/utils/constants";
 
 export type AcceptLiquidityConfirmProps = {
   open: boolean;
@@ -53,7 +54,7 @@ export function AcceptLiquidityConfirm({
     const amount = new Big(amountRaw);
     const interest = new Big(interestRaw);
     if (amount.gt(0) && durationSeconds > 0) {
-      const apr = interest.div(amount).times(365 * 86400).div(durationSeconds).times(100);
+      const apr = interest.div(amount).times(SECONDS_PER_YEAR).div(durationSeconds).times(100);
       estApr = `${apr.round(2, 0 /* RoundDown */).toString()}%`;
     }
   } catch {}

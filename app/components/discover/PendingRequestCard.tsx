@@ -22,6 +22,7 @@ import { Button } from "@/app/components/ui/Button";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { useTokenMetadata } from "@/hooks/useTokenMetadata";
 import { formatDurationFromSeconds } from "@/utils/time";
+import { SECONDS_PER_YEAR } from "@/utils/constants";
 
 type Props = {
   item: PendingRequest;
@@ -49,7 +50,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
       const interest = new Big(lr.interest);
       if (amount.lte(0)) return "—";
       const seconds = Math.max(1, durationSeconds);
-      const apr = interest.div(amount).times(365 * 86400).div(seconds).times(100);
+      const apr = interest.div(amount).times(SECONDS_PER_YEAR).div(seconds).times(100);
       return `${apr.round(2, 0 /* RoundDown */).toString()}%`;
     } catch { return "—"; }
   }, [lr, durationSeconds]);

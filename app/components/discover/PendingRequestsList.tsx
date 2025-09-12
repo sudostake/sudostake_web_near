@@ -54,6 +54,9 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     };
     const byAprDesc = (a: WithRequest, b: WithRequest) => {
       try {
+        // TODO: APR calculation is duplicated across components (e.g., PendingRequestCard, AcceptLiquidityConfirm).
+        // Extract into a shared utility like `calculateApr(interest, amount, durationSeconds)`
+        // to ensure consistency and simplify maintenance.
         const aprA = new Big(a.liquidity_request.interest).div(a.liquidity_request.amount).times(365).div(Math.max(1, Math.round(a.liquidity_request.duration/86400)));
         const aprB = new Big(b.liquidity_request.interest).div(b.liquidity_request.amount).times(365).div(Math.max(1, Math.round(b.liquidity_request.duration/86400)));
         return aprB.cmp(aprA);

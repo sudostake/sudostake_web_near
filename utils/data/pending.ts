@@ -34,6 +34,10 @@ export function subscribePendingRequests(
   return onSnapshot(
     q,
     (snap) => {
+      // NOTE: Currently sorting in memory by updated_at after fetching.
+      // This can be inefficient for large datasets. Consider leveraging
+      // Firestore server-side sorting via orderBy('updated_at', 'desc')
+      // in the query to avoid client-side sort cost.
       const docs = snap.docs.slice().sort((a, b) => {
         const aMs = tsToMillis(a.get("updated_at") as unknown) ?? 0;
         const bMs = tsToMillis(b.get("updated_at") as unknown) ?? 0;
