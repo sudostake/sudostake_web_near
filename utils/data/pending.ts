@@ -56,7 +56,12 @@ export function subscribePendingRequests(
             const interest = typeof o.interest === "string" ? o.interest : "0";
             const collateral = typeof o.collateral === "string" ? o.collateral : "0";
             const durationVal = o.duration;
-            const duration = typeof durationVal === "number" ? durationVal : Number(durationVal ?? 0);
+            const duration =
+              typeof durationVal === "number" && !Number.isNaN(durationVal)
+                ? durationVal
+                : Number.isFinite(Number(durationVal))
+                  ? Number(durationVal)
+                  : 0;
             liquidity_request = { token, amount, interest, collateral, duration };
           }
           return {

@@ -32,13 +32,13 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       if (filters.token && d.liquidity_request?.token !== filters.token) return false;
       if (filters.minAmount) {
         try {
-          const dec = getTokenDecimals(d.liquidity_request!.token, network);
-          const display = new Big(d.liquidity_request!.amount).div(new Big(10).pow(dec));
+          const dec = getTokenDecimals(d.liquidity_request.token, network);
+          const display = new Big(d.liquidity_request.amount).div(new Big(10).pow(dec));
           if (display.lt(new Big(filters.minAmount))) return false;
         } catch {}
       }
       if (filters.maxDays) {
-        const days = Math.max(1, Math.round((d.liquidity_request!.duration ?? 0) / 86400));
+        const days = Math.max(1, Math.round((d.liquidity_request.duration ?? 0) / 86400));
         if (days > Number(filters.maxDays)) return false;
       }
       return true;
