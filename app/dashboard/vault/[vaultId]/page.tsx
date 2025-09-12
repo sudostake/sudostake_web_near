@@ -256,8 +256,8 @@ export default function VaultPage() {
         <div id="vault-header-sentinel" aria-hidden className="h-px" />
         <header
           className={[
-            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative",
-            stuck ? "border-b border-foreground/10" : "",
+            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative transition-shadow",
+            stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
           ].join(" ")}
           style={{ top: "var(--nav-height, 56px)" }}
         >
@@ -314,14 +314,7 @@ export default function VaultPage() {
               </div>
             </div>
           </div>
-          {/* Subtle bottom gradient to emphasize separation; adapts to theme via CSS vars */}
-          <div
-            aria-hidden
-            className={[
-              "pointer-events-none absolute inset-x-0 bottom-0 h-3 bg-gradient-to-b from-foreground/15 to-transparent transition-opacity will-change-opacity",
-              stuck ? "opacity-100" : "opacity-0",
-            ].join(" ")}
-          />
+          {/* Removed gradient; subtle shadow + border provide a cleaner separation */}
         </header>
         {Body}
         {isOwner && (

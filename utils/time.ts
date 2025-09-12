@@ -35,3 +35,36 @@ export function dayLabel(days: number): string {
 export function formatDays(days: number): string {
   return `${days} ${dayLabel(days)}`;
 }
+
+// Formats a duration given in seconds into a compact human-readable string.
+// Examples: 90061 -> "1d 1h", 5400 -> "1h 30m", 45 -> "45s"
+export function formatDurationFromSeconds(totalSeconds: number): string {
+  try {
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const days = Math.floor(s / SECONDS_PER_DAY);
+    const afterDays = s % SECONDS_PER_DAY;
+    const hours = Math.floor(afterDays / SECONDS_PER_HOUR);
+    const afterHours = afterDays % SECONDS_PER_HOUR;
+    const minutes = Math.floor(afterHours / 60);
+    const seconds = afterHours % 60;
+    const parts: string[] = [];
+    if (days > 0) {
+      parts.push(`${days}d`);
+      if (hours > 0) parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else if (hours > 0) {
+      parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else if (minutes > 0) {
+      parts.push(`${minutes}m`);
+      if (seconds > 0) parts.push(`${seconds}s`);
+    } else {
+      parts.push(`${seconds}s`);
+    }
+    return parts.join(" ");
+  } catch {
+    return `${totalSeconds}s`;
+  }
+}

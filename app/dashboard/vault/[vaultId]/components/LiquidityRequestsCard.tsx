@@ -27,6 +27,7 @@ import { formatDurationShort, formatDays } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
+import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
 import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLenderDialog";
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
@@ -909,7 +910,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {/* Lender confirmation dialog */}
       {acceptOpen && content && data?.liquidity_request && (
-        <AcceptConfirm
+        <AcceptLiquidityConfirm
           open={acceptOpen}
           onClose={() => setAcceptOpen(false)}
           onConfirm={onAccept}
@@ -918,11 +919,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           vaultId={vaultId}
           tokenId={content.token}
           tokenSymbol={tokenSymbol}
+          decimals={tokenDecimals}
           amountRaw={data.liquidity_request.amount}
           interestRaw={data.liquidity_request.interest}
           collateralYocto={data.liquidity_request.collateral}
-          durationDays={content.durationDays}
-          network={network}
+          durationSeconds={data.liquidity_request.duration}
         />
       )}
 
@@ -987,99 +988,5 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         />
       )}
     </section>
-  );
-}
-
-type AcceptConfirmProps = {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  pending: boolean;
-  error?: string;
-  vaultId: string;
-  tokenId: string;
-  tokenSymbol: string;
-  amountRaw: string; // minimal units
-  interestRaw: string; // minimal units
-  collateralYocto: string; // yoctoNEAR
-  durationDays: number;
-  network: Network;
-};
-
-function AcceptConfirm({
-  open,
-  onClose,
-  onConfirm,
-  pending,
-  error,
-  vaultId,
-  tokenId,
-  tokenSymbol,
-  amountRaw,
-  interestRaw,
-  collateralYocto,
-  durationDays,
-  network,
-}: AcceptConfirmProps) {
-  // Resolve decimals for formatting
-  const decimals = getTokenDecimals(tokenId, network);
-  const lendAmount = formatMinimalTokenAmount(amountRaw, decimals);
-  let totalRepay = "-";
-  try {
-    const sum = (BigInt(amountRaw) + BigInt(interestRaw)).toString();
-    totalRepay = formatMinimalTokenAmount(sum, decimals);
-  } catch {}
-  const collateralNear = utils.format.formatNearAmount(collateralYocto);
-
-  return (
-    <Modal
-      open={open}
-      onClose={pending ? () => {} : onClose}
-      title="Confirm acceptance"
-      disableBackdropClose={pending}
-      footer={
-        <>
-          <button
-            type="button"
-            className="rounded border py-2 px-3 bg-surface hover:bg-surface/90 disabled:opacity-60"
-            onClick={onClose}
-            disabled={pending}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="ml-2 rounded bg-primary text-primary-text py-2 px-3 disabled:opacity-60"
-            onClick={onConfirm}
-            disabled={pending}
-          >
-            {pending ? "Confirming…" : "Confirm accept"}
-          </button>
-        </>
-      }
-    >
-      <div className="space-y-3 text-sm">
-        <p>
-          You are about to lend <span className="font-medium">{lendAmount} {tokenSymbol}</span> to
-          {" "}
-          <span className="font-medium" title={vaultId}>{vaultId}</span> via ft_transfer_call.
-        </p>
-        <ul className="list-disc pl-5 space-y-1">
-          <li>
-            On-time repayment (within {formatDays(durationDays)}) should return a total of
-            {" "}
-            <span className="font-medium">{totalRepay} {tokenSymbol}</span> (principal + interest).
-          </li>
-          <li>
-            If the vault does not repay before the term ends, your claim can be fulfilled from the vault’s
-            collateral of <span className="font-medium">{collateralNear} NEAR</span>.
-          </li>
-          <li>
-            This transaction will transfer tokens to the vault and attach a 1 yoctoNEAR deposit.
-          </li>
-        </ul>
-        {error && <div className="text-red-600">{error}</div>}
-      </div>
-    </Modal>
   );
 }

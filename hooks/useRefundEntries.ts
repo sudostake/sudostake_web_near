@@ -32,8 +32,13 @@ export function useRefundEntries(vaultId?: string | null) {
           args: { account_id: null },
         });
         if (!cancelled) setEntries(Array.isArray(res) ? res : []);
-      } catch (e: any) {
-        if (!cancelled) setError(e?.message ?? "Failed to load refund entries");
+      } catch (e: unknown) {
+        if (!cancelled) {
+          const msg = typeof e === 'object' && e !== null && 'message' in e && typeof (e as { message?: unknown }).message === 'string'
+            ? String((e as { message?: unknown }).message)
+            : 'Failed to load refund entries';
+          setError(msg);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,4 +50,3 @@ export function useRefundEntries(vaultId?: string | null) {
   const count = useMemo(() => entries.length, [entries]);
   return { entries, count, loading, error, refetch } as const;
 }
-

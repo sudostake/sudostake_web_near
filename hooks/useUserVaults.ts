@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { collection, onSnapshot, query as fsQuery, where } from "firebase/firestore";
 import { getFirebaseDb } from "@/utils/firebaseClient";
+import { tsToMillis } from "@/utils/firestoreTimestamps";
 
 export type UseUserVaultsResult = {
   data: string[] | null;
@@ -46,13 +47,9 @@ export function useUserVaults(
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
-        const sortedDocs = snapshot.docs.slice().sort((a, b) => {
-          const aTs: any = a.get("updated_at");
-          const bTs: any = b.get("updated_at");
-          const aMs = aTs && typeof aTs.toMillis === "function" ? aTs.toMillis() : 0;
-          const bMs = bTs && typeof bTs.toMillis === "function" ? bTs.toMillis() : 0;
-          return bMs - aMs; // latest first
-        });
+        const sortedDocs = snapshot.docs
+          .slice()
+          .sort((a, b) => (tsToMillis(b.get("updated_at") as unknown) ?? 0) - (tsToMillis(a.get("updated_at") as unknown) ?? 0));
         setData(sortedDocs.map((doc) => doc.id));
         setLoading(false);
       },

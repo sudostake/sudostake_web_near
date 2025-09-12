@@ -22,6 +22,10 @@ export const NATIVE_DECIMALS = 24;
 export const SECONDS_PER_DAY = 86_400;
 /** Number of seconds in one hour. */
 export const SECONDS_PER_HOUR = 3_600;
+/** Number of days in a (non-leap) year, used for simple APR estimates. */
+export const DAYS_PER_YEAR = 365;
+/** Number of seconds in a (non-leap) year. */
+export const SECONDS_PER_YEAR = DAYS_PER_YEAR * SECONDS_PER_DAY;
 /** Contract-level action identifiers used in FT transfer messages. */
 export const ACTION_ACCEPT_LIQUIDITY = "AcceptLiquidityRequest" as const;
 
