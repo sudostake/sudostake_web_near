@@ -27,6 +27,18 @@ export function useCancelLiquidityRequest(): UseCancelLiquidityRequestResult {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Safely extract a transaction hash from an unknown wallet outcome
+  function extractTxHash(raw: unknown): string {
+    if (typeof raw === "object" && raw !== null) {
+      const tx = (raw as { transaction?: unknown }).transaction;
+      if (typeof tx === "object" && tx !== null) {
+        const hash = (tx as { hash?: unknown }).hash;
+        if (typeof hash === "string" && hash.length > 0) return hash;
+      }
+    }
+    throw new Error("Unexpected wallet outcome: missing transaction hash");
+  }
+
   const cancelLiquidityRequest = useCallback(
     async ({ vault }: CancelLiquidityRequestParams) => {
       if (!signedAccountId) throw new Error("Wallet not signed in");
@@ -49,12 +61,7 @@ export function useCancelLiquidityRequest(): UseCancelLiquidityRequestResult {
             },
           ],
         });
-        const txHash = (() => {
-          const o = outcomeRaw as Partial<FinalExecutionOutcome> | undefined;
-          const h = (o as any)?.transaction?.hash;
-          if (typeof h === "string" && h.length > 0) return h;
-          throw new Error("Unexpected wallet outcome: missing transaction hash");
-        })();
+        const txHash = extractTxHash(outcomeRaw);
         setSuccess(true);
         return { txHash };
       } catch (e) {
