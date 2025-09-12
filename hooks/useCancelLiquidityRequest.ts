@@ -49,9 +49,12 @@ export function useCancelLiquidityRequest(): UseCancelLiquidityRequestResult {
             },
           ],
         });
-
-        const outcome = outcomeRaw as FinalExecutionOutcome;
-        const txHash = outcome.transaction.hash;
+        const txHash = (() => {
+          const o = outcomeRaw as Partial<FinalExecutionOutcome> | undefined;
+          const h = (o as any)?.transaction?.hash;
+          if (typeof h === "string" && h.length > 0) return h;
+          throw new Error("Unexpected wallet outcome: missing transaction hash");
+        })();
         setSuccess(true);
         return { txHash };
       } catch (e) {

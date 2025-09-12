@@ -348,13 +348,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const onCancel = async () => {
     try {
       const { txHash } = await cancelLiquidityRequest({ vault: vaultId });
-      // re-index to reflect cancellation
       await indexVault({ factoryId, vault: vaultId, txHash });
       refetch();
       refetchAvail();
       showToast("Request cancelled", { variant: "success" });
-    } catch {
-      // error surfaced below via cancelError
+    } catch (error) {
+      console.error("Error cancelling liquidity request:", error);
     }
   };
 
