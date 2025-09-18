@@ -17,6 +17,7 @@ import { useFtBalance } from "@/hooks/useFtBalance";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import { useTokenRegistration } from "@/hooks/useTokenRegistration";
+import { STORAGE_KEY_SEND_ASSET_KIND } from "@/utils/storageKeys";
 
 type Props = {
   open: boolean;
@@ -47,7 +48,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
   const { wallet, signedAccountId } = useWalletSelector();
   const { ftTransfer, pending: ftPending } = useFtTransfer();
 
-  const LS_KEY = "sendValueDialog.lastAssetKind" as const;
+  const LS_KEY = STORAGE_KEY_SEND_ASSET_KIND;
   const [kind, setKind] = useState<TokenKind>(defaultUsdc ? "USDC" : "NEAR");
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState("");
@@ -76,14 +77,14 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
       if (saved === "USDC" && defaultUsdc) setKind("USDC");
       else if (saved === "NEAR") setKind("NEAR");
     } catch {}
-  }, [open, defaultUsdc]);
+  }, [open, defaultUsdc, LS_KEY]);
 
   // Persist selection
   useEffect(() => {
     try {
       if (typeof window !== "undefined") window.localStorage.setItem(LS_KEY, kind);
     } catch {}
-  }, [kind]);
+  }, [kind, LS_KEY]);
 
   const amountMinimalPreview = useMemo(() => {
     try {
@@ -95,7 +96,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
       } else {
         return toMinimal(amount, usdcDecimals);
       }
-    } catch (e) { return null; }
+    } catch (_e) { return null; }
   }, [amount, kind, usdcDecimals]);
 
   const amountValid = Boolean(amountMinimalPreview && amountMinimalPreview !== "0");

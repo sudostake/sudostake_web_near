@@ -7,6 +7,7 @@ import { getActiveNetwork } from "@/utils/networks";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { CopyButton } from "@/app/components/ui/CopyButton";
+import { STORAGE_KEY_SEND_ASSET_KIND } from "@/utils/storageKeys";
 
 type Props = {
   open: boolean;
@@ -19,7 +20,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   const { signedAccountId } = useWalletSelector();
   const network = getActiveNetwork();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
-  const LS_KEY = "sendValueDialog.lastAssetKind" as const;
+  const LS_KEY = STORAGE_KEY_SEND_ASSET_KIND;
   const [kind, setKind] = useState<TokenKind>(usdcId ? "USDC" : "NEAR");
   const [showToken, setShowToken] = useState(false);
 
@@ -31,14 +32,14 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
       if (saved === "USDC" && usdcId) setKind("USDC");
       else if (saved === "NEAR") setKind("NEAR");
     } catch {}
-  }, [open, usdcId]);
+  }, [open, usdcId, LS_KEY]);
 
   // Persist selection
   useEffect(() => {
     try {
       if (typeof window !== "undefined") window.localStorage.setItem(LS_KEY, kind);
     } catch {}
-  }, [kind]);
+  }, [kind, LS_KEY]);
 
   return (
     <Modal
