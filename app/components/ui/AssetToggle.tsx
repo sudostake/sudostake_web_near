@@ -21,12 +21,19 @@ export interface AssetToggleProps {
 
 // A segmented control with a sliding thumb that animates left/right.
 export function AssetToggle({ value, onChange, options, disabled = false, className = "", size = "md" }: AssetToggleProps) {
-  const opts: AssetOption[] = options ?? [
+  const optsRaw: AssetOption[] = options ?? [
     { kind: "NEAR", available: true },
     { kind: "USDC", available: true },
   ];
+  // Ensure we always have at least one option to render
+  const opts: AssetOption[] = optsRaw.length > 0 ? optsRaw : [{ kind: "NEAR", available: true }];
   const count = Math.max(1, opts.length);
-  const selectedIndex = Math.max(0, opts.findIndex((o) => o.kind === value));
+  // Resolve selected index; if value not present, fall back to first available option, else index 0
+  let selectedIndex = opts.findIndex((o) => o.kind === value);
+  if (selectedIndex === -1) {
+    const firstAvailable = opts.findIndex((o) => o.available !== false);
+    selectedIndex = firstAvailable !== -1 ? firstAvailable : 0;
+  }
   const segmentWidthPct = 100 / count;
   const paddingClass = size === "sm" ? "p-0.5" : "p-1";
   const thumbVert = size === "sm" ? "top-0.5 bottom-0.5" : "top-1 bottom-1";
