@@ -18,21 +18,36 @@ export interface AssetToggleProps {
   className?: string;
 }
 
+// A segmented control with a sliding thumb that animates left/right.
 export function AssetToggle({ value, onChange, options, disabled = false, className = "" }: AssetToggleProps) {
   const opts: AssetOption[] = options ?? [
     { kind: "NEAR", available: true },
     { kind: "USDC", available: true },
   ];
-
-  const baseBtn =
-    "px-3 py-1.5 text-sm border rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed";
-  const selectedClasses = "bg-primary text-primary-text border-primary";
-  const unselectedClasses = "bg-surface border-foreground/10";
+  const count = Math.max(1, opts.length);
+  const selectedIndex = Math.max(0, opts.findIndex((o) => o.kind === value));
+  const segmentWidthPct = 100 / count;
 
   return (
-    <div className={["flex gap-2", className].join(" ")} role="tablist" aria-label="Asset selector">
-      {opts.map((o) => {
-        const isSelected = o.kind === value;
+    <div
+      className={[
+        "relative inline-flex w-full select-none items-center rounded-md border border-foreground/10 bg-surface p-1",
+        disabled ? "opacity-60 cursor-not-allowed" : "",
+        className,
+      ].join(" ")}
+      role="tablist"
+      aria-label="Asset selector"
+    >
+      {/* Sliding thumb */}
+      <div
+        className="absolute top-1 bottom-1 left-1 rounded-md bg-primary transition-transform duration-200 ease-out"
+        style={{ width: `${segmentWidthPct}%`, transform: `translateX(${selectedIndex * 100}%)` }}
+        aria-hidden
+      />
+
+      {/* Options */}
+      {opts.map((o, i) => {
+        const isSelected = i === selectedIndex;
         const isAvailable = o.available !== false && !disabled;
         const label = o.label ?? (o.available === false ? `${o.kind} (unavailable)` : o.kind);
         return (
@@ -42,7 +57,10 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
             role="tab"
             aria-selected={isSelected}
             aria-disabled={!isAvailable}
-            className={[baseBtn, isSelected ? selectedClasses : unselectedClasses].join(" ")}
+            className={[
+              "relative z-10 flex-1 rounded-md px-3 py-1.5 text-sm transition-colors",
+              isSelected ? "text-primary-text" : "text-foreground",
+            ].join(" ")}
             onClick={() => isAvailable && onChange(o.kind)}
             disabled={!isAvailable}
           >
@@ -53,4 +71,3 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
     </div>
   );
 }
-
