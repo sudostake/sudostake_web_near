@@ -11,6 +11,7 @@ import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
 import { ClaimUnstakedDialog } from "@/app/components/dialogs/ClaimUnstakedDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
+import { TransferOwnershipDialog } from "@/app/components/dialogs/TransferOwnershipDialog";
 import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
 import { ActionButtons } from "./components/ActionButtons";
 import { DelegationsCard } from "./components/DelegationsCard";
@@ -78,6 +79,7 @@ export default function VaultPage() {
   const [delegateValidator, setDelegateValidator] = useState<string | null>(null);
   const [undelegateOpen, setUndelegateOpen] = useState(false);
   const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
+  const [transferOpen, setTransferOpen] = useState(false);
   const handleDeposit = () => setDepositOpen(true);
   const withdrawBlockReason = useMemo(() => {
     if (data?.liquidation) return STRINGS.withdrawDisabledLiquidation;
@@ -92,6 +94,9 @@ export default function VaultPage() {
       return;
     }
     setWithdrawOpen(true);
+  };
+  const handleTransfer = () => {
+    setTransferOpen(true);
   };
   const handleDelegate = (validator?: string) => {
     if (data?.liquidation) {
@@ -198,7 +203,7 @@ export default function VaultPage() {
         />
 
         {isOwner && (
-          <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} disabled={loading || Boolean(error)} />
+          <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
         )}
 
         {/* Delegations list & controls */}
@@ -328,6 +333,15 @@ export default function VaultPage() {
                 refetchVaultNear();
                 refetchAvail();
                 refetchVaultUsdc();
+              }}
+            />
+            <TransferOwnershipDialog
+              open={transferOpen}
+              onClose={() => setTransferOpen(false)}
+              vaultId={vaultId}
+              currentOwner={data?.owner ?? null}
+              onSuccess={() => {
+                refetch();
               }}
             />
             <WithdrawDialog

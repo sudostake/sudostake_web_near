@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "@/utils/errors";
 
 type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
 
@@ -91,6 +92,7 @@ export function useIndexVault(): UseIndexVaultResult {
         fetch("/api/index_vault", directOptions)
           // TODO: Add client-side retry with backoff for direct indexing kickoff when appropriate.
           .catch((err) => {
+            if (isAbortError(err)) return; // ignore aborts silently
             console.error("Direct indexing request failed", err);
           })
           .finally(() => {
@@ -111,6 +113,7 @@ export function useIndexVault(): UseIndexVaultResult {
         fetch("/api/indexing/enqueue", fetchOptions)
           // TODO: Implement client-side retry with jittered backoff for enqueue failures.
           .catch((err) => {
+            if (isAbortError(err)) return; // ignore aborts silently
             console.error("Enqueue indexing request failed", err);
           })
           .finally(() => {

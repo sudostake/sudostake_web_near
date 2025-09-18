@@ -22,9 +22,10 @@ Current UI rules
 - Vault actions
   - Deposit, Withdraw, Delegate, Undelegate, and Claim Unstaked dialogs are only rendered for the owner.
   - Delegations summary remains visible to all viewers; onboarding CTAs are disabled unless the viewer is the owner.
+  - Transfer ownership is owner-only and requires attaching exactly 1 yoctoNEAR to confirm intent.
 
 Contract reference
 
 - Only the vault owner may call request_liquidity (1 yoctoNEAR required).
+- Only the vault owner may call transfer_ownership(new_owner) (1 yoctoNEAR required).
 - Accepted offer stores the lender account; this determines the activeLender role.
-
