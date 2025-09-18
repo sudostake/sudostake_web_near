@@ -40,7 +40,12 @@ export default function Dashboard() {
 
   // Account summary component
   const summary = (
-    <AccountSummary near={balances.near} usdc={balances.usdc} loading={balancesLoading} />
+    <AccountSummary
+      near={balances.near}
+      usdc={balances.usdc}
+      loading={balancesLoading}
+      onRefreshBalances={refetchBalances}
+    />
   );
 
   return (
