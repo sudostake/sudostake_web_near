@@ -29,6 +29,22 @@ type TokenKind = "NEAR" | "USDC";
 
 const BIG_JS_ROUND_DOWN = 0 as const;
 
+/**
+ * Convert a human display amount into minimal units for a token.
+ *
+ * For example, with decimals=6 (USDC):
+ *  - "1.23" -> "1230000"
+ *  - "0.000001" -> "1"
+ *  - "1" -> "1000000"
+ *
+ * Validates that the input is a simple decimal (no commas) and does not
+ * exceed the token's fractional precision.
+ *
+ * @param display Human-readable token amount string (e.g., "1.23").
+ * @param decimals Token fractional precision (e.g., 6 for USDC).
+ * @returns Minimal-unit amount as a string integer.
+ * @throws Error when format is invalid or precision exceeds decimals.
+ */
 function toMinimal(display: string, decimals: number): string {
   const trimmed = (display ?? "").trim();
   if (!/^\d+(?:\.\d*)?$/.test(trimmed)) {
