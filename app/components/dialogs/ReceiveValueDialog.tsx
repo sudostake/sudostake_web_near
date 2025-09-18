@@ -8,6 +8,7 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { STORAGE_KEY_SEND_ASSET_KIND } from "@/utils/storageKeys";
+import { AssetToggle } from "@/app/components/ui/AssetToggle";
 
 type Props = {
   open: boolean;
@@ -62,29 +63,14 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
         {/* Asset toggle */}
         <div>
           <div className="text-sm text-secondary-text mb-1">Asset</div>
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-1 cursor-pointer">
-              <input
-                type="radio"
-                name="asset"
-                value="NEAR"
-                checked={kind === "NEAR"}
-                onChange={() => setKind("NEAR")}
-              />
-              <span>NEAR</span>
-            </label>
-            <label className="inline-flex items-center gap-1 cursor-pointer">
-              <input
-                type="radio"
-                name="asset"
-                value="USDC"
-                checked={kind === "USDC"}
-                onChange={() => setKind("USDC")}
-                disabled={!usdcId}
-              />
-              <span>USDC{!usdcId ? " (unavailable)" : ""}</span>
-            </label>
-          </div>
+          <AssetToggle
+            value={kind}
+            onChange={setKind}
+            options={[
+              { kind: "NEAR", available: true },
+              { kind: "USDC", available: Boolean(usdcId) },
+            ]}
+          />
         </div>
 
         {/* Focused content per asset */}
