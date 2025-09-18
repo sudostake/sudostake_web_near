@@ -81,12 +81,12 @@ export default function VaultPage() {
   const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
   const [transferOpen, setTransferOpen] = useState(false);
   const handleDeposit = () => setDepositOpen(true);
+  // Withdraw is now available in broader cases; dialog enforces precise rules per token.
   const withdrawBlockReason = useMemo(() => {
-    if (data?.liquidation) return STRINGS.withdrawDisabledLiquidation;
-    if (data?.state === "active") return STRINGS.withdrawDisabledActive;
-    if (data?.state === "pending") return STRINGS.withdrawDisabledPending;
+    // Optionally block if there are pending refunds; contract enforces this as well
+    if ((refundCount ?? 0) > 0) return STRINGS.pendingRefunds;
     return null;
-  }, [data?.liquidation, data?.state]);
+  }, [refundCount]);
 
   const handleWithdraw = () => {
     if (withdrawBlockReason) {
@@ -348,6 +348,10 @@ export default function VaultPage() {
               open={withdrawOpen}
               onClose={resetWithdraw}
               vaultId={vaultId}
+              state={data?.state as "idle" | "pending" | "active" | undefined}
+              requestToken={data?.liquidity_request?.token as string | undefined}
+              liquidationActive={Boolean(data?.liquidation)}
+              refundsCount={refundCount}
               onSuccess={() => {
                 refetchVaultNear();
                 refetchAvail();

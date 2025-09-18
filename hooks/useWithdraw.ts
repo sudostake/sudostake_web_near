@@ -97,7 +97,8 @@ export function useWithdraw(): UseWithdrawResult {
                   to,
                 },
                 gas: DEFAULT_GAS,
-                deposit: ONE_YOCTO,
+                // 1 yocto only required for FT path; NEAR path should attach 0
+                deposit: tokenAddress ? ONE_YOCTO : "0",
               },
             },
           ],
