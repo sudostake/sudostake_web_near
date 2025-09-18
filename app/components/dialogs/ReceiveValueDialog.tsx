@@ -20,7 +20,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   const { signedAccountId } = useWalletSelector();
   const network = getActiveNetwork();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
-  const LS_KEY = STORAGE_KEY_SEND_ASSET_KIND;
+  // Use shared storage key directly for persisting the last asset kind
   const [kind, setKind] = useState<TokenKind>(usdcId ? "USDC" : "NEAR");
   const [showToken, setShowToken] = useState(false);
 
@@ -28,7 +28,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   useEffect(() => {
     if (!open) return;
     try {
-      const saved = typeof window !== "undefined" ? window.localStorage.getItem(LS_KEY) : null;
+      const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY_SEND_ASSET_KIND) : null;
       if (saved === "USDC" && usdcId) setKind("USDC");
       else if (saved === "NEAR") setKind("NEAR");
     }
@@ -36,18 +36,18 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
     catch (_e) {
       // Ignore errors reading from localStorage (e.g., blocked/unavailable environment)
     }
-  }, [open, usdcId, LS_KEY]);
+  }, [open, usdcId]);
 
   // Persist selection
   useEffect(() => {
     try {
-      if (typeof window !== "undefined") window.localStorage.setItem(LS_KEY, kind);
+      if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY_SEND_ASSET_KIND, kind);
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     catch (_e) {
       // Ignore errors writing to localStorage (e.g., storage is unavailable)
     }
-  }, [kind, LS_KEY]);
+  }, [kind]);
 
   return (
     <Modal
