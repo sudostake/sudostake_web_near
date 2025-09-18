@@ -3,6 +3,7 @@
 import { collection, onSnapshot, query as fsQuery, where } from "firebase/firestore";
 import { getFirebaseDb } from "@/utils/firebaseClient";
 import { tsToMillis } from "@/utils/firestoreTimestamps";
+import { isAbortError } from "@/utils/errors";
 
 export type LenderPosition = {
   id: string;
@@ -88,12 +89,6 @@ function subscribeViaApi(
   onError: (err: Error) => void,
   intervalMs = 10_000
 ): Unsubscribe {
-  const hasName = (v: unknown): v is { name: string } =>
-    typeof v === "object" && v !== null && "name" in v;
-  const isAbortError = (v: unknown): boolean =>
-    (typeof DOMException !== "undefined" && v instanceof DOMException && v.name === "AbortError") ||
-    (v instanceof Error && v.name === "AbortError") ||
-    (hasName(v) && (v as { name: string }).name === "AbortError");
   let stopped = false;
   let timer: ReturnType<typeof setInterval> | null = null;
   let inFlight: AbortController | null = null;

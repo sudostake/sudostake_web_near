@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAbortError } from "@/utils/errors";
 
 type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
 
@@ -73,13 +74,6 @@ export function useIndexVault(): UseIndexVaultResult {
       } catch {
         // ignore
       }
-
-      const hasName = (v: unknown): v is { name: string } =>
-        typeof v === "object" && v !== null && "name" in v;
-      const isAbortError = (v: unknown): boolean =>
-        (typeof DOMException !== "undefined" && v instanceof DOMException && v.name === "AbortError") ||
-        (v instanceof Error && v.name === "AbortError") ||
-        (hasName(v) && (v as { name: string }).name === "AbortError");
 
       const kickOffDirectIndex = () => {
         const directController = new AbortController();
