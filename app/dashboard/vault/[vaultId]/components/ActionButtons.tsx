@@ -5,10 +5,11 @@ import React from "react";
 export interface ActionButtonsProps {
   onDeposit: () => void;
   onWithdraw: () => void;
+  onTransfer?: () => void;
   disabled: boolean;
 }
 
-export function ActionButtons({ onDeposit, onWithdraw, disabled }: ActionButtonsProps) {
+export function ActionButtons({ onDeposit, onWithdraw, onTransfer, disabled }: ActionButtonsProps) {
   const baseBtn =
     "inline-flex h-11 items-center justify-center gap-2 rounded-md px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-60 disabled:cursor-not-allowed";
   const primaryBtn = `${baseBtn} bg-primary text-primary-text hover:bg-primary/90 active:bg-primary/95`;
@@ -42,7 +43,7 @@ export function ActionButtons({ onDeposit, onWithdraw, disabled }: ActionButtons
         <span>Withdraw</span>
       </button>
 
-      <button type="button" disabled={disabled} className={secondaryBtn}>
+      <button type="button" onClick={onTransfer} disabled={disabled} className={secondaryBtn}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
