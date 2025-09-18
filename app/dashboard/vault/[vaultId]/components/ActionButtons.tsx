@@ -5,7 +5,7 @@ import React from "react";
 export interface ActionButtonsProps {
   onDeposit: () => void;
   onWithdraw: () => void;
-  onTransfer?: () => void;
+  onTransfer: () => void;
   disabled: boolean;
 }
 
