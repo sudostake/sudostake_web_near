@@ -31,7 +31,9 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
       const saved = typeof window !== "undefined" ? window.localStorage.getItem(LS_KEY) : null;
       if (saved === "USDC" && usdcId) setKind("USDC");
       else if (saved === "NEAR") setKind("NEAR");
-    } catch (_e) {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    catch (_e) {
       // Ignore errors reading from localStorage (e.g., blocked/unavailable environment)
     }
   }, [open, usdcId, LS_KEY]);
@@ -40,7 +42,9 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   useEffect(() => {
     try {
       if (typeof window !== "undefined") window.localStorage.setItem(LS_KEY, kind);
-    } catch (_e) {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    catch (_e) {
       // Ignore errors writing to localStorage (e.g., storage is unavailable)
     }
   }, [kind, LS_KEY]);
