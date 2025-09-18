@@ -33,6 +33,11 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
   const textSize = size === "sm" ? "text-xs" : "text-sm";
   const btnPad = size === "sm" ? "px-2 py-1" : "px-3 py-1.5";
 
+  function getDisplayLabel(option: AssetOption): string {
+    if (option.label) return option.label;
+    return option.available === false ? `${option.kind} (unavailable)` : option.kind;
+  }
+
   return (
     <div
       className={[
@@ -55,7 +60,7 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
       {opts.map((o, i) => {
         const isSelected = i === selectedIndex;
         const isAvailable = o.available !== false && !disabled;
-        const label = o.label ?? (o.available === false ? `${o.kind} (unavailable)` : o.kind);
+        const label = getDisplayLabel(o);
         return (
           <button
             key={o.kind}
