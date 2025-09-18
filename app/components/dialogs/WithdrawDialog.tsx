@@ -149,6 +149,7 @@ export function WithdrawDialog({
           value={kind}
           onChange={setKind}
           disabled={withdrawing}
+          size="sm"
           options={[
             { kind: "NEAR", available: true },
             { kind: "USDC", available: Boolean(usdcId) },

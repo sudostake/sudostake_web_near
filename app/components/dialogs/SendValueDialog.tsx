@@ -228,6 +228,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
           <AssetToggle
             value={kind}
             onChange={setKind}
+            size="sm"
             options={[
               { kind: "NEAR", available: true },
               { kind: "USDC", available: Boolean(defaultUsdc) },
