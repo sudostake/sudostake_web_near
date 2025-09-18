@@ -74,6 +74,13 @@ export function useIndexVault(): UseIndexVaultResult {
         // ignore
       }
 
+      const hasName = (v: unknown): v is { name: string } =>
+        typeof v === "object" && v !== null && "name" in v;
+      const isAbortError = (v: unknown): boolean =>
+        (typeof DOMException !== "undefined" && v instanceof DOMException && v.name === "AbortError") ||
+        (v instanceof Error && v.name === "AbortError") ||
+        (hasName(v) && (v as { name: string }).name === "AbortError");
+
       const kickOffDirectIndex = () => {
         const directController = new AbortController();
         if (externalSignal) {
@@ -91,6 +98,7 @@ export function useIndexVault(): UseIndexVaultResult {
         fetch("/api/index_vault", directOptions)
           // TODO: Add client-side retry with backoff for direct indexing kickoff when appropriate.
           .catch((err) => {
+            if (isAbortError(err)) return; // ignore aborts silently
             console.error("Direct indexing request failed", err);
           })
           .finally(() => {
@@ -111,6 +119,7 @@ export function useIndexVault(): UseIndexVaultResult {
         fetch("/api/indexing/enqueue", fetchOptions)
           // TODO: Implement client-side retry with jittered backoff for enqueue failures.
           .catch((err) => {
+            if (isAbortError(err)) return; // ignore aborts silently
             console.error("Enqueue indexing request failed", err);
           })
           .finally(() => {
