@@ -31,7 +31,7 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
   return (
     <div
       className={[
-        "relative inline-flex w-full select-none items-center rounded-md border border-foreground/10 bg-surface p-1",
+        "relative inline-flex w-full overflow-hidden select-none items-center rounded-md border border-foreground/10 bg-surface p-1",
         disabled ? "opacity-60 cursor-not-allowed" : "",
         className,
       ].join(" ")}
@@ -40,8 +40,8 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
     >
       {/* Sliding thumb */}
       <div
-        className="absolute top-1 bottom-1 left-1 rounded-md bg-primary transition-transform duration-200 ease-out"
-        style={{ width: `${segmentWidthPct}%`, transform: `translateX(${selectedIndex * 100}%)` }}
+        className="absolute top-1 bottom-1 rounded-md bg-primary transition-all duration-200 ease-out pointer-events-none"
+        style={{ width: `${segmentWidthPct}%`, left: `${selectedIndex * segmentWidthPct}%` }}
         aria-hidden
       />
 
