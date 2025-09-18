@@ -95,7 +95,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
       } else {
         return toMinimal(amount, usdcDecimals);
       }
-    } catch { return null; }
+    } catch (e) { return null; }
   }, [amount, kind, usdcDecimals]);
 
   const amountValid = Boolean(amountMinimalPreview && amountMinimalPreview !== "0");
