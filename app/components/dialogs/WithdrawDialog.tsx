@@ -17,6 +17,7 @@ import { useTokenRegistration } from "@/hooks/useTokenRegistration";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { Balance } from "@/utils/balance";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
+import { AssetToggle } from "@/app/components/ui/AssetToggle";
 
 function isRequestedTokenWithdrawalBlocked(
   state: "idle" | "pending" | "active" | undefined,
@@ -144,25 +145,18 @@ export function WithdrawDialog({
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className={`px-3 py-1.5 rounded border text-sm ${kind === "NEAR" ? "bg-primary text-primary-text border-primary" : "bg-surface border-foreground/10"}`}
-            onClick={() => setKind("NEAR")}
+        <div>
+          <div className="text-sm text-secondary-text mb-1">Asset</div>
+          <AssetToggle
+            value={kind}
+            onChange={setKind}
             disabled={withdrawing}
-          >
-            NEAR
-          </button>
-          {usdcId && (
-            <button
-              type="button"
-              className={`px-3 py-1.5 rounded border text-sm ${kind === "USDC" ? "bg-primary text-primary-text border-primary" : "bg-surface border-foreground/10"}`}
-              onClick={() => setKind("USDC")}
-              disabled={withdrawing}
-            >
-              USDC
-            </button>
-          )}
+            size="sm"
+            options={[
+              { kind: "NEAR", available: true },
+              { kind: "USDC", available: Boolean(usdcId) },
+            ]}
+          />
         </div>
         <Input
           label="Amount"

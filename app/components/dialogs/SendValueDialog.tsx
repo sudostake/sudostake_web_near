@@ -18,6 +18,7 @@ import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import { useTokenRegistration } from "@/hooks/useTokenRegistration";
 import { STORAGE_KEY_SEND_ASSET_KIND } from "@/utils/storageKeys";
+import { AssetToggle } from "@/app/components/ui/AssetToggle";
 
 type Props = {
   open: boolean;
@@ -224,30 +225,15 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
         <div className="text-xs text-secondary-text">Network: <span className="uppercase font-medium">{network}</span></div>
         <div>
           <div className="text-sm text-secondary-text mb-1">Asset</div>
-          <div className="flex items-center gap-3">
-            <label className="inline-flex items-center gap-1 cursor-pointer">
-              <input
-                type="radio"
-                name="asset"
-                value="NEAR"
-                checked={kind === "NEAR"}
-                onChange={() => setKind("NEAR")}
-              />
-              <span>NEAR</span>
-            </label>
-            <label className="inline-flex items-center gap-1 cursor-pointer opacity-100">
-              <input
-                type="radio"
-                name="asset"
-                value="USDC"
-                checked={kind === "USDC"}
-                onChange={() => setKind("USDC")}
-                disabled={!defaultUsdc}
-              />
-              <span>USDC{!defaultUsdc ? " (unavailable)" : ""}</span>
-            </label>
-          </div>
-          {/* Keep UI minimal; hide mechanics */}
+          <AssetToggle
+            value={kind}
+            onChange={setKind}
+            size="sm"
+            options={[
+              { kind: "NEAR", available: true },
+              { kind: "USDC", available: Boolean(defaultUsdc) },
+            ]}
+          />
         </div>
         <div>
           <label className="block text-sm text-secondary-text mb-1">Recipient account</label>
