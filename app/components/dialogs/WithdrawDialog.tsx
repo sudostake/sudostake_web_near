@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { useWithdraw } from "@/hooks/useWithdraw";
@@ -42,6 +42,10 @@ export function WithdrawDialog({
   const { registered: ownerRegistered, minDeposit: ownerMinDeposit, loading: regLoading, refresh: refreshReg } =
     useTokenRegistration(usdcId ?? null, signedAccountId ?? null);
   const { registerStorage, pending: storagePending } = useFtStorage();
+  // If liquidation is active, default to USDC since NEAR is disallowed
+  useEffect(() => {
+    if (open && liquidationActive && usdcId) setKind("USDC");
+  }, [open, liquidationActive, usdcId]);
 
   const amountNum = Number(amount);
   const withdrawAvailableNum = useMemo(() => {
