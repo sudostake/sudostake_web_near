@@ -18,6 +18,14 @@ import { useFtStorage } from "@/hooks/useFtStorage";
 import { Balance } from "@/utils/balance";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 
+function isRequestedTokenWithdrawalBlocked(
+  state: "idle" | "pending" | "active" | undefined,
+  requestToken: string | null | undefined,
+  targetTokenId: string | null | undefined
+): boolean {
+  return state === "pending" && !!requestToken && !!targetTokenId && requestToken === targetTokenId;
+}
+
 export function WithdrawDialog({
   open,
   onClose,
@@ -73,7 +81,7 @@ export function WithdrawDialog({
   }, [refundsCount, liquidationActive]);
   const canWithdrawUsdc = useMemo(() => {
     if ((refundsCount ?? 0) > 0) return false;
-    if (state === "pending" && requestToken && usdcId && requestToken === usdcId) return false; // cannot withdraw requested token while pending
+    if (isRequestedTokenWithdrawalBlocked(state, requestToken, usdcId)) return false; // cannot withdraw requested token while pending
     // During liquidation, FT withdrawals are allowed
     return true;
   }, [refundsCount, state, requestToken, usdcId]);
@@ -222,4 +230,3 @@ export function WithdrawDialog({
     </Modal>
   );
 }
-
