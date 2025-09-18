@@ -19,7 +19,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   const { signedAccountId } = useWalletSelector();
   const network = getActiveNetwork();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
-  const LS_KEY = "lastAssetKind" as const;
+  const LS_KEY = "sendValueDialog.lastAssetKind" as const;
   const [kind, setKind] = useState<TokenKind>(usdcId ? "USDC" : "NEAR");
   const [showToken, setShowToken] = useState(false);
 

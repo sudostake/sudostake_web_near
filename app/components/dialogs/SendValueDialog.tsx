@@ -47,7 +47,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
   const { wallet, signedAccountId } = useWalletSelector();
   const { ftTransfer, pending: ftPending } = useFtTransfer();
 
-  const LS_KEY = "lastAssetKind" as const;
+  const LS_KEY = "sendValueDialog.lastAssetKind" as const;
   const [kind, setKind] = useState<TokenKind>(defaultUsdc ? "USDC" : "NEAR");
   const [receiver, setReceiver] = useState("");
   const [amount, setAmount] = useState("");
