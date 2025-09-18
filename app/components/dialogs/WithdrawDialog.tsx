@@ -109,7 +109,7 @@ export function WithdrawDialog({
         const res = await withdraw({ vault: vaultId, amount });
         txHash = res.txHash;
       } else {
-        if (!usdcId) throw new Error("USDC not configured for this network");
+        if (!usdcId) throw new Error(`USDC not configured for network: ${network}`);
         const res = await withdraw({ vault: vaultId, amount, tokenAddress: usdcId, tokenDecimals: usdcDecimals });
         txHash = res.txHash;
       }
