@@ -48,7 +48,7 @@ export function AssetToggle({ value, onChange, options, disabled = false, classN
       <div
         className={["absolute rounded-md bg-primary transition-all duration-200 ease-out pointer-events-none", thumbVert].join(" ")}
         style={{ width: `${segmentWidthPct}%`, left: `${selectedIndex * segmentWidthPct}%` }}
-        aria-hidden
+        aria-hidden={true}
       />
 
       {/* Options */}
