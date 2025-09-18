@@ -145,16 +145,19 @@ export function WithdrawDialog({
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <AssetToggle
-          value={kind}
-          onChange={setKind}
-          disabled={withdrawing}
-          size="sm"
-          options={[
-            { kind: "NEAR", available: true },
-            { kind: "USDC", available: Boolean(usdcId) },
-          ]}
-        />
+        <div>
+          <div className="text-sm text-secondary-text mb-1">Asset</div>
+          <AssetToggle
+            value={kind}
+            onChange={setKind}
+            disabled={withdrawing}
+            size="sm"
+            options={[
+              { kind: "NEAR", available: true },
+              { kind: "USDC", available: Boolean(usdcId) },
+            ]}
+          />
+        </div>
         <Input
           label="Amount"
           type="number"
