@@ -6,6 +6,7 @@ import { Badge } from "@/app/components/ui/Badge";
 import { Card } from "@/app/components/ui/Card";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useState } from "react";
+import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 
 export type VaultSummary = { id: string; state: "idle" | "pending" | "active" };
 export type VaultListProps = {
@@ -17,11 +18,7 @@ export type VaultListProps = {
 export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
   const [copied] = useState<string | null>(null);
 
-  const initials = (id: string) => {
-    // Use first two visible characters before a dot if possible
-    const base = id.split(".")[0] || id;
-    return base.slice(0, 2).toUpperCase();
-  };
+  
 
   const stateFor = (id: string): VaultSummary["state"] | undefined => {
     const s = summaries?.find((v) => v.id === id)?.state;
@@ -38,12 +35,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   const ItemInner = ({ id }: { id: string }) => (
     <Card className="flex items-center justify-between gap-3 hover:bg-background/70">
       <div className="flex items-center gap-3 min-w-0">
-        <div
-          aria-hidden
-          className="h-8 w-8 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium"
-        >
-          {initials(id)}
-        </div>
+        <VaultIcon id={id} size="sm" />
         <div className="min-w-0">
           <div className="font-medium truncate" title={id}>
             {id}
