@@ -5,6 +5,7 @@ import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
 import { LabelValue } from "@/app/components/ui/LabelValue";
 import { CopyButton } from "@/app/components/ui/CopyButton";
+import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import Link from "next/link";
 import Big from "big.js";
 import { formatMinimalTokenAmount } from "@/utils/format";
@@ -117,15 +118,13 @@ export function PendingRequestCard({ item, factoryId }: Props) {
     }
   };
 
-  const initials = (id: string) => (id.split(".")[0] || id).slice(0, 2).toUpperCase();
+  
 
   return (
     <Card className="p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
-          <div aria-hidden className="h-9 w-9 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium">
-            {initials(item.id)}
-          </div>
+          <VaultIcon id={item.id} size="md" />
           <div className="min-w-0">
             <div className="font-medium truncate" title={item.id}>
               {item.id}
