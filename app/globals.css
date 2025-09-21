@@ -7,6 +7,7 @@
   --primary: #3b82f6;
   --primary-text: #ffffff;
   --secondary-text: #6b7280;
+  --border: color-mix(in oklab, var(--foreground) 12%, transparent);
 }
 
 @theme inline {
@@ -20,6 +21,7 @@
   --color-primary: var(--primary);
   --color-primary-text: var(--primary-text);
   --color-secondary-text: var(--secondary-text);
+  --color-border: var(--border);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,6 +32,7 @@
     --primary: #2563eb;
     --primary-text: #ffffff;
     --secondary-text: #9ca3af;
+    --border: color-mix(in oklab, var(--foreground) 14%, transparent);
   }
 }
 
@@ -38,6 +41,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* Normalize default border color for elements using the generic `border` class */
+*, ::before, ::after { border-color: var(--color-border); }
 
 /* Custom utility classes */
 @utility max-h-modal {

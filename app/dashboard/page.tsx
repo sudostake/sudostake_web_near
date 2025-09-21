@@ -51,7 +51,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       {summary}
-      <main className="w-full max-w-2xl mx-auto mt-8">
+      <main id="main" className="w-full max-w-2xl mx-auto mt-8">
         {/* Vault listing for the connected user under the chosen factory */}
         <div className="mt-4">
           <UserVaults

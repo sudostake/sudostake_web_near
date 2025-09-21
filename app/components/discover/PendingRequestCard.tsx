@@ -158,7 +158,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
           Lend
         </Button>
         {!signedAccountId && (
-          <div className="text-xs text-secondary-text">Login to lend</div>
+          <div className="text-xs text-secondary-text">Connect to lend</div>
         )}
         {signedAccountId && lenderRegistered === false && (
           <>

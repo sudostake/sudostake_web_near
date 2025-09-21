@@ -7,11 +7,11 @@ This document outlines a first draft of the end‑to‑end authentication strate
 | State       | UI                          | Next Steps                               |
 |-------------|-----------------------------|------------------------------------------|
 | Unknown     | **Loading…** button state  | Initialize wallet selector & load session|
-| Determined  | **Login** or **Logout [ID]**| User can trigger sign‑in or sign‑out      |
+| Determined  | **Connect Wallet** or **Logout [ID]**| User can trigger sign‑in or sign‑out      |
 
 ## 2. Unauthenticated → Sign‑In Flow
 
-1. **User clicks Login**
+1. **User clicks Connect Wallet**
    - Disable button and show spinner/“Redirecting…”
    - Call `signIn()` from wallet hook (redirect or popup)
 
@@ -25,7 +25,7 @@ This document outlines a first draft of the end‑to‑end authentication strate
 ## 3. Processing the Redirect
 
 1. Wallet hook reads URL params, verifies nonce, and persists credentials
-2. React effect updates button label from **Login** → **Logout [accountId]**
+2. React effect updates button label from **Connect Wallet** → **Logout [accountId]**
 
 ## 4. Authenticated UX
 
@@ -38,7 +38,7 @@ This document outlines a first draft of the end‑to‑end authentication strate
 1. **User clicks Logout [ID]**
    - (Optional) Confirm dialog
    - Call `signOut()` from wallet hook
-2. Clear session, reset state → **Login** button
+2. Clear session, reset state → **Connect Wallet** button
 
 ## 6. Error‑Handling & Edge Cases
 
