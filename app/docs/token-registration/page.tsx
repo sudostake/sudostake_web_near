@@ -3,11 +3,13 @@
 import React from "react";
 import { Card } from "@/app/components/ui/Card";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
+import { Container } from "@/app/components/layout/Container";
 
 export default function TokenRegistrationDoc() {
   return (
-    <div className="min-h-screen p-6 sm:p-10 font-[family-name:var(--font-geist-sans)]">
-      <main className="w-full max-w-3xl mx-auto">
+    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <main>
+        <Container>
         <SectionHeader
           title="What is token registration?"
           caption="NEP-141 tokens require a small storage deposit per account."
@@ -75,6 +77,7 @@ export default function TokenRegistrationDoc() {
             </li>
           </ul>
         </Card>
+        </Container>
       </main>
     </div>
   );
