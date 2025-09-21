@@ -36,10 +36,10 @@ type Feature = { icon: React.ReactNode; title: string; body: string };
 
 export function Features() {
   const items: Feature[] = [
-    { icon: <IconShield />, title: "Non‑custodial", body: "You control your keys. Contracts enforce rules on‑chain." },
-    { icon: <IconChart />, title: "Transparent terms", body: "Requests show amounts, rates, and collateral up front." },
-    { icon: <IconFlash />, title: "Fast + low fees", body: "NEAR finality and low costs keep flows snappy." },
-    { icon: <IconCode />, title: "Open‑source", body: "Code and activity are auditable; no black boxes." },
+    { icon: <IconShield />, title: "Non‑custodial", body: "You keep your keys. The contract enforces rules on‑chain." },
+    { icon: <IconChart />, title: "Transparent terms", body: "See amounts, rates, and collateral upfront." },
+    { icon: <IconFlash />, title: "Fast + low fees", body: "NEAR offers fast finality and low fees." },
+    { icon: <IconCode />, title: "Open‑source", body: "Open code and transparent activity. No black boxes." },
   ];
 
   return (
@@ -62,4 +62,3 @@ export function Features() {
     </section>
   );
 }
-

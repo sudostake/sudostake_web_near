@@ -4,7 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
-import { TrustBar } from "@/app/components/landing/TrustBar";
 import { SpinningTokenPair } from "@/app/components/ui/SpinningTokenPair";
 import { getActiveNetwork } from "@/utils/networks";
 
@@ -40,13 +39,14 @@ export function Hero() {
           />
         </div>
         <h1 className="mt-4 text-3xl sm:text-4xl font-semibold">
-          Borrow and Lend with NEAR‑backed Vaults
+          Borrow and lend with NEAR‑backed vaults
         </h1>
         <p className="mt-3 text-base sm:text-lg text-secondary-text">
-          Create a vault secured by NEAR, request USDC liquidity, and let lenders earn yield — all non‑custodial and on‑chain.
+          Create a NEAR‑backed vault. Request USDC. Lenders earn yield. Everything is non‑custodial and on‑chain.
         </p>
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-center">
           <Button
+            className="col-span-2 sm:col-span-1"
             size="lg"
             onClick={() => {
               setConnecting(true);
@@ -57,11 +57,11 @@ export function Hero() {
           >
             {connecting ? "Opening wallet…" : "Connect Wallet"}
           </Button>
-          <Link href="/discover" className="inline-flex">
-            <Button size="lg" variant="secondary">Explore Requests</Button>
+          <Link href="/discover" className="w-full sm:w-auto">
+            <Button size="lg" variant="secondary" className="w-full sm:w-auto">Explore Requests</Button>
           </Link>
-          <a href="#how-it-works" className="inline-flex">
-            <Button size="lg" variant="ghost">How it works</Button>
+          <a href="#how-it-works" className="w-full sm:w-auto">
+            <Button size="lg" variant="ghost" className="w-full sm:w-auto">How it works</Button>
           </a>
         </div>
         {slowConnect && (
@@ -69,17 +69,20 @@ export function Hero() {
             <div className="h-2 w-28 rounded bg-background animate-pulse" />
           </div>
         )}
-        <p className="mt-3 text-xs text-secondary-text">Always review transactions in your wallet. Smart contracts carry risk.</p>
-        <p className="mt-3 text-sm text-secondary-text">
-          No wallet? You can browse first, then connect when ready.
-        </p>
-        {network && network !== "mainnet" && (
-          <div className="mt-3 text-xs inline-flex items-center gap-2 rounded border bg-background/70 px-2.5 py-1.5 text-secondary-text" role="note">
-            <span className="font-medium">Testnet</span>
-            <span>Funds are for testing only.</span>
-          </div>
-        )}
-        <TrustBar />
+        <div className="mt-6 space-y-2">
+          <p className="text-xs text-secondary-text">Always review transactions in your wallet. Smart contracts carry risk.</p>
+          <p className="text-sm text-secondary-text">No wallet? Browse first, then connect when ready.</p>
+          {network && network !== "mainnet" && (
+            <div
+              className="text-xs inline-flex items-center gap-2 rounded border bg-background/70 px-2.5 py-1.5 text-secondary-text"
+              role="note"
+              aria-label="Network is Testnet; funds are for testing only"
+            >
+              <span className="font-medium">Network:</span>
+              <span>Testnet — funds are for testing only.</span>
+            </div>
+          )}
+        </div>
       </div>
       <style jsx>{`
         .hero-gradient {

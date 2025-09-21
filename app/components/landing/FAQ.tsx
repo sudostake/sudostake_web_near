@@ -9,19 +9,19 @@ export function LandingFAQ() {
       id: "custody",
       question: "Is this non‑custodial?",
       answer:
-        "Yes. You approve transactions in your wallet; smart contracts enforce terms on‑chain. Your keys, your assets.",
+        "Yes. You approve every transaction in your wallet. The smart contract enforces the terms on‑chain. Your keys, your assets.",
     },
     {
       id: "wallets",
       question: "Which wallets are supported?",
       answer:
-        "Bitte, Meteor, MyNearWallet, Nightly, and Ledger via Wallet Selector. More can be added over time.",
+        "We support Bitte, Meteor, MyNearWallet, Nightly, and Ledger (via Wallet Selector). More can be added over time.",
     },
     {
       id: "terms",
       question: "How are loan terms enforced?",
       answer:
-        "Terms are part of the contract call and state. Repayments and liquidations follow the contract logic; every step is traceable on‑chain.",
+        "Terms live in the contract. Repayments and liquidations follow the contract logic. Every step is traceable on‑chain.",
     },
   ];
 
@@ -36,4 +36,3 @@ export function LandingFAQ() {
     </section>
   );
 }
-
