@@ -57,13 +57,13 @@ export function Hero() {
           >
             {connecting ? "Opening wallet…" : "Connect Wallet"}
           </Button>
-          <div className="flex gap-3 justify-center sm:justify-start">
-            <Link href="/discover" className="flex-none">
-              <Button size="lg" variant="secondary" className="whitespace-nowrap">Explore Requests</Button>
+          <div className="flex flex-col gap-3 justify-center md:flex-row sm:justify-start">
+            <Link href="/discover" className="flex-none w-full md:w-auto">
+              <Button size="lg" variant="secondary" className="w-full md:w-auto whitespace-nowrap">
+                Explore Requests
+              </Button>
             </Link>
-            <a href="#how-it-works" className="flex-none">
-              <Button size="lg" variant="ghost" className="whitespace-nowrap">How it works</Button>
-            </a>
+            {/* Removed "How it works" button per request */}
           </div>
         </div>
         {slowConnect && (
