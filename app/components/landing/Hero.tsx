@@ -44,9 +44,9 @@ export function Hero() {
         <p className="mt-3 text-base sm:text-lg text-secondary-text">
           Create a NEAR‑backed vault. Request USDC. Lenders earn yield. Everything is non‑custodial and on‑chain.
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-center">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button
-            className="col-span-2 sm:col-span-1"
+            className="w-full sm:w-auto"
             size="lg"
             onClick={() => {
               setConnecting(true);
@@ -57,12 +57,14 @@ export function Hero() {
           >
             {connecting ? "Opening wallet…" : "Connect Wallet"}
           </Button>
-          <Link href="/discover" className="w-full sm:w-auto">
-            <Button size="lg" variant="secondary" className="w-full sm:w-auto">Explore Requests</Button>
-          </Link>
-          <a href="#how-it-works" className="w-full sm:w-auto">
-            <Button size="lg" variant="ghost" className="w-full sm:w-auto">How it works</Button>
-          </a>
+          <div className="flex gap-3 justify-center sm:justify-start">
+            <Link href="/discover" className="flex-1 sm:flex-none">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">Explore Requests</Button>
+            </Link>
+            <a href="#how-it-works" className="flex-1 sm:flex-none">
+              <Button size="lg" variant="ghost" className="w-full sm:w-auto">How it works</Button>
+            </a>
+          </div>
         </div>
         {slowConnect && (
           <div className="mt-2 flex justify-center" aria-hidden>
