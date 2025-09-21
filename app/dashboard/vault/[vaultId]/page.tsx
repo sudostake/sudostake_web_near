@@ -256,7 +256,7 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
-      <main className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
+      <main id="main" className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
         {/* Sentinel used to detect when the sticky header is affixed to the top */}
         <div id="vault-header-sentinel" aria-hidden className="h-px" />
         <header

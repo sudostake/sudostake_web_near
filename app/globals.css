@@ -42,7 +42,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
 
 /* Normalize default border color for elements using the generic `border` class */
 *, ::before, ::after { border-color: var(--color-border); }

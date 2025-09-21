@@ -25,7 +25,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main>
+      <main id="main">
         <Container>
         <div className="rounded-lg border bg-surface p-6 shadow-sm">
           <h1 className="text-2xl font-semibold">Connect your wallet</h1>

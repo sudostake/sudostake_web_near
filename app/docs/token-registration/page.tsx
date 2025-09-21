@@ -8,7 +8,7 @@ import { Container } from "@/app/components/layout/Container";
 export default function TokenRegistrationDoc() {
   return (
     <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main>
+      <main id="main">
         <Container>
         <SectionHeader
           title="What is token registration?"

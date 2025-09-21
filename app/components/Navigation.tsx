@@ -100,7 +100,7 @@ export function Navigation() {
       {/* Ensure the account dropdown overlays sticky page headers (vault view uses z-30). */}
       <nav ref={navRef}
         className={[
-          "fixed top-0 left-0 right-0 border-b border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
+          "fixed top-0 left-0 right-0 border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
