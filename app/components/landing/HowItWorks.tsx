@@ -14,17 +14,17 @@ export function HowItWorks() {
   const steps = [
     {
       title: "Create a vault",
-      body: "Lock NEAR as collateral in a smart contract you control.",
+      body: "Lock NEAR as collateral in a contract you control.",
       icon: "1",
     },
     {
       title: "Request liquidity",
-      body: "Set amount and terms in USDC; lenders can fund your request.",
+      body: "Choose the USDC amount and terms. Lenders can fund.",
       icon: "2",
     },
     {
       title: "Repay or liquidate",
-      body: "Repay to unlock collateral, or let the contract settle claims.",
+      body: "Repay to unlock your collateral. Otherwise the contract settles claims.",
       icon: "3",
     },
   ];
@@ -45,7 +45,7 @@ export function HowItWorks() {
           ))}
         </div>
         <div className="mt-4 text-xs text-secondary-text">
-          Non‑custodial by design. You approve transactions in your wallet; contracts enforce rules on‑chain.
+          Non‑custodial by design. You approve every transaction; the contract enforces rules on‑chain.
         </div>
       </div>
     </section>

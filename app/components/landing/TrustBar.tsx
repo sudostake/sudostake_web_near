@@ -32,14 +32,16 @@ export function TrustBar() {
     { icon: <CodeIcon />, label: "Open‑source" },
   ];
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-secondary-text">
-      {items.map((i) => (
-        <div key={i.label} className="inline-flex items-center gap-2 rounded border bg-surface px-3 py-1.5">
-          {i.icon}
-          <span>{i.label}</span>
-        </div>
-      ))}
+    <div className="mt-6 text-xs text-secondary-text" aria-labelledby="trust-heading">
+      <span id="trust-heading" className="sr-only">Trust indicators</span>
+      <ul className="list-none m-0 p-0 flex flex-wrap items-center justify-center gap-4">
+        {items.map((i) => (
+          <li key={i.label} className="inline-flex items-center gap-2 rounded border bg-surface px-3 py-1.5">
+            {i.icon}
+            <span>{i.label}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
-
