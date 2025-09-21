@@ -78,10 +78,9 @@ export function Hero() {
             <div
               className="text-xs inline-flex items-center gap-2 rounded border bg-background/70 px-2.5 py-1.5 text-secondary-text"
               role="note"
-              aria-label="Network is Testnet; funds are for testing only"
+              aria-label={`Network is ${network.charAt(0).toUpperCase() + network.slice(1)}; funds are for testing only`}
             >
-              <span className="font-medium">Network:</span>
-              <span>Testnet — funds are for testing only.</span>
+              <span>{network.charAt(0).toUpperCase() + network.slice(1)} — funds are for testing only.</span>
             </div>
           )}
         </div>
