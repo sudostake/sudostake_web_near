@@ -39,6 +39,7 @@ import { LiquidationSummary } from "./LiquidationSummary";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
+import { SpinningTokenPair } from "@/app/components/ui/SpinningTokenPair";
 import {
   computeRemainingYocto,
   computeMaturedTotals,
@@ -382,12 +383,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   return (
     <section className="rounded border bg-surface p-4">
       <div className="flex items-center gap-4">
-        <div className="coin-scene">
-          <div className="coin" aria-hidden="true">
-            <div className="face front" />
-            <div className="face back" />
-          </div>
-        </div>
+        <SpinningTokenPair pauseOnHover />
         <div className="flex-1 min-w-0">
           {hasOpenRequest ? (
             <>
@@ -904,14 +900,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         </div>
       )}
 
-      <style jsx>{`
-        .coin-scene { width: 44px; height: 44px; perspective: 800px; }
-        .coin { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; -webkit-transform-style: preserve-3d; animation: coin-spin 12s linear infinite; will-change: transform; }
-        .face { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 50%; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-        .front { background-image: url('/usdc.svg'); }
-        .back { background-image: url('/near-coin.svg'); transform: rotateY(180deg); }
-        @keyframes coin-spin { 0% { transform: rotateX(6deg) rotateY(0deg);} 50% { transform: rotateX(6deg) rotateY(180deg);} 100% { transform: rotateX(6deg) rotateY(360deg);} }
-      `}</style>
+      
       {isOwner && (
         <RequestLiquidityDialog open={openDialog} onClose={() => setOpenDialog(false)} vaultId={vaultId} />
       )}
