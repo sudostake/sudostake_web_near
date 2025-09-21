@@ -32,14 +32,22 @@ function DiscoverIcon() {
   );
 }
 import Link from "next/link";
+// import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
+import { getActiveNetwork } from "@/utils/networks";
 
 /**
  * Navigation bar with Login/Logout button.
  */
 export function Navigation() {
   const { signedAccountId, signIn, signOut } = useWalletSelector();
+  // const router = useRouter();
+  const [network, setNetwork] = useState<string>("");
+  useEffect(() => {
+    // Reflect current network for clarity; safe on client
+    setNetwork(getActiveNetwork());
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
@@ -50,7 +58,6 @@ export function Navigation() {
     const tail = signedAccountId.slice(-8);
     return `${head}…${tail}`;
   }, [signedAccountId]);
-  const onLogin = () => signIn();
   const onLogout = () => signOut().catch((err) => console.error(err));
 
   useEffect(() => {
@@ -93,7 +100,7 @@ export function Navigation() {
       {/* Ensure the account dropdown overlays sticky page headers (vault view uses z-30). */}
       <nav ref={navRef}
         className={[
-          "fixed top-0 left-0 right-0 border-b border-white/10 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
+          "fixed top-0 left-0 right-0 border-b border bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
@@ -105,6 +112,11 @@ export function Navigation() {
             <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
               Discover
             </Link>
+            {network && (
+              <span className="hidden md:inline text-xs rounded border bg-surface px-2 py-0.5 text-secondary-text" title="Active network">
+                {network}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2">
             {/* Mobile discover shortcut */}
@@ -118,9 +130,7 @@ export function Navigation() {
             </Link>
 
             {!signedAccountId ? (
-              <Button size="sm" onClick={onLogin}>
-                Login
-              </Button>
+              <Button size="sm" onClick={() => signIn()}>Connect Wallet</Button>
             ) : (
               <div className="relative" ref={menuRef}>
                 <Button
