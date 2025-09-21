@@ -1,30 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { Hero } from "@/app/components/landing/Hero";
+import { HowItWorks } from "@/app/components/landing/HowItWorks";
+import { Features } from "@/app/components/landing/Features";
+import { LandingFAQ } from "@/app/components/landing/FAQ";
+import { Divider } from "@/app/components/ui/Divider";
+import { Container } from "@/app/components/layout/Container";
 
 export default function Home() {
   const { signedAccountId } = useWalletSelector();
   const router = useRouter();
 
   useEffect(() => {
-    if (signedAccountId) {
-      router.push("/dashboard");
-    }
+    if (signedAccountId) router.push("/dashboard");
   }, [signedAccountId, router]);
 
-  if (!signedAccountId) {
-    return (
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-        <main className="w-full max-w-2xl">
-          <p className="text-center text-secondary-text">
-            Please login to access your dashboard.
-          </p>
-        </main>
-      </div>
-    );
-  }
+  if (signedAccountId) return null;
 
-  return null;
+  return (
+    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <main id="main">
+        <Container>
+          <Hero />
+          <Features />
+          <Divider />
+          <HowItWorks />
+          <Divider />
+          <LandingFAQ />
+        </Container>
+      </main>
+    </div>
+  );
 }
