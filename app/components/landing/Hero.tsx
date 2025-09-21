@@ -58,11 +58,11 @@ export function Hero() {
             {connecting ? "Opening wallet…" : "Connect Wallet"}
           </Button>
           <div className="flex gap-3 justify-center sm:justify-start">
-            <Link href="/discover" className="flex-1 sm:flex-none">
-              <Button size="lg" variant="secondary" className="w-full sm:w-auto">Explore Requests</Button>
+            <Link href="/discover" className="flex-none">
+              <Button size="lg" variant="secondary" className="whitespace-nowrap">Explore Requests</Button>
             </Link>
-            <a href="#how-it-works" className="flex-1 sm:flex-none">
-              <Button size="lg" variant="ghost" className="w-full sm:w-auto">How it works</Button>
+            <a href="#how-it-works" className="flex-none">
+              <Button size="lg" variant="ghost" className="whitespace-nowrap">How it works</Button>
             </a>
           </div>
         </div>
