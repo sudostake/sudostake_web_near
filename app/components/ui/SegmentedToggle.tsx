@@ -49,6 +49,9 @@ export function SegmentedToggle({
   const selectedText = isPrimary ? "text-primary-text" : "text-foreground";
   const unselectedText = isPrimary ? "text-foreground" : "text-secondary-text";
 
+  // Horizontal inset so the thumb and segments don't touch edges
+  const padPx = size === "sm" ? 2 : 4; // matches p-0.5 (2px) or p-1 (4px)
+
   return (
     <div
       className={[
@@ -62,7 +65,10 @@ export function SegmentedToggle({
     >
       <div
         className={[`absolute rounded-md ${thumbBg} transition-all duration-200 ease-out pointer-events-none`, thumbVert].join(" ")}
-        style={{ width: `${segmentWidthPct}%`, left: `${selectedIndex * segmentWidthPct}%` }}
+        style={{
+          width: `calc(${segmentWidthPct}% - ${padPx * 2}px)`,
+          left: `calc(${selectedIndex * segmentWidthPct}% + ${padPx}px)`,
+        }}
         aria-hidden={true}
       />
       {opts.map((o, i) => {
