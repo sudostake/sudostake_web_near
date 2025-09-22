@@ -104,7 +104,7 @@ export function Navigation() {
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="flex items-center justify-between px-4 py-3 md:mx-auto md:max-w-2xl">
+        <div className="flex items-center justify-between px-4 py-3 mx-auto max-w-6xl">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-xl font-bold">
               SudoStake

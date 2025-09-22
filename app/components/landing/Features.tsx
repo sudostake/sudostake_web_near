@@ -43,16 +43,17 @@ export function Features() {
   ];
 
   return (
-    <section className="mt-10">
-      <div className="mx-auto max-w-2xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <section className="mt-12 md:mt-16">
+      <h2 className="text-[clamp(1.25rem,2.1vw,1.75rem)] font-semibold">Why SudoStake</h2>
+      <div className="mt-4 rounded-xl border bg-surface/50 p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {items.map((f) => (
             <div key={f.title} className="rounded border bg-surface p-4">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 text-secondary-text">{f.icon}</div>
                 <div>
                   <div className="text-sm font-medium">{f.title}</div>
-                  <div className="text-sm text-secondary-text mt-0.5">{f.body}</div>
+                  <div className="text-sm text-secondary-text mt-0.5 leading-relaxed">{f.body}</div>
                 </div>
               </div>
             </div>

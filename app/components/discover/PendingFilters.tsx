@@ -66,17 +66,7 @@ export function PendingFilters({ value, onChange }: { value: PendingFilters; onC
         className="h-9"
         containerClassName="sm:col-span-6 md:col-span-3"
       />
-      <Select
-        label="Sort"
-        value={value.sort}
-        onChange={(e) => set({ sort: (e.target as HTMLSelectElement).value as PendingFilters["sort"] })}
-        containerClassName="sm:col-span-6 md:col-span-3"
-      >
-        <option value="updated_desc">Newest</option>
-        <option value="amount_desc">Amount (desc)</option>
-        <option value="apr_desc">APR (desc)</option>
-        <option value="term_asc">Term (asc)</option>
-      </Select>
+      {/* Sort control moved to header segmented toggle for better visibility */}
     </div>
   );
 }

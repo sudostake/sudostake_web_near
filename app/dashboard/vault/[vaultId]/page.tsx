@@ -261,7 +261,7 @@ export default function VaultPage() {
         <div id="vault-header-sentinel" aria-hidden className="h-px" />
         <header
           className={[
-            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative transition-shadow",
+            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
             stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
           ].join(" ")}
           style={{ top: "var(--nav-height, 56px)" }}
@@ -271,29 +271,29 @@ export default function VaultPage() {
               <div className="flex items-center gap-3">
                 <BackButton onClick={() => router.back()} />
                 <div className="min-w-0">
-                  <h1 className="text-lg font-semibold truncate" title={String(vaultId)}>{vaultShortName}</h1>
+                  <h1 className="text-lg font-semibold break-all" title={String(vaultId)}>{vaultShortName}</h1>
                   <div className="text-xs text-secondary-text mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
                     <a
                       href={explorerAccountUrl(network, String(vaultId))}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline truncate"
+                      className="underline break-all"
                       title={String(vaultId)}
                     >
                       {String(vaultId)}
                     </a>
                     <CopyButton value={String(vaultId)} />
                     {data?.owner && (
-                      <span className="truncate">
+                      <span className="break-all">
                         Owner:
                         <a
                           href={explorerAccountUrl(network, String(data.owner))}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline ml-1"
+                          className="underline ml-1 break-all"
                           title={String(data.owner)}
                         >
-                          <span className="font-mono">{data.owner}</span>
+                          <span className="font-mono break-all">{data.owner}</span>
                         </a>
                         <CopyButton value={String(data.owner)} className="ml-1" />
                       </span>

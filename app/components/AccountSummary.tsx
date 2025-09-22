@@ -3,13 +3,14 @@ import React from "react";
 // import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 import { Balance } from "@/utils/balance";
-import { getActiveNetwork } from "@/utils/networks";
+// import { getActiveNetwork } from "@/utils/networks";
 import { Card } from "@/app/components/ui/Card";
 import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
+// (No asset toggle here; dialogs handle asset selection themselves)
 
 export function AccountSummary({
   near,
@@ -22,14 +23,16 @@ export function AccountSummary({
   loading?: boolean;
   onRefreshBalances?: () => void;
 }) {
-  const network = getActiveNetwork();
-  const usdcLabel = network === "mainnet" ? "USDC" : "USDC (Testnet)";
+  const usdcLabel = "USDC";
   const nearShort = shortAmount(near.toDisplay(), 5);
   const usdcShort = shortAmount(usdc.toDisplay(), 2);
+  const [sendOpen, setSendOpen] = React.useState(false);
+  const [recvOpen, setRecvOpen] = React.useState(false);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   return (
     <Card className="w-full md:max-w-2xl md:mx-auto p-4">
-      <HeaderWithActions onRefreshBalances={onRefreshBalances} />
+      <HeaderWithActions />
       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* NEAR */}
         <BalanceStat
@@ -48,31 +51,38 @@ export function AccountSummary({
           loading={Boolean(loading)}
         />
       </div>
-    </Card>
-  );
-}
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="text-xs text-secondary-text">Always review transactions in your wallet.</div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            variant="ghost"
+            className="w-full sm:w-auto"
+            onClick={() => { setRefreshing(true); onRefreshBalances?.(); window.setTimeout(() => setRefreshing(false), 600); }}
+            disabled={refreshing}
+          >
+            {refreshing ? "Refreshing…" : "Refresh"}
+          </Button>
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>Receive</Button>
+          <Button className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>Send</Button>
+        </div>
+      </div>
 
-function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
-  const [sendOpen, setSendOpen] = React.useState(false);
-  const [recvOpen, setRecvOpen] = React.useState(false);
-
-  return (
-    <>
-      <SectionHeader
-        title="Account Balances"
-        right={
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={() => setRecvOpen(true)}>Receive</Button>
-            <Button onClick={() => setSendOpen(true)}>Send</Button>
-          </div>
-        }
-      />
+      {/* Dialogs */}
       <SendValueDialog
         open={sendOpen}
         onClose={() => setSendOpen(false)}
         onSuccess={() => onRefreshBalances?.()}
       />
       <ReceiveValueDialog open={recvOpen} onClose={() => setRecvOpen(false)} />
+    </Card>
+  );
+}
+
+function HeaderWithActions() {
+
+  return (
+    <>
+      <SectionHeader title="Account Balances" />
     </>
   );
 }

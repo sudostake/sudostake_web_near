@@ -38,7 +38,7 @@ export function Accordion({ items }: Props) {
               role="region"
               aria-labelledby={triggerId}
               hidden={!isOpen}
-              className="mt-2 text-sm text-secondary-text"
+              className="mt-2 text-sm text-secondary-text leading-relaxed max-w-[70ch]"
             >
               {it.answer}
             </div>

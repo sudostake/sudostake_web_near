@@ -7,7 +7,6 @@ import { Hero } from "@/app/components/landing/Hero";
 import { HowItWorks } from "@/app/components/landing/HowItWorks";
 import { Features } from "@/app/components/landing/Features";
 import { LandingFAQ } from "@/app/components/landing/FAQ";
-import { Divider } from "@/app/components/ui/Divider";
 import { Container } from "@/app/components/layout/Container";
 
 export default function Home() {
@@ -21,14 +20,12 @@ export default function Home() {
   if (signedAccountId) return null;
 
   return (
-    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
       <main id="main">
         <Container>
           <Hero />
           <Features />
-          <Divider />
           <HowItWorks />
-          <Divider />
           <LandingFAQ />
         </Container>
       </main>

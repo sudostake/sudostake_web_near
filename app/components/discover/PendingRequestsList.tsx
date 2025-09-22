@@ -13,6 +13,7 @@ import Big from "big.js";
 import type { PendingRequest } from "@/utils/data/pending";
 import { Button } from "@/app/components/ui/Button";
 import { calculateApr } from "@/utils/finance";
+import { SegmentedToggle } from "@/app/components/ui/SegmentedToggle";
 
 export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const { data, loading, error, refetch } = usePendingRequests(factoryId);
@@ -109,7 +110,9 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     if (typeof window === "undefined") return;
     const saved = window.localStorage.getItem("discover:filters:open");
     if (saved === null) {
-      setShowFilters(false); // default collapsed on all screens
+      // Default: expanded on md+ screens, collapsed on small screens
+      const isDesktop = window.matchMedia && window.matchMedia("(min-width: 768px)").matches;
+      setShowFilters(isDesktop);
     } else {
       setShowFilters(saved === "1");
     }
@@ -189,12 +192,12 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     setFilters({ q: "", token: null, minAmount: "", maxDays: "", sort: "updated_desc" });
 
   return (
-    <div className="px-4">
+    <div>
       {/* Sentinel to detect affixed sticky header */}
       <div id="discover-header-sentinel" aria-hidden className="h-px" />
       <header
         className={[
-          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative transition-shadow",
+          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
           stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
         ].join(" ")}
         style={{ top: "var(--nav-height, 56px)" }}
@@ -234,6 +237,21 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
           />
           <div className="mt-2 text-xs text-secondary-text" aria-live="polite">
             {filtered.length} result{filtered.length === 1 ? "" : "s"} • sorted by {sortLabel}
+          </div>
+          <div className="mt-2">
+            <SegmentedToggle
+              value={filters.sort}
+              onChange={(v) => setFilters({ ...filters, sort: v as FiltersValue["sort"] })}
+              options={[
+                { id: "updated_desc", label: "Newest" },
+                { id: "amount_desc", label: "Amount" },
+                { id: "apr_desc", label: "APR" },
+                { id: "term_asc", label: "Term" },
+              ]}
+              size="sm"
+              variant="neutral"
+              ariaLabel="Sort results"
+            />
           </div>
         </div>
       </header>
@@ -342,7 +360,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
           )}
         </div>
       )}
-      <div className="mt-3 grid grid-cols-1 gap-2">
+      <div className="mt-3 grid grid-cols-1 gap-3">
         {filtered.map((it) => (
           <PendingRequestCard key={it.id} item={it} factoryId={factoryId} />
         ))}
