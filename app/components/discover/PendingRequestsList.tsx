@@ -194,7 +194,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       <div id="discover-header-sentinel" aria-hidden className="h-px" />
       <header
         className={[
-          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative transition-shadow",
+          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
           stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
         ].join(" ")}
         style={{ top: "var(--nav-height, 56px)" }}
