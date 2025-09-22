@@ -54,7 +54,11 @@ export function PendingRequestCard({ item, factoryId }: Props) {
 
   const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
   return (
-    <Link href={href} className="block group">
+    <Link
+      href={href}
+      className="block group"
+      aria-label={`View vault details for ${item.id}`}
+    >
     <Card className="relative p-3 pr-8 hover:border-foreground/20 hover:bg-surface/60 transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
