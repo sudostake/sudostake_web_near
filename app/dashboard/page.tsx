@@ -10,7 +10,6 @@ import { LenderPositions } from "../components/vaults/LenderPositions";
 import { getActiveNetwork, factoryContract } from "@/utils/networks";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
-import { Button } from "@/app/components/ui/Button";
 import { shortAmount } from "@/utils/format";
 import { Container } from "@/app/components/layout/Container";
 
@@ -90,12 +89,7 @@ export default function Dashboard() {
           <div className="py-2 px-3">
             <SectionHeader
               title="Dashboard"
-              caption={<>{nearShort} NEAR • {usdcShort} USDC</>}
-              right={
-                <Button onClick={() => setShowCreate(true)}>
-                  Create Vault
-                </Button>
-              }
+              caption={<>{activeNetwork.charAt(0).toUpperCase() + activeNetwork.slice(1)}</>}
             />
           </div>
         </header>
