@@ -10,6 +10,9 @@ import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
+import { AssetToggle, type AssetKind } from "@/app/components/ui/AssetToggle";
+import { getDefaultUsdcTokenId } from "@/utils/tokens";
+import { STORAGE_KEY_SEND_ASSET_KIND } from "@/utils/storageKeys";
 
 export function AccountSummary({
   near,
@@ -55,6 +58,18 @@ export function AccountSummary({
 function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
   const [sendOpen, setSendOpen] = React.useState(false);
   const [recvOpen, setRecvOpen] = React.useState(false);
+  const network = getActiveNetwork();
+  const usdcId = getDefaultUsdcTokenId(network);
+  const [asset, setAsset] = React.useState<AssetKind>(() => {
+    if (typeof window === "undefined") return usdcId ? "USDC" as const : "NEAR" as const;
+    const saved = window.localStorage.getItem(STORAGE_KEY_SEND_ASSET_KIND);
+    if (saved === "USDC" && usdcId) return "USDC";
+    return "NEAR";
+  });
+
+  React.useEffect(() => {
+    try { if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY_SEND_ASSET_KIND, asset); } catch {}
+  }, [asset]);
 
   return (
     <>
@@ -62,6 +77,19 @@ function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => vo
         title="Account Balances"
         right={
           <div className="flex items-center gap-2">
+            <div className="hidden sm:block">
+              <AssetToggle
+                value={asset}
+                onChange={setAsset}
+                size="sm"
+                variant="neutral"
+                options={[
+                  { kind: "NEAR", available: true },
+                  { kind: "USDC", available: Boolean(usdcId) },
+                ]}
+                ariaLabel="Preferred asset"
+              />
+            </div>
             <Button variant="secondary" onClick={() => setRecvOpen(true)}>Receive</Button>
             <Button onClick={() => setSendOpen(true)}>Send</Button>
           </div>
