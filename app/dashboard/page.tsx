@@ -79,21 +79,30 @@ export default function Dashboard() {
             variant="neutral"
           />
         </div>
-        {/* Vault listing for the connected user under the chosen factory */}
-        {tab === "vaults" ? (
-          <div className="mt-4">
-            <UserVaults
-              owner={signedAccountId}
-              factoryId={factoryId}
-              onCreate={() => setShowCreate(true)}
-              headerMode="toolsOnly"
-            />
-          </div>
-        ) : (
-          <div className="mt-4">
-            <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
-          </div>
-        )}
+        {/* Tab panels with proper a11y mapping */}
+        <div
+          id="vaults-panel"
+          role="tabpanel"
+          aria-labelledby="vaults-trigger"
+          hidden={tab !== "vaults"}
+          className="mt-4"
+        >
+          <UserVaults
+            owner={signedAccountId}
+            factoryId={factoryId}
+            onCreate={() => setShowCreate(true)}
+            headerMode="toolsOnly"
+          />
+        </div>
+        <div
+          id="positions-panel"
+          role="tabpanel"
+          aria-labelledby="positions-trigger"
+          hidden={tab !== "positions"}
+          className="mt-4"
+        >
+          <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
+        </div>
       </main>
       <CreateVaultDialog
         open={showCreate}

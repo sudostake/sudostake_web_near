@@ -52,6 +52,25 @@ export function SegmentedToggle({
   // Horizontal inset so the thumb and segments don't touch edges
   const padPx = size === "sm" ? 2 : 4; // matches p-0.5 (2px) or p-1 (4px)
 
+  function moveSelection(delta: number) {
+    const dir = Math.sign(delta);
+    if (dir === 0) return;
+    let i = selectedIndex;
+    for (let step = 0; step < count; step++) {
+      i = (i + dir + count) % count;
+      const opt = opts[i];
+      if (opt && opt.available !== false) {
+        onChange(opt.id);
+        // Attempt to move focus to the newly selected tab
+        try {
+          const el = document.getElementById(`${opt.id}-trigger`);
+          if (el) (el as HTMLButtonElement).focus();
+        } catch {}
+        break;
+      }
+    }
+  }
+
   return (
     <div
       className={[
@@ -62,6 +81,10 @@ export function SegmentedToggle({
       ].join(" ")}
       role="tablist"
       aria-label={ariaLabel}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowRight") { e.preventDefault(); moveSelection(1); }
+        if (e.key === "ArrowLeft") { e.preventDefault(); moveSelection(-1); }
+      }}
     >
       <div
         className={[`absolute rounded-md ${thumbBg} transition-all duration-200 ease-out pointer-events-none`, thumbVert].join(" ")}
@@ -79,8 +102,11 @@ export function SegmentedToggle({
             key={o.id}
             type="button"
             role="tab"
+            id={`${o.id}-trigger`}
             aria-selected={isSelected}
             aria-disabled={!isAvailable}
+            aria-controls={`${o.id}-panel`}
+            tabIndex={isSelected ? 0 : -1}
             className={[
               "relative z-10 flex-1 rounded-md transition-colors",
               btnPad,
