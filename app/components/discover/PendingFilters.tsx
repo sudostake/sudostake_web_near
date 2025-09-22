@@ -3,7 +3,7 @@
 import React from "react";
 import { Input } from "@/app/components/ui/Input";
 import { Select } from "@/app/components/ui/Select";
-import { getKnownTokens } from "@/utils/tokens";
+import { getKnownTokens, getTokenConfigById } from "@/utils/tokens";
 import { getActiveNetwork } from "@/utils/networks";
 
 export type PendingFilters = {
@@ -17,22 +17,28 @@ export type PendingFilters = {
 export function PendingFilters({ value, onChange }: { value: PendingFilters; onChange: (v: PendingFilters) => void }) {
   const network = getActiveNetwork();
   const tokens = getKnownTokens(network);
+  const selectedSymbol = value.token ? (getTokenConfigById(value.token, network)?.symbol ?? undefined) : undefined;
 
   const set = (patch: Partial<PendingFilters>) => onChange({ ...value, ...patch });
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
       <Input
         label="Search"
-        placeholder="Vault or owner"
+        placeholder="Vault or owner (e.g. name.near)"
         value={value.q}
         onChange={(e) => set({ q: e.target.value })}
         className="h-9"
+        containerClassName="sm:col-span-12"
+        type="search"
+        autoComplete="off"
+        spellCheck={false}
       />
       <Select
         label="Token"
         value={value.token ?? ""}
         onChange={(e) => set({ token: (e.target as HTMLSelectElement).value || null })}
+        containerClassName="sm:col-span-6 md:col-span-3"
       >
         <option value="">All</option>
         {tokens.map((t) => (
@@ -47,7 +53,8 @@ export function PendingFilters({ value, onChange }: { value: PendingFilters; onC
         value={value.minAmount}
         onChange={(e) => set({ minAmount: e.target.value })}
         className="h-9"
-        hint="Token display units"
+        containerClassName="sm:col-span-6 md:col-span-3"
+        suffix={selectedSymbol}
       />
       <Input
         label="Max term (days)"
@@ -57,12 +64,13 @@ export function PendingFilters({ value, onChange }: { value: PendingFilters; onC
         value={value.maxDays}
         onChange={(e) => set({ maxDays: e.target.value })}
         className="h-9"
+        containerClassName="sm:col-span-6 md:col-span-3"
       />
       <Select
         label="Sort"
-        className="sm:col-span-2"
         value={value.sort}
         onChange={(e) => set({ sort: (e.target as HTMLSelectElement).value as PendingFilters["sort"] })}
+        containerClassName="sm:col-span-6 md:col-span-3"
       >
         <option value="updated_desc">Newest</option>
         <option value="amount_desc">Amount (desc)</option>

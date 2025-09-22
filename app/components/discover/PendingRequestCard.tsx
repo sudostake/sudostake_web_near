@@ -9,7 +9,7 @@ import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import Link from "next/link";
 import Big from "big.js";
 import { formatMinimalTokenAmount } from "@/utils/format";
-import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
+import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
@@ -42,6 +42,13 @@ export function PendingRequestCard({ item, factoryId }: Props) {
 
   const amountLabel = useMemo(() => (lr ? formatMinimalTokenAmount(lr.amount, decimals) : "—"), [lr, decimals]);
   const interestLabel = useMemo(() => (lr ? formatMinimalTokenAmount(lr.interest, decimals) : "—"), [lr, decimals]);
+  const repayLabel = useMemo(() => {
+    try {
+      if (!lr) return "—";
+      const totalRaw = new Big(lr.amount).plus(new Big(lr.interest)).toFixed(0);
+      return formatMinimalTokenAmount(totalRaw, decimals);
+    } catch { return "—"; }
+  }, [lr, decimals]);
   const collateralNear = useMemo(() => (lr ? safeFormatYoctoNear(lr.collateral, 5) : "—"), [lr]);
 
   const aprLabel = useMemo(() => {
@@ -121,7 +128,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
   
 
   return (
-    <Card className="p-3">
+    <Card className="p-3 hover:border-foreground/20 transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <VaultIcon id={item.id} size="md" />
@@ -144,9 +151,10 @@ export function PendingRequestCard({ item, factoryId }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mt-3">
         <LabelValue label="Amount" value={`${amountLabel} ${symbol}`} />
         <LabelValue label="Interest" value={`${interestLabel} ${symbol}`} />
+        <LabelValue label="Repay" value={`${repayLabel} ${symbol}`} />
         <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
         <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
         <LabelValue label="Est. APR" value={aprLabel} />
