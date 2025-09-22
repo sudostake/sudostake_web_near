@@ -28,6 +28,7 @@ import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
+import { Container } from "@/app/components/layout/Container";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -179,7 +180,7 @@ export default function VaultPage() {
   let Body: React.ReactNode;
   if (error) {
     Body = (
-      <div className="p-4 text-center text-sm text-red-500" role="alert" aria-live="polite">
+      <div className="text-center text-sm text-red-500" role="alert" aria-live="polite">
         Failed to load vault.
         <div className="mt-1 text-xs opacity-80">{error}</div>
         <button className="underline mt-2" onClick={refetch}>Retry</button>
@@ -187,7 +188,7 @@ export default function VaultPage() {
     );
   } else if (loading) {
     Body = (
-      <div className="animate-pulse space-y-3 p-4" aria-live="polite" aria-busy="true">
+      <div className="animate-pulse space-y-3" aria-live="polite" aria-busy="true">
         <div className="h-6 bg-surface rounded w-1/3" />
         <div className="h-24 bg-surface rounded" />
         <div className="h-6 bg-surface rounded w-1/2" />
@@ -196,7 +197,7 @@ export default function VaultPage() {
     );
   } else {
     Body = (
-      <div className="space-y-4 p-4">
+      <div className="space-y-4">
         <AvailableBalanceCard
           balance={availBalance}
           loading={availLoading}
@@ -255,8 +256,8 @@ export default function VaultPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 font-[family-name:var(--font-geist-sans)]">
-      <main id="main" className="w-full max-w-2xl mx-auto" aria-busy={loading || undefined}>
+    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
+      <main id="main" className="w-full" aria-busy={loading || undefined}>
         {/* Sentinel used to detect when the sticky header is affixed to the top */}
         <div id="vault-header-sentinel" aria-hidden className="h-px" />
         <header
@@ -266,8 +267,8 @@ export default function VaultPage() {
           ].join(" ")}
           style={{ top: "var(--nav-height, 56px)" }}
         >
-          <div className="w-full max-w-2xl mx-auto">
-            <div className="-mx-4 px-4 py-3 sm:mx-0 sm:rounded">
+          <Container>
+            <div className="py-3">
               <div className="flex items-center gap-3">
                 <BackButton onClick={() => router.back()} />
                 <div className="min-w-0">
@@ -318,10 +319,12 @@ export default function VaultPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Container>
           {/* Removed gradient; subtle shadow + border provide a cleaner separation */}
         </header>
-        {Body}
+        <Container>
+          {Body}
+        </Container>
         {isOwner && (
           <>
             <DepositDialog

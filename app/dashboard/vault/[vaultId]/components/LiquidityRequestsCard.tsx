@@ -539,7 +539,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           )}
-          {data?.state === "active" && isOwner && !data?.liquidation && remainingMs !== 0 && (
+          {data?.state === "active" && isOwner && !data?.liquidation && (
             <div className="mt-2 text-sm">
               <button
                 type="button"
