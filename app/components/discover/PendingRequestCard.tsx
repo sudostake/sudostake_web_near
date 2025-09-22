@@ -42,6 +42,19 @@ export function PendingRequestCard({ item, factoryId }: Props) {
 
   const amountLabel = useMemo(() => (lr ? formatMinimalTokenAmount(lr.amount, decimals) : "—"), [lr, decimals]);
   const interestLabel = useMemo(() => (lr ? formatMinimalTokenAmount(lr.interest, decimals) : "—"), [lr, decimals]);
+  const repayLabel = useMemo(() => {
+    try {
+      if (!lr) return "—";
+      const amount = new Big(lr.amount);
+      const interest = new Big(lr.interest);
+      const total = amount.plus(interest);
+      const display = total.div(new Big(10).pow(decimals));
+      // Reuse formatMinimalTokenAmount behavior via toFixed-like truncation
+      // Keep 2-6 decimals depending on magnitude
+      const s = display.lt(1) ? display.toFixed(6) : display.lt(1000) ? display.toFixed(3) : display.round(2, 0).toString();
+      return s.replace(/\.0+$/, "");
+    } catch { return "—"; }
+  }, [lr, decimals]);
   const collateralNear = useMemo(() => (lr ? safeFormatYoctoNear(lr.collateral, 5) : "—"), [lr]);
 
   const aprLabel = useMemo(() => {
@@ -121,7 +134,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
   
 
   return (
-    <Card className="p-3">
+    <Card className="p-3 hover:border-foreground/20 transition-colors">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <VaultIcon id={item.id} size="md" />
@@ -144,9 +157,10 @@ export function PendingRequestCard({ item, factoryId }: Props) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mt-3">
         <LabelValue label="Amount" value={`${amountLabel} ${symbol}`} />
         <LabelValue label="Interest" value={`${interestLabel} ${symbol}`} />
+        <LabelValue label="Repay" value={`${repayLabel} ${symbol}`} />
         <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
         <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
         <LabelValue label="Est. APR" value={aprLabel} />

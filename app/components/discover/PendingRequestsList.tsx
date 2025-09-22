@@ -4,9 +4,10 @@ import React, { useMemo, useState, useEffect } from "react";
 import { usePendingRequests } from "@/hooks/usePendingRequests";
 import { PendingRequestCard } from "./PendingRequestCard";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
+import { Card } from "@/app/components/ui/Card";
 import { PendingFilters } from "./PendingFilters";
 import type { PendingFilters as FiltersValue } from "./PendingFilters";
-import { getTokenDecimals } from "@/utils/tokens";
+import { getTokenDecimals, getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import Big from "big.js";
 import type { PendingRequest } from "@/utils/data/pending";
@@ -19,6 +20,28 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const [showFilters, setShowFilters] = useState(true);
 
   const network = networkFromFactoryId(factoryId);
+
+  // Track whether the sticky header is currently affixed to the top to toggle a bottom shadow
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sentinel = document.getElementById("discover-header-sentinel");
+    if (!sentinel) return;
+    const rootStyles = getComputedStyle(document.documentElement);
+    const navVar = rootStyles.getPropertyValue("--nav-height").trim();
+    const navPx = navVar.endsWith("px") ? Number(navVar.replace("px", "")) : Number(navVar || 56);
+    const rootMargin = `-${isNaN(navPx) ? 56 : navPx}px 0px 0px 0px`;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const next = entry.intersectionRatio < 1;
+        setStuck((prev) => (prev !== next ? next : prev));
+      },
+      { root: null, rootMargin, threshold: [1] }
+    );
+    io.observe(sentinel);
+    return () => io.disconnect();
+  }, []);
 
   // Client-side filtering/sorting for v1
   type WithRequest = PendingRequest & { liquidity_request: NonNullable<PendingRequest["liquidity_request"]> };
@@ -98,6 +121,33 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     } catch {}
   }, [showFilters]);
 
+  // Persist filter values so users keep state when returning
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("discover:filters:value");
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<FiltersValue>;
+        const next: FiltersValue = {
+          q: typeof parsed.q === "string" ? parsed.q : "",
+          token: typeof parsed.token === "string" ? parsed.token : null,
+          minAmount: typeof parsed.minAmount === "string" ? parsed.minAmount : "",
+          maxDays: typeof parsed.maxDays === "string" ? parsed.maxDays : "",
+          sort: (parsed.sort === "amount_desc" || parsed.sort === "apr_desc" || parsed.sort === "term_asc" || parsed.sort === "updated_desc") ? parsed.sort : "updated_desc",
+        };
+        setFilters(next);
+      }
+    } catch {}
+    // run only once on mount
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem("discover:filters:value", JSON.stringify(filters));
+    } catch {}
+  }, [filters]);
+
   const activeFilterCount = useMemo(() => {
     let n = 0;
     if (filters.q.trim()) n++;
@@ -108,6 +158,16 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     return n;
   }, [filters]);
 
+  const sortLabel = useMemo(() => {
+    switch (filters.sort) {
+      case "amount_desc": return "Amount (desc)";
+      case "apr_desc": return "APR (desc)";
+      case "term_asc": return "Term (asc)";
+      case "updated_desc":
+      default: return "Newest";
+    }
+  }, [filters.sort]);
+
   function FunnelIcon() {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-4 h-4">
@@ -116,47 +176,130 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     );
   }
 
+  function XIcon() {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+        <path fillRule="evenodd" d="M10 8.586 5.707 4.293A1 1 0 1 0 4.293 5.707L8.586 10l-4.293 4.293a1 1 0 1 0 1.414 1.414L10 11.414l4.293 4.293a1 1 0 0 0 1.414-1.414L11.414 10l4.293-4.293A1 1 0 1 0 14.293 4.293L10 8.586Z" clipRule="evenodd" />
+      </svg>
+    );
+  }
+
   const clearFilters = () =>
     setFilters({ q: "", token: null, minAmount: "", maxDays: "", sort: "updated_desc" });
 
   return (
-    <div>
-      <SectionHeader
-        title="Discover Requests"
-        caption={<>{(data ?? []).length} open</>}
-        right={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowFilters((v) => !v)}
-              className="inline-flex items-center gap-2"
-              aria-expanded={showFilters || undefined}
-              aria-controls="discover-filters"
-            >
-              <FunnelIcon />
-              <span className="hidden sm:inline">Filters</span>
-              {activeFilterCount > 0 && (
-                <span className="text-xs text-secondary-text">({activeFilterCount})</span>
-              )}
-            </Button>
-            {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="text-sm"
-              >
-                Clear
-              </Button>
-            )}
+    <div className="px-4">
+      {/* Sentinel to detect affixed sticky header */}
+      <div id="discover-header-sentinel" aria-hidden className="h-px" />
+      <header
+        className={[
+          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative transition-shadow",
+          stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
+        ].join(" ")}
+        style={{ top: "var(--nav-height, 56px)" }}
+      >
+        <div className="py-2 px-3">
+          <SectionHeader
+            title="Discover Requests"
+            caption={<>{(data ?? []).length} open</>}
+            right={
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowFilters((v) => !v)}
+                  className="inline-flex items-center gap-2"
+                  aria-expanded={showFilters || undefined}
+                  aria-controls="discover-filters"
+                >
+                  <FunnelIcon />
+                  <span className="hidden sm:inline">Filters</span>
+                  {activeFilterCount > 0 && (
+                    <span className="text-xs text-secondary-text">({activeFilterCount})</span>
+                  )}
+                </Button>
+                {activeFilterCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="text-sm"
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            }
+          />
+          <div className="mt-2 text-xs text-secondary-text" aria-live="polite">
+            {filtered.length} result{filtered.length === 1 ? "" : "s"} • sorted by {sortLabel}
           </div>
-        }
-      />
-      {showFilters && (
-        <div id="discover-filters" className="mt-3">
-          <PendingFilters value={filters} onChange={setFilters} />
         </div>
+      </header>
+      
+      {activeFilterCount > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-2" aria-live="polite">
+          {filters.q.trim() && (
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, q: "" })}
+              className="inline-flex items-center gap-1 rounded-full border bg-surface px-2 py-1 text-xs hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label={`Remove search filter: ${filters.q.trim()}`}
+            >
+              <span>Search: “{filters.q.trim()}”</span>
+              <XIcon />
+            </button>
+          )}
+          {filters.token && (
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, token: null })}
+              className="inline-flex items-center gap-1 rounded-full border bg-surface px-2 py-1 text-xs hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label="Remove token filter"
+              title={filters.token}
+            >
+              <span>
+                Token: {getTokenConfigById(filters.token, network)?.symbol ?? filters.token}
+              </span>
+              <XIcon />
+            </button>
+          )}
+          {filters.minAmount.trim() && (
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, minAmount: "" })}
+              className="inline-flex items-center gap-1 rounded-full border bg-surface px-2 py-1 text-xs hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label={`Remove min amount filter: ${filters.minAmount}`}
+            >
+              <span>Min ≥ {filters.minAmount}</span>
+              <XIcon />
+            </button>
+          )}
+          {filters.maxDays.trim() && (
+            <button
+              type="button"
+              onClick={() => setFilters({ ...filters, maxDays: "" })}
+              className="inline-flex items-center gap-1 rounded-full border bg-surface px-2 py-1 text-xs hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
+              aria-label={`Remove max term filter: ${filters.maxDays} days`}
+            >
+              <span>Term ≤ {filters.maxDays}d</span>
+              <XIcon />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="ml-1 text-xs underline text-secondary-text hover:text-foreground"
+            aria-label="Clear all filters"
+          >
+            Clear all
+          </button>
+        </div>
+      )}
+      {showFilters && (
+        <Card id="discover-filters" className="mt-3">
+          <PendingFilters value={filters} onChange={setFilters} />
+        </Card>
       )}
       {error && (
         <div className="mt-3 text-sm text-red-600" role="alert">
@@ -166,18 +309,44 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       )}
       {loading && (
         <div className="mt-3 animate-pulse space-y-2">
-          <div className="h-20 bg-surface rounded" />
-          <div className="h-20 bg-surface rounded" />
+          <div className="rounded border bg-surface p-3">
+            <div className="h-4 w-3/5 bg-foreground/10 rounded" />
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+            </div>
+          </div>
+          <div className="rounded border bg-surface p-3">
+            <div className="h-4 w-2/5 bg-foreground/10 rounded" />
+            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+              <div className="h-4 bg-foreground/10 rounded" />
+            </div>
+          </div>
         </div>
       )}
       {!loading && filtered.length === 0 && (
-        <div className="mt-3 text-sm text-secondary-text">No matching requests.</div>
+        <div className="mt-6 rounded border bg-surface p-6 text-sm text-secondary-text">
+          <div>No matching requests.</div>
+          {activeFilterCount > 0 && (
+            <button className="mt-2 text-primary underline" onClick={clearFilters}>Clear filters</button>
+          )}
+        </div>
       )}
       <div className="mt-3 grid grid-cols-1 gap-2">
         {filtered.map((it) => (
           <PendingRequestCard key={it.id} item={it} factoryId={factoryId} />
         ))}
       </div>
+      
     </div>
   );
 }
