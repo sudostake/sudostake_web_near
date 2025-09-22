@@ -31,7 +31,7 @@ export function AccountSummary({
   const [refreshing, setRefreshing] = React.useState(false);
 
   return (
-    <Card className="w-full md:max-w-2xl md:mx-auto p-4">
+    <Card className="w-full p-4">
       <HeaderWithActions />
       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* NEAR */}

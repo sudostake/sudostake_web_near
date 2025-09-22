@@ -12,6 +12,7 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { SegmentedToggle } from "@/app/components/ui/SegmentedToggle";
 import { useUserVaults } from "@/hooks/useUserVaults";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
+import { Container } from "@/app/components/layout/Container";
 
 export default function Dashboard() {
   const { signedAccountId } = useWalletSelector();
@@ -64,46 +65,48 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      {summary}
-      <main id="main" className="w-full max-w-2xl mx-auto mt-8">
-        <div className="mb-3">
-          <SegmentedToggle
-            value={tab}
-            onChange={setTab}
-            options={[
-              { id: "vaults", label: `Vaults (${userVaultIds?.length ?? 0})` },
-              { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
-            ]}
-            ariaLabel="Dashboard sections"
-            variant="neutral"
-          />
-        </div>
-        {/* Tab panels with proper a11y mapping */}
-        <div
-          id="vaults-panel"
-          role="tabpanel"
-          aria-labelledby="vaults-trigger"
-          hidden={tab !== "vaults"}
-          className="mt-4"
-        >
-          <UserVaults
-            owner={signedAccountId}
-            factoryId={factoryId}
-            onCreate={() => setShowCreate(true)}
-            headerMode="toolsOnly"
-          />
-        </div>
-        <div
-          id="positions-panel"
-          role="tabpanel"
-          aria-labelledby="positions-trigger"
-          hidden={tab !== "positions"}
-          className="mt-4"
-        >
-          <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
-        </div>
-      </main>
+    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
+      <Container>
+        <div className="mt-4 sm:mt-6">{summary}</div>
+        <main id="main" className="w-full mt-8">
+          <div className="mb-3">
+            <SegmentedToggle
+              value={tab}
+              onChange={setTab}
+              options={[
+                { id: "vaults", label: `Vaults (${userVaultIds?.length ?? 0})` },
+                { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
+              ]}
+              ariaLabel="Dashboard sections"
+              variant="neutral"
+            />
+          </div>
+          {/* Tab panels with proper a11y mapping */}
+          <div
+            id="vaults-panel"
+            role="tabpanel"
+            aria-labelledby="vaults-trigger"
+            hidden={tab !== "vaults"}
+            className="mt-4"
+          >
+            <UserVaults
+              owner={signedAccountId}
+              factoryId={factoryId}
+              onCreate={() => setShowCreate(true)}
+              headerMode="toolsOnly"
+            />
+          </div>
+          <div
+            id="positions-panel"
+            role="tabpanel"
+            aria-labelledby="positions-trigger"
+            hidden={tab !== "positions"}
+            className="mt-4"
+          >
+            <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
+          </div>
+        </main>
+      </Container>
       <CreateVaultDialog
         open={showCreate}
         onClose={() => setShowCreate(false)}
