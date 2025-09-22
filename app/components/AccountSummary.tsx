@@ -3,7 +3,7 @@ import React from "react";
 // import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 import { Balance } from "@/utils/balance";
-import { getActiveNetwork } from "@/utils/networks";
+// import { getActiveNetwork } from "@/utils/networks";
 import { Card } from "@/app/components/ui/Card";
 import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
@@ -23,8 +23,7 @@ export function AccountSummary({
   loading?: boolean;
   onRefreshBalances?: () => void;
 }) {
-  const network = getActiveNetwork();
-  const usdcLabel = network === "mainnet" ? "USDC" : "USDC (Testnet)";
+  const usdcLabel = "USDC";
   const nearShort = shortAmount(near.toDisplay(), 5);
   const usdcShort = shortAmount(usdc.toDisplay(), 2);
   const [sendOpen, setSendOpen] = React.useState(false);
@@ -33,7 +32,7 @@ export function AccountSummary({
 
   return (
     <Card className="w-full md:max-w-2xl md:mx-auto p-4">
-      <HeaderWithActions onRefreshBalances={onRefreshBalances} />
+      <HeaderWithActions />
       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* NEAR */}
         <BalanceStat
@@ -79,15 +78,11 @@ export function AccountSummary({
   );
 }
 
-function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
-  const network = getActiveNetwork();
+function HeaderWithActions() {
 
   return (
     <>
-      <SectionHeader
-        title="Account Balances"
-        caption={<span className="uppercase text-xs">{network}</span>}
-      />
+      <SectionHeader title="Account Balances" />
     </>
   );
 }
