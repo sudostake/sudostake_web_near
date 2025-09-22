@@ -539,6 +539,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           )}
+          {/* Intentionally allow repayment post-term:
+              We keep the Repay button visible for the owner even after the
+              countdown reaches zero (remainingMs === 0), up until liquidation
+              actually starts. This matches the banner below which states that
+              repayment is still possible until liquidation is triggered. */}
           {data?.state === "active" && isOwner && !data?.liquidation && (
             <div className="mt-2 text-sm">
               <button
