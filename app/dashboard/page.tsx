@@ -10,6 +10,8 @@ import { LenderPositions } from "../components/vaults/LenderPositions";
 import { getActiveNetwork, factoryContract } from "@/utils/networks";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import { SegmentedToggle } from "@/app/components/ui/SegmentedToggle";
+import { useUserVaults } from "@/hooks/useUserVaults";
+import { useLenderPositions } from "@/hooks/useLenderPositions";
 
 export default function Dashboard() {
   const { signedAccountId } = useWalletSelector();
@@ -29,6 +31,8 @@ export default function Dashboard() {
   const factoryId = useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
 
   const { balances, loading: balancesLoading, refetch: refetchBalances } = useTokenBalances();
+  const { data: userVaultIds } = useUserVaults(signedAccountId, factoryId);
+  const { data: lenderPositions } = useLenderPositions(signedAccountId, factoryId);
 
   // Always refresh balances on dashboard entry to show up-to-date totals.
   React.useEffect(() => {
@@ -68,8 +72,8 @@ export default function Dashboard() {
             value={tab}
             onChange={setTab}
             options={[
-              { id: "vaults", label: "Vaults" },
-              { id: "positions", label: "Lending" },
+              { id: "vaults", label: `Vaults (${userVaultIds?.length ?? 0})` },
+              { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
             ]}
             ariaLabel="Dashboard sections"
           />
@@ -81,11 +85,12 @@ export default function Dashboard() {
               owner={signedAccountId}
               factoryId={factoryId}
               onCreate={() => setShowCreate(true)}
+              headerMode="toolsOnly"
             />
           </div>
         ) : (
           <div className="mt-4">
-            <LenderPositions lender={signedAccountId} factoryId={factoryId} />
+            <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
           </div>
         )}
       </main>

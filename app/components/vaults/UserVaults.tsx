@@ -16,9 +16,10 @@ export type UserVaultsProps = {
   factoryId: string;
   onVaultClick?: (vaultId: string) => void;
   onCreate?: () => void;
+  headerMode?: "full" | "toolsOnly"; // toolsOnly renders just the controls (search + create)
 };
 
-export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVaultsProps) {
+export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMode = "full" }: UserVaultsProps) {
   const { data, loading, error, refetch } = useUserVaults(owner, factoryId);
   const { data: summaries } = useUserVaultsSummaries(owner, factoryId);
   const [query, setQuery] = React.useState("");
@@ -34,32 +35,34 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate }: UserVau
   if ((data ?? []).length === 0)
     return <EmptyState owner={owner} factoryId={factoryId} onCreate={onCreate} />;
 
+  const Controls = (
+    <div className="flex items-center gap-2 w-full sm:w-auto">
+      <label className="sr-only" htmlFor="vault-search">Search vaults</label>
+      <Input
+        id="vault-search"
+        type="text"
+        inputMode="search"
+        placeholder="Search vaults"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="sm:w-64"
+      />
+      <CreateVaultButton className="shrink-0" onClick={onCreate} />
+    </div>
+  );
+
   return (
     <div>
-      <SectionHeader
-        className="mt-6"
-        title="Your Vaults"
-        caption={
-          <>
-            {(data ?? []).length} vault{(data ?? []).length === 1 ? "" : "s"}
-          </>
-        }
-        right={
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <label className="sr-only" htmlFor="vault-search">Search vaults</label>
-            <Input
-              id="vault-search"
-              type="text"
-              inputMode="search"
-              placeholder="Search vaults"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="sm:w-64"
-            />
-            <CreateVaultButton className="shrink-0" onClick={onCreate} />
-          </div>
-        }
-      />
+      {headerMode === "full" ? (
+        <SectionHeader
+          className="mt-6"
+          title="Your Vaults"
+          caption={<>{(data ?? []).length} vault{(data ?? []).length === 1 ? "" : "s"}</>}
+          right={Controls}
+        />
+      ) : (
+        <div className="mt-6 flex items-center justify-end">{Controls}</div>
+      )}
       {query && filtered.length === 0 ? (
         <div className="text-sm text-secondary-text mt-3">No vaults match “{query}”.</div>
       ) : null}
