@@ -133,10 +133,10 @@ export function PendingRequestCard({ item, factoryId }: Props) {
         <div className="flex items-center gap-3 min-w-0">
           <VaultIcon id={item.id} size="md" />
           <div className="min-w-0">
-            <div className="font-medium truncate" title={item.id}>
-              {item.id}
-              <Badge variant="warn" className="ml-2">Request open</Badge>
-              <Badge variant="neutral" className="ml-2">{symbol}</Badge>
+            <div className="font-medium break-all" title={item.id}>{item.id}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              <Badge variant="warn">Request open</Badge>
+              <Badge variant="neutral">{symbol}</Badge>
             </div>
             {item.owner && (
               <div className="text-xs text-secondary-text truncate" title={item.owner}>Owner: {item.owner}</div>
@@ -145,7 +145,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
         </div>
         <div className="shrink-0 flex items-center gap-1">
           <CopyButton value={item.id} />
-          <Link href={`/dashboard/vault/${encodeURIComponent(item.id)}`} className="text-xs underline text-primary ml-1">
+          <Link href={`/dashboard/vault/${encodeURIComponent(item.id)}`} className="text-xs underline text-primary ml-1 whitespace-nowrap">
             View
           </Link>
         </div>
