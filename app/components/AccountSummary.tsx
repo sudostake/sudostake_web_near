@@ -28,7 +28,7 @@ export function AccountSummary({
   const usdcShort = shortAmount(usdc.toDisplay(), 2);
 
   return (
-    <Card className="p-4">
+    <Card className="w-full md:max-w-2xl md:mx-auto p-4">
       <HeaderWithActions onRefreshBalances={onRefreshBalances} />
       <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* NEAR */}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
@@ -9,10 +9,6 @@ import { UserVaults } from "../components/vaults/UserVaults";
 import { LenderPositions } from "../components/vaults/LenderPositions";
 import { getActiveNetwork, factoryContract } from "@/utils/networks";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
-import { SectionHeader } from "@/app/components/ui/SectionHeader";
-import { Button } from "@/app/components/ui/Button";
-import { shortAmount } from "@/utils/format";
-import { Container } from "@/app/components/layout/Container";
 
 export default function Dashboard() {
   const { signedAccountId } = useWalletSelector();
@@ -38,6 +34,9 @@ export default function Dashboard() {
     refetchBalances();
   }, [refetchBalances]);
 
+  if (!signedAccountId) {
+    return null;
+  }
 
   // Account summary component
   const summary = (
@@ -49,75 +48,23 @@ export default function Dashboard() {
     />
   );
 
-  // Sticky header handling
-  const [stuck, setStuck] = useState(false);
-  useEffect(() => {
-    const sentinel = document.getElementById("dashboard-header-sentinel");
-    if (!sentinel) return;
-    const rootStyles = getComputedStyle(document.documentElement);
-    const navVar = rootStyles.getPropertyValue("--nav-height").trim();
-    const parsed = parseInt(navVar, 10);
-    const navPx = Number.isFinite(parsed) ? parsed : 56;
-    const rootMargin = `-${navPx}px 0px 0px 0px`;
-    const io = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      const next = entry.intersectionRatio < 1;
-      setStuck((prev) => (prev !== next ? next : prev));
-    }, { threshold: [1], root: null, rootMargin });
-    io.observe(sentinel);
-    return () => io.disconnect();
-  }, []);
-
-  const nearShort = shortAmount(balances.near.toDisplay(), 5);
-  const usdcShort = shortAmount(balances.usdc.toDisplay(), 2);
-
-  if (!signedAccountId) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen font-[family-name:var(--font-geist-sans)]">
-      <Container>
-        {/* Sticky subheader */}
-        <div id="dashboard-header-sentinel" aria-hidden className="h-px" />
-        <header
-          className={[
-            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
-            stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
-          ].join(" ")}
-          style={{ top: "var(--nav-height, 56px)" }}
-        >
-          <div className="py-2 px-3">
-            <SectionHeader
-              title="Dashboard"
-              caption={<>{nearShort} NEAR • {usdcShort} USDC</>}
-              right={
-                <Button onClick={() => setShowCreate(true)}>
-                  Create Vault
-                </Button>
-              }
-            />
-          </div>
-        </header>
-
-        <main id="main" className="mt-4 lg:mt-6">
-          {/* 12-col grid: content and side */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-            <div className="lg:col-span-8 space-y-4 md:space-y-6">
-              {summary}
-              <UserVaults
-                owner={signedAccountId}
-                factoryId={factoryId}
-                onCreate={() => setShowCreate(true)}
-              />
-            </div>
-            <div className="lg:col-span-4 space-y-4 md:space-y-6">
-              <LenderPositions lender={signedAccountId} factoryId={factoryId} />
-            </div>
-          </div>
-        </main>
-      </Container>
-
+    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      {summary}
+      <main id="main" className="w-full max-w-2xl mx-auto mt-8">
+        {/* Vault listing for the connected user under the chosen factory */}
+        <div className="mt-4">
+          <UserVaults
+            owner={signedAccountId}
+            factoryId={factoryId}
+            onCreate={() => setShowCreate(true)}
+          />
+        </div>
+        {/* Lending positions for the connected user */}
+        <div className="mt-6">
+          <LenderPositions lender={signedAccountId} factoryId={factoryId} />
+        </div>
+      </main>
       <CreateVaultDialog
         open={showCreate}
         onClose={() => setShowCreate(false)}
