@@ -29,8 +29,9 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     if (!sentinel) return;
     const rootStyles = getComputedStyle(document.documentElement);
     const navVar = rootStyles.getPropertyValue("--nav-height").trim();
-    const navPx = navVar.endsWith("px") ? Number(navVar.replace("px", "")) : Number(navVar || 56);
-    const rootMargin = `-${isNaN(navPx) ? 56 : navPx}px 0px 0px 0px`;
+    const parsed = parseInt(navVar, 10);
+    const navPx = Number.isFinite(parsed) ? parsed : 56;
+    const rootMargin = `-${navPx}px 0px 0px 0px`;
     const io = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];

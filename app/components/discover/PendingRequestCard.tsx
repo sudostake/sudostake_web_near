@@ -9,7 +9,7 @@ import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import Link from "next/link";
 import Big from "big.js";
 import { formatMinimalTokenAmount } from "@/utils/format";
-import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
+import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
@@ -45,14 +45,8 @@ export function PendingRequestCard({ item, factoryId }: Props) {
   const repayLabel = useMemo(() => {
     try {
       if (!lr) return "—";
-      const amount = new Big(lr.amount);
-      const interest = new Big(lr.interest);
-      const total = amount.plus(interest);
-      const display = total.div(new Big(10).pow(decimals));
-      // Reuse formatMinimalTokenAmount behavior via toFixed-like truncation
-      // Keep 2-6 decimals depending on magnitude
-      const s = display.lt(1) ? display.toFixed(6) : display.lt(1000) ? display.toFixed(3) : display.round(2, 0).toString();
-      return s.replace(/\.0+$/, "");
+      const totalRaw = new Big(lr.amount).plus(new Big(lr.interest)).toFixed(0);
+      return formatMinimalTokenAmount(totalRaw, decimals);
     } catch { return "—"; }
   }, [lr, decimals]);
   const collateralNear = useMemo(() => (lr ? safeFormatYoctoNear(lr.collateral, 5) : "—"), [lr]);
