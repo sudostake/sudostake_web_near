@@ -30,16 +30,16 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="mt-12">
-      <div className="mx-auto max-w-2xl">
-        <h2 className="text-xl font-semibold">How it works</h2>
-        <div className="mt-4 grid gap-4">
+    <section id="how-it-works" className="mt-12 md:mt-16">
+      <h2 className="text-[clamp(1.25rem,2.1vw,1.75rem)] font-semibold">How it works</h2>
+      <div className="mt-4 rounded-xl border bg-surface/50 p-4 sm:p-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map((s) => (
             <div key={s.title} className="flex gap-3 rounded border bg-surface p-4">
               <StepIcon>{s.icon}</StepIcon>
               <div>
                 <div className="font-medium">{s.title}</div>
-                <div className="text-sm text-secondary-text">{s.body}</div>
+                <div className="text-sm text-secondary-text leading-relaxed">{s.body}</div>
               </div>
             </div>
           ))}

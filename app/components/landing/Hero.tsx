@@ -23,11 +23,11 @@ export function Hero() {
     return () => { if (t) clearTimeout(t); };
   }, [connecting]);
   return (
-    <section className="text-center relative overflow-hidden rounded-xl border bg-surface/60">
+    <section className="mt-6 md:mt-8 text-center relative overflow-hidden rounded-xl border bg-surface/60">
       <div className="pointer-events-none absolute inset-0 opacity-70" aria-hidden>
         <div className="hero-gradient w-full h-full" />
       </div>
-      <div className="relative mx-auto max-w-2xl px-4 py-10 sm:py-12">
+      <div className="relative mx-auto max-w-3xl lg:max-w-4xl px-4 py-10 sm:py-12">
         <div className="flex items-center justify-center">
           <SpinningTokenPair
             size={48}
@@ -38,10 +38,10 @@ export function Hero() {
             pauseOnHover
           />
         </div>
-        <h1 className="mt-4 text-3xl sm:text-4xl font-semibold">
+        <h1 className="mt-4 font-semibold leading-tight text-[clamp(2rem,5vw,3rem)]">
           Borrow and lend with NEAR‑backed vaults
         </h1>
-        <p className="mt-3 text-base sm:text-lg text-secondary-text">
+        <p className="mt-3 text-base sm:text-lg text-secondary-text leading-relaxed max-w-[65ch] mx-auto">
           Create a NEAR‑backed vault. Request USDC. Lenders earn yield. Everything is non‑custodial and on‑chain.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
