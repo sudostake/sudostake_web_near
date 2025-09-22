@@ -76,6 +76,7 @@ export default function Dashboard() {
               { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
             ]}
             ariaLabel="Dashboard sections"
+            variant="neutral"
           />
         </div>
         {/* Vault listing for the connected user under the chosen factory */}

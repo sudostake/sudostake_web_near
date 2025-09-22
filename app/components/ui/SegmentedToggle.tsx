@@ -16,6 +16,7 @@ export interface SegmentedToggleProps {
   className?: string;
   size?: "sm" | "md";
   ariaLabel?: string;
+  variant?: "neutral" | "primary";
 }
 
 // Generic segmented control with a sliding thumb (visual match with AssetToggle)
@@ -27,6 +28,7 @@ export function SegmentedToggle({
   className = "",
   size = "md",
   ariaLabel = "Segment selector",
+  variant = "neutral",
 }: SegmentedToggleProps) {
   const opts: SegmentedOption[] = options.length > 0 ? options : [{ id: "default", label: "Default" }];
   const count = Math.max(1, opts.length);
@@ -42,6 +44,11 @@ export function SegmentedToggle({
   const textSize = size === "sm" ? "text-xs" : "text-sm";
   const btnPad = size === "sm" ? "px-2 py-1" : "px-3 py-1.5";
 
+  const isPrimary = variant === "primary";
+  const thumbBg = isPrimary ? "bg-primary" : "bg-foreground/10";
+  const selectedText = isPrimary ? "text-primary-text" : "text-foreground";
+  const unselectedText = isPrimary ? "text-foreground" : "text-secondary-text";
+
   return (
     <div
       className={[
@@ -54,7 +61,7 @@ export function SegmentedToggle({
       aria-label={ariaLabel}
     >
       <div
-        className={["absolute rounded-md bg-primary transition-all duration-200 ease-out pointer-events-none", thumbVert].join(" ")}
+        className={[`absolute rounded-md ${thumbBg} transition-all duration-200 ease-out pointer-events-none`, thumbVert].join(" ")}
         style={{ width: `${segmentWidthPct}%`, left: `${selectedIndex * segmentWidthPct}%` }}
         aria-hidden={true}
       />
@@ -72,16 +79,15 @@ export function SegmentedToggle({
               "relative z-10 flex-1 rounded-md transition-colors",
               btnPad,
               textSize,
-              isSelected ? "text-primary-text" : "text-foreground",
+              isSelected ? selectedText : unselectedText,
             ].join(" ")}
             onClick={() => isAvailable && onChange(o.id)}
             disabled={!isAvailable}
           >
             {o.label}
           </button>
-        );
+      );
       })}
     </div>
   );
 }
-
