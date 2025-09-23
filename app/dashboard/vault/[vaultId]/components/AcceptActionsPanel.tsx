@@ -4,7 +4,6 @@ import React from "react";
 import { Button } from "@/app/components/ui/Button";
 import { STRINGS } from "@/utils/strings";
 import { computeAcceptDisabled, computeAcceptLabel, computeAcceptTitle } from "./acceptActionsLogic";
-import { formatMinimalTokenAmount } from "@/utils/format";
 
 type Props = {
   pending: boolean;
