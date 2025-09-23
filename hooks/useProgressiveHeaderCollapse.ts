@@ -100,7 +100,7 @@ export function useProgressiveHeaderCollapse(
     window.addEventListener("orientationchange", onResize);
     onScroll();
     return () => {
-      window.removeEventListener("scroll", onScroll as EventListener);
+      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("orientationchange", onResize);
     };
