@@ -1,6 +1,22 @@
 // Minimal strings module to centralize user-facing text.
 
 export const STRINGS = {
+  // Liquidity requests header/intro
+  accessUsdcTitle: "Access USDC backed by your staked tokens",
+  accessUsdcCaption: "Open a request for USDC using your vault as collateral.",
+  ownerRequestTitleActive: "Your request is funded",
+  ownerRequestTitlePending: "Your liquidity request",
+  nonOwnerRequestTitleActiveLender: "You funded this request",
+  nonOwnerRequestTitleGeneric: "Vault liquidity request",
+  ownerRequestCaptionPending: "You can cancel before an offer is accepted.",
+  ownerRequestCaptionFunded: "This request has been funded.",
+  nonOwnerRequestCaptionPending: "Review the terms and accept to lend. Your tokens will transfer to the vault via ft_transfer_call.",
+  nonOwnerRequestCaptionActiveLender: "You are the lender for this active request.",
+  nonOwnerRequestCaptionFunded: "This request has been funded.",
+  // Common actions
+  openRequest: "Open request",
+  cancelRequest: "Cancel request",
+  learnMore: "Learn more",
   registerVaultWithToken: "Register vault with token",
   registerAccountWithToken: "Register your account with token",
   transferring: "Transferring…",
@@ -12,6 +28,12 @@ export const STRINGS = {
   copyFailed: "Copy failed",
   vaultRegisteredSuccess: "Vault registered with token",
   accountRegisteredSuccess: "Registration successful",
+  vaultRegistrationRequiredTitle: "Vault registration required",
+  vaultRegistrationRequiredOwnerBody: "Your vault is not registered with this token contract yet. To receive funds from a lender, register the vault with the token.",
+  // Vault registration copy
+  vaultRegisteredDefaultToken: "Your vault is registered with the default USDC token. You can receive USDC via ft_transfer_call.",
+  vaultNotRegisteredDefaultToken: "Your vault is not registered with the default USDC token yet. You will be prompted to register during the request flow.",
+  vaultNotRegisteredLendingDisabled: "This vault is not registered with this token contract yet. Lending is disabled until the vault owner registers the vault with this token.",
   repaySuccess: "Loan repaid successfully",
   // Post-expiry (lender) dialog
   loanExpired: "Loan term ended",
@@ -69,10 +91,18 @@ export const STRINGS = {
   expectedNextHint: "‘Expected next’ is what the contract can pay after claiming currently matured funds.",
   youCanRefresh: "Use Refresh to see updated maturity and availability.",
   refresh: "Refresh",
+  // Accept actions
+  accepting: "Accepting…",
+  checkingBalance: "Checking balance…",
+  registrationRequired: "Registration required",
+  vaultNotRegisteredShort: "Vault not registered",
+  acceptRequest: "Accept request",
+  insufficientBalance: "Insufficient balance",
   // Payout destination clarity
   payoutDestination: "Payout destination",
   payoutsGoTo: "Payouts are sent directly to",
   viewAccountOnExplorer: "View account on Explorer",
+  availableAfterExpiry: "Available after expiry",
   // Withdraw restrictions
   withdrawDisabledLiquidation: "Withdraw is disabled while liquidation is in progress.",
   withdrawDisabledActive: "Withdraw is disabled while a loan is active.",
@@ -100,6 +130,17 @@ export const STRINGS = {
   sourceMaturedUnbonding: "Matured (claimable now)",
   maturedClaimableNow: "Matured (claimable now)",
   noMaturedYet: "No matured entries yet",
+  // Current request panel
+  currentRequestTitle: "Current request",
+  tokenLabel: "Token",
+  amountLabel: "Amount",
+  interestLabel: "Interest",
+  collateralLabel: "Collateral",
+  durationLabel: "Duration",
+  yourBalance: "Your balance",
+  // Accept gating messages
+  mustRegisterAccountBeforeAccept: "You must register with this token contract before accepting",
+  vaultMustBeRegisteredBeforeLending: "Vault must be registered with the token contract before lending can proceed",
   // Epoch / ETA labels
   unlockEpochLabel: "Unlock epoch",
   remainingLabel: "Remaining",
@@ -111,6 +152,25 @@ export const STRINGS = {
   ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
   unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the remaining amount owed to you as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
   unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
+  // Delegations summary
+  delegationsSummaryTitle: "Delegations Summary",
+  totalStaked: "Total staked",
+  totalUnstaked: "Total unstaked",
+  stakedLabelUI: "Staked",
+  unstakedLabelUI: "Unstaked",
+  validatorLabel: "Validator",
+  statusWithdrawable: "Ready to withdraw",
+  statusUnstaking: "Unstaking",
+  statusActive: "Active",
+  claimAction: "Claim",
+  delegateAction: "Delegate",
+  undelegateAction: "Undelegate",
+  // Generic labels
+  availableBalanceTitle: "Available balance",
+  back: "Back",
+  depositAction: "Deposit",
+  withdrawAction: "Withdraw",
+  transferAction: "Transfer",
 };
 
 /**
@@ -118,4 +178,12 @@ export const STRINGS = {
  */
 export function includesMaturedString(amount: string): string {
   return `Includes ${amount} NEAR matured`;
+}
+
+export function storageDepositString(amount: string): string {
+  return `This is a one-time storage deposit of ${amount} NEAR.`;
+}
+
+export function fundedByString(accountId: string): string {
+  return `Funded by ${accountId}`;
 }
