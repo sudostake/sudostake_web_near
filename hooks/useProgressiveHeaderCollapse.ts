@@ -115,12 +115,10 @@ export function useProgressiveHeaderCollapse(
       mql.addEventListener("change", update);
       return () => mql.removeEventListener("change", update);
     } else {
-      // Safari <14 fallback
-      // @ts-ignore
-      mql.addListener(update);
+      // Safari <14 fallback (deprecated addListener/removeListener)
+      (mql as any).addListener(update);
       return () => {
-        // @ts-ignore
-        mql.removeListener(update);
+        (mql as any).removeListener(update);
       };
     }
   }, []);
