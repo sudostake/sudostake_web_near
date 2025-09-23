@@ -36,3 +36,9 @@ export const NUM_EPOCHS_TO_UNLOCK = 4;
 
 /** Default vault state used for UI fallbacks. */
 export const DEFAULT_VAULT_STATE = "idle" as const;
+
+/**
+ * Maximum number of active validators a vault can delegate to.
+ * This mirrors the contract-level limit and is used for UI gating.
+ */
+export const MAX_ACTIVE_VALIDATORS = 2 as const;

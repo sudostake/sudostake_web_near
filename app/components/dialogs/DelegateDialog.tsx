@@ -6,6 +6,7 @@ import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { useDelegate } from "@/hooks/useDelegate";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
+import { MAX_ACTIVE_VALIDATORS } from "@/utils/constants";
 import Big from "big.js";
 import { MaxAvailable } from "@/app/components/MaxAvailable";
 import { Balance } from "@/utils/balance";
@@ -72,11 +73,24 @@ export function DelegateDialog({
   }, []);
 
   // Merge default validators with those from vault delegations
-  const mergedValidators = useMemo(() => {
+  const activeValidators = data?.active_validators ?? [];
+  const activeCount = activeValidators.length;
+  const canAddNewValidator = activeCount < MAX_ACTIVE_VALIDATORS;
+
+  const allKnownValidators = useMemo(() => {
     const dynamic = data?.validators ?? [];
-    const unique = Array.from(new Set([...defaultValidators, ...dynamic]));
-    return unique.sort();
-  }, [data, defaultValidators]);
+    return Array.from(new Set([...defaultValidators, ...dynamic, ...activeValidators])).sort();
+  }, [data, defaultValidators, activeValidators]);
+
+  const existingOptions = useMemo(() => {
+    // Keep existing validators visible even if not in defaults
+    return Array.from(new Set([...activeValidators])).sort();
+  }, [activeValidators]);
+
+  const addableOptions = useMemo(() => {
+    if (!canAddNewValidator) return [] as string[];
+    return allKnownValidators.filter((v) => !activeValidators.includes(v));
+  }, [allKnownValidators, activeValidators, canAddNewValidator]);
   
   // Map validator to existing staked balance
   const stakedMap = useMemo(() => {
@@ -92,10 +106,17 @@ export function DelegateDialog({
       setValidator(defaultValidator);
       return;
     }
-    if (mergedValidators.length > 0) {
-      setValidator(mergedValidators[0]);
+    // Prefer an existing validator first for top-up convenience.
+    if (existingOptions.length > 0) {
+      setValidator(existingOptions[0]);
+      return;
     }
-  }, [open, defaultValidator, mergedValidators]);
+    if (addableOptions.length > 0) {
+      setValidator(addableOptions[0]);
+      return;
+    }
+    setValidator("");
+  }, [open, defaultValidator, existingOptions, addableOptions]);
 
   const disableContinue = useMemo(() => {
     if (!validator || !amount) return true;
@@ -132,7 +153,7 @@ export function DelegateDialog({
     <Modal
       open={open}
       onClose={resetAndClose}
-      title={defaultValidator ? `Delegate to ${defaultValidator}` : "Delegate to validator"}
+      title={"Delegate to validator"}
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
@@ -146,7 +167,7 @@ export function DelegateDialog({
       }
     >
       <div className="space-y-4">
-        {!defaultValidator && (
+        {
           <label className="block text-sm">
             <span className="text-secondary-text">Validator</span>
             <select
@@ -155,17 +176,38 @@ export function DelegateDialog({
               onChange={(e) => setValidator(e.target.value)}
             >
               {(loadValidators || loadingDefaults) && <option disabled>Loading...</option>}
-              {mergedValidators.map((v) => {
-                const bal = stakedMap.get(v);
-                return (
-                  <option key={v} value={v}>
-                    {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
-                  </option>
-                );
-              })}
+              {existingOptions.length > 0 && (
+                <optgroup label="Existing validators">
+                  {existingOptions.map((v) => {
+                    const bal = stakedMap.get(v);
+                    return (
+                      <option key={`existing-${v}`} value={v}>
+                        {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              )}
+              {addableOptions.length > 0 && (
+                <optgroup label="Add new validator">
+                  {addableOptions.map((v) => {
+                    const bal = stakedMap.get(v);
+                    return (
+                      <option key={`add-${v}`} value={v}>
+                        {v} ({bal ? bal.toDisplay() : `0 ${balance.symbol}`})
+                      </option>
+                    );
+                  })}
+                </optgroup>
+              )}
             </select>
+            {!canAddNewValidator && (
+              <div className="mt-1 text-xs text-secondary-text">
+                You already have the maximum number of active validators ({MAX_ACTIVE_VALIDATORS}). You can delegate to existing validators but cannot add a new one.
+              </div>
+            )}
           </label>
-        )}
+        }
         <Input
           label={`Amount (${balance.symbol})`}
           type="number"

@@ -4,10 +4,12 @@ import React from "react";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { useDelegationsActions } from "./DelegationsActionsContext";
-import { STRINGS } from "@/utils/strings";
 import { shortAmount } from "@/utils/format";
 import { analyzeUnstakeEntry } from "@/utils/epochs";
 import { EpochDetails } from "./EpochDetails";
+import { CopyButton } from "@/app/components/ui/CopyButton";
+import { explorerAccountUrl, getActiveNetwork } from "@/utils/networks";
+import { STRINGS } from "@/utils/strings";
 
 // Enum representing the delegation summary status for a validator entry
 export enum DelegationStatus {
@@ -51,17 +53,31 @@ function statusPillClass(status: DelegationStatus | null): string {
 function statusLabel(status: DelegationStatus | null): string {
   switch (status) {
     case DelegationStatus.Withdrawable:
-      return "Ready to withdraw";
+      return STRINGS.statusWithdrawable;
     case DelegationStatus.Unstaking:
-      return "Unstaking";
+      return STRINGS.statusUnstaking;
     case DelegationStatus.Active:
-      return "Active";
+      return STRINGS.statusActive;
     default:
       return "";
   }
 }
 
 // shortAmount moved to utils/format
+
+function accentBarClass(status: DelegationStatus | null): string {
+  const base = "absolute left-0 top-0 bottom-0 w-1.5 group-hover:w-2 transition-all duration-200 rounded-l"; // ~6–8px
+  switch (status) {
+    case DelegationStatus.Withdrawable:
+      return `${base} bg-emerald-300/80 dark:bg-emerald-300/50`;
+    case DelegationStatus.Unstaking:
+      return `${base} bg-amber-300/80 dark:bg-amber-300/50`;
+    case DelegationStatus.Active:
+      return `${base} bg-blue-300/80 dark:bg-blue-300/50`;
+    default:
+      return `${base} bg-foreground/10`;
+  }
+}
 
 function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
@@ -83,58 +99,68 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   }, [entry.unstaked_at, entry.current_epoch]);
 
   return (
-    <li className="py-3" key={entry.validator} role="row">
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 sm:gap-6 items-start">
+    <li
+      className="group relative overflow-hidden rounded border border-foreground/10 bg-background/70 shadow-sm hover:bg-background/80 transition-colors p-3 dark:bg-background/60 dark:shadow-none"
+      key={entry.validator}
+    >
+      <div className={accentBarClass(status)} aria-hidden />
+      <div className="min-w-0">
         {/* Validator + status */}
-        <div className="sm:col-span-6 min-w-0" role="cell">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-sm truncate" title={entry.validator}>
-              {truncateAccount(entry.validator)}
+        <div className="flex items-center gap-2 min-w-0">
+          <a
+            href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono text-sm underline truncate"
+            title={entry.validator}
+          >
+            {truncateAccount(entry.validator)}
+          </a>
+          <CopyButton value={entry.validator} title="Copy validator" />
+          {status && (
+            <span
+              className={
+                statusPillClass(status) +
+                (status === DelegationStatus.Withdrawable ? " cursor-help" : "")
+              }
+              title={
+                status === DelegationStatus.Withdrawable
+                  ? `${entry.unstaked_balance.minimal} yoctoNEAR`
+                  : undefined
+              }
+            >
+              {statusLabel(status)}
             </span>
-            {status && <span className={statusPillClass(status)}>{statusLabel(status)}</span>}
-          </div>
-          {entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
-            <div className="mt-1 text-[11px] text-secondary-text opacity-80">
-              current epoch {entry.current_epoch} • unstaked epoch {entry.unstaked_at}
-            </div>
           )}
+        </div>
+        {showMore && entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
+          <div className="mt-1 text-xs text-secondary-text opacity-80">
+            current epoch {entry.current_epoch} • unstaked epoch {entry.unstaked_at}
+          </div>
+        )}
 
-          {/* Mobile-only balances */}
-          <div className="mt-2 grid grid-cols-2 gap-3 sm:hidden">
-            <div>
-              <div className="text-[11px] uppercase tracking-wide text-secondary-text">Staked</div>
-              <div className="font-mono text-sm break-all" title={entry.staked_balance.toDisplay()}>
-                {shortAmount(entry.staked_balance.toDisplay(), 4)}
-              </div>
+        {/* Balances */}
+        <div className="mt-2 grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.stakedLabelUI}</div>
+            <div className="font-mono text-sm break-all" title={entry.staked_balance.toDisplay()}>
+              {shortAmount(entry.staked_balance.toDisplay(), 6)}
             </div>
-            <div>
-              <div className="text-[11px] uppercase tracking-wide text-secondary-text">Unstaked</div>
-              <div className="font-mono text-sm break-all" title={entry.unstaked_balance.toDisplay()}>
-                {shortAmount(entry.unstaked_balance.toDisplay(), 4)}
-              </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.unstakedLabelUI}</div>
+            <div className="font-mono text-sm break-all" title={entry.unstaked_balance.toDisplay()}>
+              {shortAmount(entry.unstaked_balance.toDisplay(), 6)}
             </div>
           </div>
         </div>
-
-        {/* Desktop balances */}
-        <div className="hidden sm:block sm:col-span-3" role="cell">
-          <div className="font-mono text-sm text-right tabular-nums" title={entry.staked_balance.toDisplay()}>
-            {shortAmount(entry.staked_balance.toDisplay(), 6)}
-          </div>
-        </div>
-        <div className="hidden sm:block sm:col-span-3" role="cell">
-          <div className="font-mono text-sm text-right tabular-nums" title={entry.unstaked_balance.toDisplay()}>
-            {shortAmount(entry.unstaked_balance.toDisplay(), 6)}
-          </div>
-        </div>
-
       </div>
       {/* Optional per-entry more details */}
       {epochDetails && (
         <div className="mt-2">
           <button
             type="button"
-            className="text-[11px] underline text-primary"
+            className="text-xs underline text-primary"
             onClick={() => setShowMore((v) => !v)}
           >
             {showMore ? STRINGS.hideDetails : STRINGS.showDetails}
@@ -151,40 +177,40 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           )}
         </div>
       )}
-      {/* Actions row: full width at bottom */}
-      <div className="mt-2 pt-2 border-t border-foreground/10">
-        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+      {/* Actions footer: full-bleed background + divider for clear demarcation */}
+      <div className="mt-3 -mx-3 border-t border-foreground/10 bg-background/60 dark:bg-background/50">
+        <div className="px-3 py-2 flex flex-wrap gap-2 justify-start sm:justify-end">
           {canClaim && (
             <button
               type="button"
               aria-label={`Claim unstaked for ${entry.validator}`}
-              className="text-xs rounded bg-primary text-primary-text py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+              className="text-xs rounded bg-primary text-primary-text py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
               onClick={() => onUnclaimUnstaked?.(entry.validator)}
               disabled={!canClaim}
             >
-              Claim
+              {STRINGS.claimAction}
             </button>
           )}
           <button
             type="button"
             aria-label={`Delegate to ${entry.validator}`}
             className={[
-              "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed",
+              "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
               canClaim ? "border bg-surface hover:bg-surface/90" : "bg-primary text-primary-text",
             ].join(" ")}
             onClick={() => onDelegate?.(entry.validator)}
             disabled={!canDelegate}
           >
-            Delegate
+            {STRINGS.delegateAction}
           </button>
           <button
             type="button"
             aria-label={`Undelegate from ${entry.validator}`}
-            className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
+            className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
             onClick={() => onUndelegate?.(entry.validator)}
             disabled={!canUndelegate}
           >
-            Undelegate
+            {STRINGS.undelegateAction}
           </button>
         </div>
       </div>
@@ -194,16 +220,8 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
 export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
   return (
-    <div className="space-y-1" role="table" aria-label="Delegations summary">
-      <div
-        className="hidden sm:grid grid-cols-12 gap-6 text-[11px] uppercase tracking-wide text-secondary-text px-1"
-        role="row"
-      >
-        <div className="col-span-6" role="columnheader">Validator</div>
-        <div className="col-span-3 text-right" role="columnheader">Staked</div>
-        <div className="col-span-3 text-right" role="columnheader">Unstaked</div>
-      </div>
-      <ul className="divide-y divide-foreground/10" role="rowgroup">
+    <div className="space-y-2" aria-label="Delegations summary">
+      <ul className="space-y-2">
         {entries.map((entry) => (
           <SummaryItem key={entry.validator} entry={entry} />
         ))}

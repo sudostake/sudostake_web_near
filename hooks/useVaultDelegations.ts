@@ -7,8 +7,6 @@ import { NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
 import { callViewFunction, networkFromFactoryId } from "@/utils/api/rpcClient";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
 
-// Centralize the number of fraction digits used for NEAR formatting
-const FRACTION_DIGITS = 5;
 
 type StakingPoolAccountView = {
   staked_balance: string;

@@ -22,7 +22,6 @@ export function Summary({
 }: Props) {
   return (
     <div className="px-4 py-3">
-      <div className="text-sm text-secondary-text mb-2">Summary</div>
       {loading ? (
         <div className="space-y-2 animate-pulse">
           <div className="h-5 rounded bg-background/60 w-1/2" />
