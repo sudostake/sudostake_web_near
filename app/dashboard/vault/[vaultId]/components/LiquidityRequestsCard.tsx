@@ -556,7 +556,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         <div className="mt-4 rounded border border-zinc-300/40 bg-zinc-50 text-zinc-900 p-3 dark:border-foreground/20 dark:bg-background/70 dark:text-foreground">
           <div className="flex items-center gap-2">
             <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
-            <Badge variant={role === "activeLender" ? "warn" : "danger"} title={expiryDate ? formatDateTime(expiryDate) : undefined}>Expired</Badge>
+            <Badge variant={role === "activeLender" ? "warn" : "danger"} title={expiryDate ? formatDateTime(expiryDate) : undefined}>{STRINGS.expiredLabel}</Badge>
           </div>
           <div className={`mt-1 text-xs ${role === "activeLender" ? "text-zinc-700 dark:text-zinc-300" : "text-zinc-700 dark:text-zinc-300"}`}>
             {STR.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STR.liquidationInProgress}
@@ -719,7 +719,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 title={STRINGS.refresh}
                 disabled={vaultLoading || availLoading}
               >
-                {vaultLoading || availLoading ? "Refreshing…" : STRINGS.refresh}
+                {vaultLoading || availLoading ? STRINGS.refreshing : STRINGS.refresh}
               </Button>
             </div>
           )}

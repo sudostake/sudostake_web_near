@@ -37,7 +37,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      aria-label="Back"
+      aria-label={STRINGS.back}
       className="inline-flex items-center justify-center h-10 w-10 rounded bg-surface hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
@@ -277,7 +277,7 @@ export default function VaultPage() {
                   {/* Identity row */}
                   <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 items-start min-w-0">
                     <LabelValue
-                      label="Vault ID"
+                      label={STRINGS.vaultIdLabel}
                       value={
                         <span className="inline-flex items-center gap-2 min-w-0">
                           <a
@@ -295,7 +295,7 @@ export default function VaultPage() {
                     />
                     {data?.owner && (
                       <LabelValue
-                        label="Owner"
+                        label={STRINGS.ownerLabel}
                         value={
                           <span className="inline-flex items-center gap-2 min-w-0 break-all">
                             <a
@@ -316,7 +316,7 @@ export default function VaultPage() {
                   {/* Balances row */}
                   <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
                     <LabelValue
-                      label="Contract balance"
+                      label={STRINGS.contractBalanceLabel}
                       value={
                         <span className="inline-flex items-baseline gap-1">
                           <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
@@ -328,7 +328,7 @@ export default function VaultPage() {
                     />
                     {usdcId && (
                       <LabelValue
-                        label="USDC balance"
+                        label={STRINGS.usdcBalanceLabel}
                         value={
                           <span className="inline-flex items-baseline gap-1">
                             <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>

@@ -3,7 +3,7 @@
 import React from "react";
 import type { Network } from "@/utils/networks";
 import { explorerAccountUrl } from "@/utils/networks";
-import { STRINGS, includesMaturedString } from "@/utils/strings";
+import { STRINGS, includesMaturedString, startLiquidationInString } from "@/utils/strings";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Button } from "@/app/components/ui/Button";
 
@@ -42,11 +42,11 @@ export function LenderActionsPanel({
           variant="primary"
           size="lg"
           className="gap-2 w-full sm:w-auto"
-          title="Available after expiry"
+          title={STRINGS.availableAfterExpiry}
           disabled
           aria-disabled={true}
         >
-          {`Start liquidation in ${formattedCountdown ?? "—"}`}
+          {startLiquidationInString(String(formattedCountdown ?? "—"))}
         </Button>
       ) : (
         <div className="rounded border border-foreground/10 bg-background p-3">

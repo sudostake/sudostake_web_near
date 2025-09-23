@@ -91,6 +91,7 @@ export const STRINGS = {
   expectedNextHint: "‘Expected next’ is what the contract can pay after claiming currently matured funds.",
   youCanRefresh: "Use Refresh to see updated maturity and availability.",
   refresh: "Refresh",
+  refreshing: "Refreshing…",
   // Accept actions
   accepting: "Accepting…",
   checkingBalance: "Checking balance…",
@@ -138,6 +139,10 @@ export const STRINGS = {
   collateralLabel: "Collateral",
   durationLabel: "Duration",
   yourBalance: "Your balance",
+  contractBalanceLabel: "Contract balance",
+  usdcBalanceLabel: "USDC balance",
+  ownerLabel: "Owner",
+  vaultIdLabel: "Vault ID",
   // Accept gating messages
   mustRegisterAccountBeforeAccept: "You must register with this token contract before accepting",
   vaultMustBeRegisteredBeforeLending: "Vault must be registered with the token contract before lending can proceed",
@@ -171,6 +176,7 @@ export const STRINGS = {
   depositAction: "Deposit",
   withdrawAction: "Withdraw",
   transferAction: "Transfer",
+  expiredLabel: "Expired",
 };
 
 /**
@@ -186,4 +192,8 @@ export function storageDepositString(amount: string): string {
 
 export function fundedByString(accountId: string): string {
   return `Funded by ${accountId}`;
+}
+
+export function startLiquidationInString(countdown: string): string {
+  return `Start liquidation in ${countdown}`;
 }
