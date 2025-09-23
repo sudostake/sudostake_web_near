@@ -23,10 +23,11 @@ export function Input({
     hasSuffix ? "pr-9" : "",
     "outline-none focus:ring-2 focus:ring-primary/50",
   ].join(" ");
+  const inputWrapperClass = ["relative", label ? "mt-1" : ""].join(" ");
   return (
     <label className={`block text-sm ${containerClassName}`}>
       {label && <span className="text-secondary-text">{label}</span>}
-      <div className="relative mt-1">
+      <div className={inputWrapperClass}>
         <input className={`${inputBase} ${className}`} {...rest} />
         {hasSuffix && (
           <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-xs text-secondary-text">

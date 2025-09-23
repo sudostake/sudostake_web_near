@@ -39,10 +39,10 @@ export function Hero() {
           />
         </div>
         <h1 className="mt-4 font-semibold leading-tight text-[clamp(2rem,5vw,3rem)]">
-          Borrow and lend with NEAR‑backed vaults
+          Stake. Earn. Trade.
         </h1>
         <p className="mt-3 text-base sm:text-lg text-secondary-text leading-relaxed max-w-[65ch] mx-auto">
-          Create a NEAR‑backed vault. Request USDC. Lenders earn yield. Everything is non‑custodial and on‑chain.
+          Earn from staking, trade anytime.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button

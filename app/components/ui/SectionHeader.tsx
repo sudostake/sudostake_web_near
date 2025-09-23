@@ -18,8 +18,7 @@ export function SectionHeader({ title, caption, right, className = "" }: Props) 
           <div className="text-sm text-secondary-text mt-1">{caption}</div>
         )}
       </div>
-      {right && <div className="mt-2 sm:mt-0">{right}</div>}
+      {right && <div className="mt-2 sm:mt-0 w-full sm:flex-1 sm:ml-4">{right}</div>}
     </div>
   );
 }
-

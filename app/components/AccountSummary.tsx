@@ -23,9 +23,9 @@ export function AccountSummary({
   loading?: boolean;
   onRefreshBalances?: () => void;
 }) {
-  const usdcLabel = "USDC";
-  const nearShort = shortAmount(near.toDisplay(), 5);
-  const usdcShort = shortAmount(usdc.toDisplay(), 2);
+  const usdcLabel = "USDC Balance";
+  const nearShort = shortAmount(near.toDisplay(), 3);
+  const usdcShort = shortAmount(usdc.toDisplay(), 3);
   const [sendOpen, setSendOpen] = React.useState(false);
   const [recvOpen, setRecvOpen] = React.useState(false);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -33,7 +33,7 @@ export function AccountSummary({
   return (
     <Card className="w-full p-4">
       <HeaderWithActions />
-      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-3 grid grid-cols-2 gap-4">
         {/* NEAR */}
         <BalanceStat
           label={`${near.symbol} Balance`}
@@ -51,8 +51,7 @@ export function AccountSummary({
           loading={Boolean(loading)}
         />
       </div>
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="text-xs text-secondary-text">Always review transactions in your wallet.</div>
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
             variant="ghost"
