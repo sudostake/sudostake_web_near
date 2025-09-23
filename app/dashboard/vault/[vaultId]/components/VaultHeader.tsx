@@ -118,15 +118,15 @@ export function VaultHeader({
           value={
             <span className="inline-flex items-center gap-2 min-w-0">
               <a
-                href={explorerAccountUrl(network, String(vaultId))}
+                href={explorerAccountUrl(network, vaultId)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="underline break-all"
-                title={String(vaultId)}
+                title={vaultId}
               >
-                {String(vaultId)}
+                {vaultId}
               </a>
-              <CopyButton value={String(vaultId)} />
+              <CopyButton value={vaultId} />
             </span>
           }
         />
@@ -136,15 +136,15 @@ export function VaultHeader({
             value={
               <span className="inline-flex items-center gap-2 min-w-0 break-all">
                 <a
-                  href={explorerAccountUrl(network, String(owner))}
+                  href={explorerAccountUrl(network, owner)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline break-all"
-                  title={String(owner)}
+                  title={owner}
                 >
                   <span className="font-mono break-all">{owner}</span>
                 </a>
-                <CopyButton value={String(owner)} />
+                <CopyButton value={owner} />
               </span>
             }
           />
