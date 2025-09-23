@@ -177,43 +177,45 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           )}
         </div>
       )}
-      {/* Actions footer: full-bleed background + divider for clear demarcation */}
-      <div className="mt-3 -mx-3 border-t border-foreground/10 bg-background/60 dark:bg-background/50">
-        <div className="px-3 py-2 flex flex-wrap gap-2 justify-start sm:justify-end">
-          {canClaim && (
+      {/* Actions footer: show only when any action handlers are available (e.g., owner view). */}
+      {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
+        <div className="mt-3 -mx-3 border-t border-foreground/10 bg-background/60 dark:bg-background/50">
+          <div className="px-3 py-2 flex flex-wrap gap-2 justify-start sm:justify-end">
+            {canClaim && (
+              <button
+                type="button"
+                aria-label={`Claim unstaked for ${entry.validator}`}
+                className="text-xs rounded bg-primary text-primary-text py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
+                onClick={() => onUnclaimUnstaked?.(entry.validator)}
+                disabled={!canClaim}
+              >
+                {STRINGS.claimAction}
+              </button>
+            )}
             <button
               type="button"
-              aria-label={`Claim unstaked for ${entry.validator}`}
-              className="text-xs rounded bg-primary text-primary-text py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
-              onClick={() => onUnclaimUnstaked?.(entry.validator)}
-              disabled={!canClaim}
+              aria-label={`Delegate to ${entry.validator}`}
+              className={[
+                "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
+                canClaim ? "border bg-surface hover:bg-surface/90" : "bg-primary text-primary-text",
+              ].join(" ")}
+              onClick={() => onDelegate?.(entry.validator)}
+              disabled={!canDelegate}
             >
-              {STRINGS.claimAction}
+              {STRINGS.delegateAction}
             </button>
-          )}
-          <button
-            type="button"
-            aria-label={`Delegate to ${entry.validator}`}
-            className={[
-              "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
-              canClaim ? "border bg-surface hover:bg-surface/90" : "bg-primary text-primary-text",
-            ].join(" ")}
-            onClick={() => onDelegate?.(entry.validator)}
-            disabled={!canDelegate}
-          >
-            {STRINGS.delegateAction}
-          </button>
-          <button
-            type="button"
-            aria-label={`Undelegate from ${entry.validator}`}
-            className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
-            onClick={() => onUndelegate?.(entry.validator)}
-            disabled={!canUndelegate}
-          >
-            {STRINGS.undelegateAction}
-          </button>
+            <button
+              type="button"
+              aria-label={`Undelegate from ${entry.validator}`}
+              className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
+              onClick={() => onUndelegate?.(entry.validator)}
+              disabled={!canUndelegate}
+            >
+              {STRINGS.undelegateAction}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </li>
   );
 }

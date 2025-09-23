@@ -50,21 +50,23 @@ function OnboardingEmptyState({
   const { onDeposit, onDelegate } = useDelegationsActions();
   const parsed = parseNumber(availableBalance?.toDisplay() ?? "");
   const available = Number.isNaN(parsed) ? 0 : parsed;
-  const showDelegateCta = !availableLoading && available > 0;
+  const showDelegateCta = !availableLoading && available > 0 && Boolean(onDelegate);
+  const showDepositCta = Boolean(onDeposit) && !showDelegateCta;
+  const helperMessage = React.useMemo(() => {
+    const canAct = Boolean(onDelegate || onDeposit);
+    if (availableLoading && canAct) return "Checking your available balance...";
+    if (showDelegateCta) return "Delegate your available balance to validators to start earning rewards.";
+    if (showDepositCta) return "Deposit NEAR to your vault and then delegate to validators to start earning rewards.";
+    return "The owner can delegate to validators to start earning rewards.";
+  }, [availableLoading, onDelegate, onDeposit, showDelegateCta, showDepositCta]);
   return (
     <div className="rounded border border-dashed bg-background/40 p-4">
       <div className="text-sm font-medium">Get started with delegations</div>
       <p className="mt-1 text-sm text-secondary-text">
-        You do not have any delegations yet.
-        {" "}
-        {availableLoading
-          ? "Checking your available balance..."
-          : showDelegateCta
-          ? "Delegate your available balance to validators to start earning rewards."
-          : "Deposit NEAR to your vault and then delegate to validators to start earning rewards."}
+        You do not have any delegations yet. {helperMessage}
       </p>
       <div className="mt-3 flex items-center gap-2">
-        {availableLoading ? (
+        {availableLoading && (onDelegate || onDeposit) ? (
           <div className="h-8 w-40 rounded bg-background animate-pulse" />
         ) : showDelegateCta ? (
           <button
@@ -75,7 +77,7 @@ function OnboardingEmptyState({
           >
             Get started with delegating
           </button>
-        ) : (
+        ) : showDepositCta ? (
           <button
             type="button"
             className="rounded bg-primary text-primary-text py-1.5 px-3 text-sm disabled:opacity-60"
@@ -84,7 +86,7 @@ function OnboardingEmptyState({
           >
             Deposit to vault
           </button>
-        )}
+        ) : null}
       </div>
     </div>
   );
