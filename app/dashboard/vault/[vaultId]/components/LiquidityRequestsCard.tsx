@@ -559,7 +559,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             <Badge variant={role === "activeLender" ? "warn" : "danger"} title={expiryDate ? formatDateTime(expiryDate) : undefined}>{STRINGS.expiredLabel}</Badge>
           </div>
           <div className={`mt-1 text-xs ${role === "activeLender" ? "text-zinc-700 dark:text-zinc-300" : "text-zinc-700 dark:text-zinc-300"}`}>
-            {STR.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STR.liquidationInProgress}
+            {STRINGS.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STRINGS.liquidationInProgress}
           </div>
           {role === "activeLender" && (
             <div>
