@@ -33,11 +33,19 @@ import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLende
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
-import { STRINGS, includesMaturedString } from "@/utils/strings";
+import { STRINGS, includesMaturedString, fundedByString } from "@/utils/strings";
 import { UnbondingList } from "./UnbondingList";
 import { LiquidationSummary } from "./LiquidationSummary";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
+import { CurrentRequestPanel } from "./CurrentRequestPanel";
+import { LenderActionsPanel } from "./LenderActionsPanel";
+import { OwnerActionsPanel } from "./OwnerActionsPanel";
+import { VaultUsdcRegisteredNotice } from "./VaultUsdcRegisteredNotice";
+import { AcceptActionsPanel } from "./AcceptActionsPanel";
+import { OwnerVaultRegistrationCard } from "./OwnerVaultRegistrationCard";
+import { PotentialLenderRegistrationCard } from "./PotentialLenderRegistrationCard";
 import { Badge } from "@/app/components/ui/Badge";
 import { SpinningTokenPair } from "@/app/components/ui/SpinningTokenPair";
 import {
@@ -381,7 +389,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   };
 
   return (
-    <section className="rounded border bg-surface p-4">
+    <section className="rounded border bg-surface p-4" aria-label="Liquidity requests">
       <div className="flex items-center gap-4">
         <SpinningTokenPair pauseOnHover />
         <div className="flex-1 min-w-0">
@@ -390,154 +398,71 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               <div className="text-base font-medium truncate">
                 {isOwner
                   ? data?.state === "active"
-                    ? "Your request is funded"
-                    : "Your liquidity request"
+                    ? STRINGS.ownerRequestTitleActive
+                    : STRINGS.ownerRequestTitlePending
                   : data?.state === "active" && role === "activeLender"
-                  ? "You funded this request"
-                  : "Vault liquidity request"}
+                  ? STRINGS.nonOwnerRequestTitleActiveLender
+                  : STRINGS.nonOwnerRequestTitleGeneric}
               </div>
               <div className="mt-1 text-sm text-secondary-text">
                 {isOwner
                   ? data?.state === "pending"
-                    ? "You can cancel before an offer is accepted."
+                    ? STRINGS.ownerRequestCaptionPending
                     : data?.accepted_offer?.lender
-                    ? `Funded by ${data.accepted_offer.lender}`
-                    : "This request has been funded."
+                    ? fundedByString(String(data.accepted_offer.lender))
+                    : STRINGS.ownerRequestCaptionFunded
                   : data?.state === "pending"
-                  ? "Review the terms and accept to lend. Your tokens will transfer to the vault via ft_transfer_call."
+                  ? STRINGS.nonOwnerRequestCaptionPending
                   : role === "activeLender"
-                  ? "You are the lender for this active request."
-                  : "This request has been funded."}
+                  ? STRINGS.nonOwnerRequestCaptionActiveLender
+                  : STRINGS.nonOwnerRequestCaptionFunded}
               </div>
             </>
           ) : (
             <>
-              <div className="text-base font-medium truncate">Access USDC backed by your staked tokens</div>
-              <div className="mt-1 text-sm text-secondary-text">Open a request for USDC using your vault as collateral.</div>
+              <div className="text-base font-medium truncate">{STRINGS.accessUsdcTitle}</div>
+              <div className="mt-1 text-sm text-secondary-text">{STRINGS.accessUsdcCaption}</div>
             </>
           )}
         </div>
         {!hasOpenRequest && isOwner && (
           <div className="shrink-0">
-            <button
+            <Button
               type="button"
               onClick={() => setOpenDialog(true)}
               disabled={openDisabled}
-              className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface hover:bg-surface/90 disabled:opacity-50"
+              variant="secondary"
+              size="md"
+              className="gap-2"
             >
-              Open request
-            </button>
+              {STRINGS.openRequest}
+            </Button>
           </div>
         )}
       </div>
 
       {!hasOpenRequest && isOwner && vaultUsdcRegistered !== null && (
-        <div className={`mt-3 rounded border p-3 text-sm ${vaultUsdcRegistered ? "border-emerald-500/30 bg-emerald-100/30 text-emerald-900 dark:text-emerald-100" : "border-amber-500/30 bg-amber-100/40 text-amber-900 dark:text-amber-100"}`}>
-          {vaultUsdcRegistered ? (
-            <div>Your vault is registered with the default USDC token. You can receive USDC via ft_transfer_call.</div>
-          ) : (
-            <div>Your vault is not registered with the default USDC token yet. You will be prompted to register during the request flow.</div>
-          )}
-        </div>
+        <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} className="mt-3" />
       )}
 
       {content && (
-        <div className="mt-4 rounded border border-foreground/10 p-3 bg-background">
-          <div className="text-sm text-secondary-text">Current request</div>
-          <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <div>
-              <div className="text-secondary-text">Token</div>
-              <div className="font-medium truncate" title={content.token}>{content.token}</div>
-            </div>
-            <div>
-              <div className="text-secondary-text">Amount</div>
-              <div className="font-medium">{content.amount}</div>
-            </div>
-            <div>
-              <div className="text-secondary-text">Interest</div>
-              <div className="font-medium">{content.interest}</div>
-            </div>
-            {data?.state === "active" && (
-              <div>
-                <div className="text-secondary-text">Total due</div>
-                <div className="font-medium">{content.totalDue}</div>
-              </div>
-            )}
-            <div>
-              <div className="text-secondary-text">Collateral</div>
-              <div className="font-medium">{content.collateral}</div>
-            </div>
-            <div>
-              <div className="text-secondary-text">Duration</div>
-              <div className="font-medium">{formatDays(content.durationDays)}</div>
-            </div>
-          </div>
-          {/* Countdown line removed: the lender action button below now conveys timing */}
+        <>
+        <CurrentRequestPanel content={content} active={data?.state === "active"} />
+        {/* Countdown line removed: the lender action button below now conveys timing */}
           {data?.state === "active" && role === "activeLender" && expiryDate && !data?.liquidation && (
-            <div className="mt-2 text-sm">
-              {remainingMs !== null && remainingMs > 0 ? (
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
-                  title="Available after expiry"
-                  disabled
-                  aria-disabled={true}
-                >
-                  {`Start liquidation in ${formattedCountdown ?? "—"}`}
-                </button>
-              ) : (
-                <div className="rounded border border-foreground/10 bg-background p-3">
-                  <div className="text-sm font-medium mb-2">{STRINGS.nextPayoutSources}</div>
-                  <div className="text-sm space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="text-secondary-text">{STRINGS.availableNow}</div>
-                      <div className="font-medium">{claimableNowLabel} NEAR</div>
-                    </div>
-                    {!hasClaimableNow && (
-                      <div className="text-xs text-secondary-text">
-                        {STRINGS.nothingAvailableNow}
-                        {expectedNextLabel && (
-                          <>
-                            {" · "}{STRINGS.expectedNext}: {expectedNextLabel} NEAR
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {lenderId && (
-                      <div className="text-xs text-secondary-text">
-                        {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
-                        <a
-                          href={explorerAccountUrl(network, lenderId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 underline text-primary"
-                        >
-                          {STRINGS.viewAccountOnExplorer}
-                        </a>
-                      </div>
-                    )}
-                    {/* Simplified: detailed sources are covered by the Waiting to unlock section */}
-                    {processError && (
-                      <div className="text-xs text-red-600">{processError}</div>
-                    )}
-                    {maturedYocto > BigInt(0) && (
-                      <div className="text-xs text-secondary-text">
-                        {includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
-                      onClick={() => setPostExpiryOpen(true)}
-                      disabled={processPending || !hasClaimableNow}
-                      title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
-                    >
-                      {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            <LenderActionsPanel
+              remainingMs={remainingMs}
+              formattedCountdown={formattedCountdown}
+              hasClaimableNow={hasClaimableNow}
+              claimableNowLabel={claimableNowLabel}
+              expectedNextLabel={expectedNextLabel}
+              lenderId={lenderId}
+              network={network}
+              processError={processError}
+              processPending={processPending}
+              maturedYocto={maturedYocto}
+              onOpenProcess={() => setPostExpiryOpen(true)}
+            />
           )}
           {/* Intentionally allow repayment post-term:
               We keep the Repay button visible for the owner even after the
@@ -545,15 +470,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               actually starts. This matches the banner below which states that
               repayment is still possible until liquidation is triggered. */}
           {data?.state === "active" && isOwner && !data?.liquidation && (
-            <div className="mt-2 text-sm">
-              <button
-                type="button"
-                onClick={() => setRepayOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded bg-primary text-primary-text disabled:opacity-50 w-full sm:w-auto"
-              >
-                Repay now
-              </button>
-            </div>
+            <OwnerActionsPanel onRepay={() => setRepayOpen(true)} />
           )}
           {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
@@ -564,63 +481,35 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           {/* Lender appreciation card intentionally removed for a leaner UI */}
           {isOwner && data?.state === "pending" ? (
             <div className="mt-3 text-right">
-              <button
+              <Button
                 type="button"
                 onClick={onCancel}
                 disabled={cancelPending}
-                className="inline-flex items-center gap-2 px-3 h-9 rounded border bg-surface disabled:opacity-50"
+                variant="secondary"
+                size="md"
+                className="gap-2"
               >
-                {cancelPending ? "Cancelling…" : "Cancel request"}
-              </button>
+                {cancelPending ? "Cancelling…" : STRINGS.cancelRequest}
+              </Button>
               {cancelError && <div className="mt-2 text-xs text-red-600">{cancelError}</div>}
             </div>
           ) : data?.state === "pending" && role === "potentialLender" ? (
             <div className="mt-3 text-right space-y-2">
               <div className="text-sm text-secondary-text text-left">
-                Your balance: <span className="font-medium">{lenderBalanceLabel} {tokenSymbol}</span>
+                {STRINGS.yourBalance}: <span className="font-mono">{lenderBalanceLabel} {tokenSymbol}</span>
               </div>
-              {lenderRegistered === false && (
-                <div className="text-left text-sm text-amber-800 bg-amber-100/60 border border-amber-500/30 rounded p-2">
-                  Your account is not registered with this token contract. You must register before accepting.
-                  {lenderMinDeposit && (
-                    <>
-                      {" "}Registration requires ~{utils.format.formatNearAmount(lenderMinDeposit)} NEAR.
-                    </>
-                  )}
-                  <div className="mt-2">
-                    <button
-                      type="button"
-                      onClick={onRegisterLender}
-                      disabled={storagePending || !lenderMinDeposit}
-                      className="inline-flex items-center gap-2 px-3 h-8 rounded border bg-surface disabled:opacity-50"
-                    >
-                      {storagePending ? "Registering…" : "Register with token"}
-                    </button>
-                    {content?.token && (
-                      <a
-                        href={explorerAccountUrl(network, content.token)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="ml-3 inline-flex items-center text-primary underline"
-                      >
-                        View token on Explorer
-                      </a>
-                    )}
-                    <a
-                      href="/docs/token-registration"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-3 inline-flex items-center text-primary underline"
-                    >
-                      Learn more
-                    </a>
-                    {storageError && <div className="mt-1 text-xs text-red-600 dark:text-red-300">{storageError}</div>}
-                  </div>
-                </div>
-              )}
+              <PotentialLenderRegistrationCard
+                network={network}
+                tokenId={content?.token}
+                lenderRegistered={lenderRegistered}
+                lenderMinDeposit={lenderMinDeposit ? utils.format.formatNearAmount(lenderMinDeposit) : null}
+                storagePending={storagePending}
+                storageError={storageError}
+                onRegister={onRegisterLender}
+              />
               {vaultRegisteredForToken === false && (
                 <div className="text-left text-sm rounded p-2 border border-red-300/40 bg-red-50 text-red-900 dark:bg-red-900/30 dark:text-red-100 dark:border-red-500/30">
-                  This vault is not registered with this token contract yet. Lending is disabled until the vault owner registers the vault with this token.
+                  {STRINGS.vaultNotRegisteredLendingDisabled}
                   <div className="mt-1">
                     <a
                       href={explorerAccountUrl(network, vaultId)}
@@ -628,7 +517,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-primary underline"
                     >
-                      View vault on Explorer
+                      {STRINGS.viewVaultOnExplorer}
                     </a>
                     {content?.token && (
                       <a
@@ -637,52 +526,29 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         rel="noopener noreferrer"
                         className="ml-3 inline-flex items-center text-primary underline"
                       >
-                        View token on Explorer
+                        {STRINGS.viewTokenOnExplorer}
                       </a>
                     )}
                   </div>
                 </div>
               )}
-              {acceptError && (
-                <div className="text-sm text-red-500" role="alert">{acceptError}</div>
-              )}
-              <button
-                type="button"
-                onClick={() => setAcceptOpen(true)}
-                disabled={
-                  pending ||
-                  balLoading ||
-                  !sufficientBalance ||
-                  lenderRegistered === false ||
-                  vaultRegisteredForToken === false
-                }
-                title={
-                  pending ? undefined : balLoading ? undefined : !sufficientBalance && content?.amountRaw
-                    ? `Need ${formatMinimalTokenAmount(content.amountRaw, tokenDecimals)} ${tokenSymbol}, have ${lenderBalanceLabel} ${tokenSymbol}`
-                    : lenderRegistered === false
-                    ? "You must register with the token contract before accepting"
-                    : vaultRegisteredForToken === false
-                    ? "Vault must be registered with the token contract before lending can proceed"
-                    : undefined
-                }
-                className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-50"
-              >
-                {pending
-                  ? "Accepting…"
-                  : balLoading
-                  ? "Checking balance…"
-                  : lenderRegistered === false
-                  ? "Registration required"
-                  : vaultRegisteredForToken === false
-                  ? "Vault not registered"
-                  : sufficientBalance
-                  ? "Accept request"
-                  : "Insufficient balance"}
-              </button>
+              <AcceptActionsPanel
+                pending={pending}
+                balLoading={balLoading}
+                sufficientBalance={sufficientBalance}
+                lenderRegistered={lenderRegistered}
+                vaultRegisteredForToken={vaultRegisteredForToken}
+                amountRaw={content?.amountRaw}
+                tokenDecimals={tokenDecimals}
+                tokenSymbol={tokenSymbol}
+                lenderBalanceLabel={lenderBalanceLabel}
+                acceptError={acceptError}
+                onOpen={() => setAcceptOpen(true)}
+              />
             </div>
           ) : null}
           {/* Single repay action is shown above in the owner section; avoid duplicating here */}
-        </div>
+        </>
       )}
 
       {/* Liquidation progress/status section */}
@@ -821,7 +687,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     {maturedEntries.map((m, idx) => (
                       <li key={idx} className="flex items-center justify-between">
                         <span className="truncate" title={m.validator}>{m.validator}</span>
-                        <span className="font-medium">{safeFormatYoctoNear(m.amount)} NEAR</span>
+                        <span className="font-mono">{safeFormatYoctoNear(m.amount)} NEAR</span>
                       </li>
                     ))}
                   </ul>
@@ -839,9 +705,11 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           ) : null}
           {role !== "activeLender" && !isOwner && (
             <div className="mt-2 text-right">
-              <button
+              <Button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 px-3 h-10 rounded border bg-surface disabled:opacity-60 w-full sm:w-auto"
+                variant="secondary"
+                size="lg"
+                className="gap-2 w-full sm:w-auto"
                 onClick={() => {
                   const txHash = `manual-refresh-${Date.now()}`;
                   void indexVault({ factoryId, vault: vaultId, txHash });
@@ -852,7 +720,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 disabled={vaultLoading || availLoading}
               >
                 {vaultLoading || availLoading ? "Refreshing…" : STRINGS.refresh}
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -863,46 +731,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       {/* Post-expiry lender popup is rendered below with tighter guards to ensure required data is present */}
 
       {isOwner && hasOpenRequest && vaultRegisteredForToken === false && (
-        <div className="mt-3 rounded border border-amber-500/30 bg-amber-100/40 text-amber-900 p-3 text-sm">
-          <div className="font-medium">Vault registration required</div>
-          <div className="mt-1">
-            Your vault is not registered with this token contract yet. To receive funds from a lender, register the vault with the token.
-            {ownerMinDeposit && (
-              <>
-                {" "}This is a one-time storage deposit of {utils.format.formatNearAmount(ownerMinDeposit)} NEAR.
-              </>
-            )}
-          </div>
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={onRegisterVaultForToken}
-              disabled={storagePending || !ownerMinDeposit}
-              className="inline-flex items-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-50"
-            >
-              {storagePending ? "Registering…" : "Register vault with token"}
-            </button>
-            {content?.token && (
-              <a
-                href={explorerAccountUrl(network, content.token)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-3 inline-flex items-center text-primary underline"
-              >
-                View token on Explorer
-              </a>
-            )}
-            <a
-              href="/docs/token-registration"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-3 inline-flex items-center text-primary underline"
-            >
-              Learn more
-            </a>
-            {storageError && <div className="mt-2 text-xs text-red-600">{storageError}</div>}
-          </div>
-        </div>
+        <OwnerVaultRegistrationCard
+          ownerMinDeposit={ownerMinDeposit ? utils.format.formatNearAmount(ownerMinDeposit) : null}
+          storagePending={storagePending}
+          onRegister={onRegisterVaultForToken}
+          tokenId={content?.token}
+          network={network}
+          storageError={storageError}
+        />
       )}
 
       
