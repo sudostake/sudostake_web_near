@@ -29,6 +29,7 @@ import { STRINGS } from "@/utils/strings";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
 import { Container } from "@/app/components/layout/Container";
+import { LabelValue } from "@/app/components/ui/LabelValue";
 
 
 function BackButton({ onClick }: { onClick: () => void }) {
@@ -37,7 +38,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label="Back"
-      className="inline-flex items-center justify-center h-10 w-10 rounded bg-surface hover:bg-surface/90"
+      className="inline-flex items-center justify-center h-10 w-10 rounded bg-surface hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -272,50 +273,73 @@ export default function VaultPage() {
               <div className="flex items-center gap-3">
                 <BackButton onClick={() => router.back()} />
                 <div className="min-w-0">
-                  <h1 className="text-lg font-semibold break-all" title={String(vaultId)}>{vaultShortName}</h1>
-                  <div className="text-xs text-secondary-text mt-0.5 flex flex-wrap items-center gap-2 min-w-0">
-                    <a
-                      href={explorerAccountUrl(network, String(vaultId))}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline break-all"
-                      title={String(vaultId)}
-                    >
-                      {String(vaultId)}
-                    </a>
-                    <CopyButton value={String(vaultId)} />
+                  <h1 className="text-xl sm:text-2xl font-semibold break-all" title={String(vaultId)}>{vaultShortName}</h1>
+                  {/* Identity row */}
+                  <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 items-start min-w-0">
+                    <LabelValue
+                      label="Vault ID"
+                      value={
+                        <span className="inline-flex items-center gap-2 min-w-0">
+                          <a
+                            href={explorerAccountUrl(network, String(vaultId))}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline break-all"
+                            title={String(vaultId)}
+                          >
+                            {String(vaultId)}
+                          </a>
+                          <CopyButton value={String(vaultId)} />
+                        </span>
+                      }
+                    />
                     {data?.owner && (
-                      <span className="break-all">
-                        Owner:
-                        <a
-                          href={explorerAccountUrl(network, String(data.owner))}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline ml-1 break-all"
-                          title={String(data.owner)}
-                        >
-                          <span className="font-mono break-all">{data.owner}</span>
-                        </a>
-                        <CopyButton value={String(data.owner)} className="ml-1" />
-                      </span>
+                      <LabelValue
+                        label="Owner"
+                        value={
+                          <span className="inline-flex items-center gap-2 min-w-0 break-all">
+                            <a
+                              href={explorerAccountUrl(network, String(data.owner))}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline break-all"
+                              title={String(data.owner)}
+                            >
+                              <span className="font-mono break-all">{data.owner}</span>
+                            </a>
+                            <CopyButton value={String(data.owner)} />
+                          </span>
+                        }
+                      />
                     )}
                   </div>
-                  <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
-                    <span className="shrink-0">Contract Balance:</span>
-                    <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-                      {vaultNearLoading ? "Loading…" : vaultNear}
-                    </span>
-                    <span className="text-secondary-text shrink-0">{NATIVE_TOKEN}</span>
+                  {/* Balances row */}
+                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
+                    <LabelValue
+                      label="Contract balance"
+                      value={
+                        <span className="inline-flex items-baseline gap-1">
+                          <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+                            {vaultNearLoading ? "Loading…" : vaultNear}
+                          </span>
+                          <span className="text-secondary-text">{NATIVE_TOKEN}</span>
+                        </span>
+                      }
+                    />
+                    {usdcId && (
+                      <LabelValue
+                        label="USDC balance"
+                        value={
+                          <span className="inline-flex items-baseline gap-1">
+                            <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
+                              {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
+                            </span>
+                            <span className="text-secondary-text">USDC</span>
+                          </span>
+                        }
+                      />
+                    )}
                   </div>
-                  {usdcId && (
-                    <div className="text-sm text-secondary-text flex items-baseline gap-1 min-w-0">
-                      <span className="shrink-0">USDC Balance:</span>
-                      <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
-                        {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
-                      </span>
-                      <span className="text-secondary-text shrink-0">USDC</span>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
