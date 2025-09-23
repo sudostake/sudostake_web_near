@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
+import { getActiveFactoryId } from "@/utils/networks";
 import { useVault } from "@/hooks/useVault";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAvailableBalance } from "@/hooks/useAvailableBalance";
@@ -26,26 +26,11 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
-import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
 import { Container } from "@/app/components/layout/Container";
-import { LabelValue } from "@/app/components/ui/LabelValue";
+import { useProgressiveHeaderCollapse } from "@/hooks/useProgressiveHeaderCollapse";
+import { VaultHeader } from "./components/VaultHeader";
 
-
-function BackButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={STRINGS.back}
-      className="inline-flex items-center justify-center h-10 w-10 rounded bg-surface hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-      </svg>
-	</button>
-  );
-}
 
 export default function VaultPage() {
   const router = useRouter();
@@ -158,26 +143,7 @@ export default function VaultPage() {
   } = useVaultDelegations(factoryId, vaultId);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
-  // Track whether the sticky header is currently affixed to the top to toggle a bottom shadow
-  const [stuck, setStuck] = useState(false);
-  useEffect(() => {
-    const sentinel = document.getElementById("vault-header-sentinel");
-    if (!sentinel) return;
-    const rootStyles = getComputedStyle(document.documentElement);
-    const navVar = rootStyles.getPropertyValue("--nav-height").trim();
-    const navPx = navVar.endsWith("px") ? Number(navVar.replace("px", "")) : Number(navVar || 56);
-    const rootMargin = `-${isNaN(navPx) ? 56 : navPx}px 0px 0px 0px`;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        const next = entry.intersectionRatio < 1; // becomes < 1 once it starts moving out
-        setStuck((prev) => (prev !== next ? next : prev));
-      },
-      { root: null, rootMargin, threshold: [1] }
-    );
-    io.observe(sentinel);
-    return () => io.disconnect();
-  }, []);
+  const collapse = useProgressiveHeaderCollapse("vault-header-sentinel");
   let Body: React.ReactNode;
   if (error) {
     Body = (
@@ -264,85 +230,23 @@ export default function VaultPage() {
         <header
           className={[
             "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
-            stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
+            collapse.stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
           ].join(" ")}
           style={{ top: "var(--nav-height, 56px)" }}
         >
           <Container>
-            <div className="py-3">
-              <div className="flex items-center gap-3">
-                <BackButton onClick={() => router.back()} />
-                <div className="min-w-0">
-                  <h1 className="text-xl sm:text-2xl font-semibold break-all" title={String(vaultId)}>{vaultShortName}</h1>
-                  {/* Identity row */}
-                  <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 items-start min-w-0">
-                    <LabelValue
-                      label={STRINGS.vaultIdLabel}
-                      value={
-                        <span className="inline-flex items-center gap-2 min-w-0">
-                          <a
-                            href={explorerAccountUrl(network, String(vaultId))}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline break-all"
-                            title={String(vaultId)}
-                          >
-                            {String(vaultId)}
-                          </a>
-                          <CopyButton value={String(vaultId)} />
-                        </span>
-                      }
-                    />
-                    {data?.owner && (
-                      <LabelValue
-                        label={STRINGS.ownerLabel}
-                        value={
-                          <span className="inline-flex items-center gap-2 min-w-0 break-all">
-                            <a
-                              href={explorerAccountUrl(network, String(data.owner))}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="underline break-all"
-                              title={String(data.owner)}
-                            >
-                              <span className="font-mono break-all">{data.owner}</span>
-                            </a>
-                            <CopyButton value={String(data.owner)} />
-                          </span>
-                        }
-                      />
-                    )}
-                  </div>
-                  {/* Balances row */}
-                  <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1">
-                    <LabelValue
-                      label={STRINGS.contractBalanceLabel}
-                      value={
-                        <span className="inline-flex items-baseline gap-1">
-                          <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-                            {vaultNearLoading ? "Loading…" : vaultNear}
-                          </span>
-                          <span className="text-secondary-text">{NATIVE_TOKEN}</span>
-                        </span>
-                      }
-                    />
-                    {usdcId && (
-                      <LabelValue
-                        label={STRINGS.usdcBalanceLabel}
-                        value={
-                          <span className="inline-flex items-baseline gap-1">
-                            <span className="truncate" title={`${vaultUsdc?.toDisplay() ?? ""} USDC`}>
-                              {vaultUsdcLoading ? "Loading…" : vaultUsdc?.toDisplay()}
-                            </span>
-                            <span className="text-secondary-text">USDC</span>
-                          </span>
-                        }
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <VaultHeader
+              onBack={() => router.back()}
+              vaultId={String(vaultId)}
+              vaultShortName={vaultShortName}
+              network={network}
+              owner={data?.owner}
+              vaultNear={vaultNear}
+              vaultNearLoading={vaultNearLoading}
+              usdcDisplay={vaultUsdc?.toDisplay()}
+              vaultUsdcLoading={vaultUsdcLoading}
+              collapse={collapse}
+            />
           </Container>
           {/* Removed gradient; subtle shadow + border provide a cleaner separation */}
         </header>
