@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Big from "big.js";
+// Use native BigInt for integer aggregation to avoid scientific notation issues
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { Summary } from "./Summary";
@@ -42,28 +42,31 @@ export function DelegationsCard({
   // Compute lightweight stats for footer
   const stats = React.useMemo(() => {
     const entries = Array.isArray(summary) ? summary : [];
-    let staked = Big(0);
-    let unstaked = Big(0);
+    let staked = BigInt(0);
+    let unstaked = BigInt(0);
     let withdrawableCount = 0;
     for (const e of entries) {
       try {
-        staked = staked.plus(e.staked_balance.minimal || "0");
-        unstaked = unstaked.plus(e.unstaked_balance.minimal || "0");
+        // Sum raw minimal-unit values exactly using BigInt
+        const s = BigInt(e.staked_balance.minimal || "0");
+        const u = BigInt(e.unstaked_balance.minimal || "0");
+        staked += s;
+        unstaked += u;
+      } catch {
+        // Ignore malformed values, continue with others
+      }
+      try {
         if (e.can_withdraw) {
           const un2 = parseNumber(e.unstaked_balance.toDisplay());
           if (Number.isFinite(un2) && un2 > 0) withdrawableCount += 1;
         }
       } catch {
-        // ignore parse/Big errors for stats; keep robust
+        // Ignore parse errors for withdrawable count
       }
     }
     const stakedDisplay = formatMinimalTokenAmount(staked.toString(), NATIVE_DECIMALS);
     const unstakedDisplay = formatMinimalTokenAmount(unstaked.toString(), NATIVE_DECIMALS);
-    return {
-      stakedDisplay,
-      unstakedDisplay,
-      withdrawableCount,
-    };
+    return { stakedDisplay, unstakedDisplay, withdrawableCount };
   }, [summary]);
 
   // Minimal default ordering for clarity (withdrawable -> unstaking -> active)
