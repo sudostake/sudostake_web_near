@@ -83,7 +83,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const [repayOpen, setRepayOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const { data, refetch, loading: vaultLoading } = useVault(factoryId, vaultId);
-  const { data: delData } = useVaultDelegations(factoryId, vaultId);
+  const { data: delData, refetch: refetchDeleg } = useVaultDelegations(factoryId, vaultId);
   const { balance: availableNear, loading: availLoading, refetch: refetchAvail } = useAvailableBalance(vaultId);
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
@@ -199,14 +199,16 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       const { txHash } = await processClaims({ vault: vaultId });
       showToast(STRINGS.processClaimsSuccess, { variant: "success" });
       setPostExpiryOpen(false);
-      // Refresh local views immediately
+      // Update local views immediately
       refetchAvail();
       refetch();
-      // Kick off indexing; refresh again when done
+      refetchDeleg();
+      // Kick off indexing; refetch again when done
       void indexAfterProcess({ factoryId, vault: vaultId, txHash })
         .then(() => {
           refetchAvail();
           refetch();
+          refetchDeleg();
         })
         .catch((e) => {
           console.error("Indexing after process_claims failed", e);
@@ -380,7 +382,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       });
       // Kick off indexing to reflect accepted_offer
       await indexVault({ factoryId, vault: vaultId, txHash });
-      // Allow parent to refresh balances
+      // Allow parent to update balances
       onAfterAccept?.();
       setAcceptOpen(false);
     } catch {
@@ -703,26 +705,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           ) : isOwner ? (
             <div className="mt-2 text-xs text-secondary-text">{STRINGS.ownerLiquidationNote}</div>
           ) : null}
-          {role !== "activeLender" && !isOwner && (
-            <div className="mt-2 text-right">
-              <Button
-                type="button"
-                variant="secondary"
-                size="lg"
-                className="gap-2 w-full sm:w-auto"
-                onClick={() => {
-                  const txHash = `manual-refresh-${Date.now()}`;
-                  void indexVault({ factoryId, vault: vaultId, txHash });
-                  refetch();
-                  refetchAvail();
-                }}
-                title={STRINGS.refresh}
-                disabled={vaultLoading || availLoading}
-              >
-                {vaultLoading || availLoading ? STRINGS.refreshing : STRINGS.refresh}
-              </Button>
-            </div>
-          )}
         </div>
       )}
 

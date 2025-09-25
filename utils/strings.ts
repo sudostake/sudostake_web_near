@@ -89,9 +89,6 @@ export const STRINGS = {
   waitingOnUnbondingBody: "Some collateral is currently unbonding. At the unlock epoch, the contract will claim matured funds and reduce the remaining amount owed to you by the expected amount shown below.",
   ownerWaitingOnUnbondingBody: "Some collateral is currently unbonding. At the unlock epoch, the contract will claim matured funds and reduce your remaining debt by the expected amount shown below.",
   expectedNextHint: "‘Expected next’ is what the contract can pay after claiming currently matured funds.",
-  youCanRefresh: "Use Refresh to see updated maturity and availability.",
-  refresh: "Refresh",
-  refreshing: "Refreshing…",
   // Accept actions
   accepting: "Accepting…",
   checkingBalance: "Checking balance…",

@@ -53,7 +53,7 @@ export default function VaultPage() {
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const { balance: vaultUsdc, loading: vaultUsdcLoading, refetch: refetchVaultUsdc } = useAccountFtBalance(vaultId, usdcId, "USDC");
   React.useEffect(() => {
-    // When accepted_offer changes (after indexing), refresh USDC balance
+    // When accepted_offer changes (after indexing), refetch USDC balance
     if (!usdcId) return;
     if (data?.accepted_offer) {
       refetchVaultUsdc();
@@ -192,12 +192,10 @@ export default function VaultPage() {
             loading={delegLoading}
             error={delegError}
             summary={delegData?.summary}
-            refetch={refetchDeleg}
             availableBalance={availBalance}
             availableLoading={availLoading}
             refundsCount={refundCount}
             refundsLoading={refundsLoading}
-            onRefreshRefunds={refetchRefunds}
             showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
           />
         </DelegationsActionsProvider>
@@ -287,6 +285,7 @@ export default function VaultPage() {
                 refetchVaultNear();
                 refetchAvail();
                 refetchVaultUsdc();
+                refetchRefunds();
               }}
             />
             <DelegateDialog

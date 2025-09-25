@@ -124,7 +124,7 @@ export function RepayLoanDialog({
           console.error("Indexing enqueue failed after repay", idxRes.reason);
         }
         if (balRes.status === "rejected") {
-          console.error("Vault token balance refresh failed after repay", balRes.reason);
+          console.error("Vault token balance update failed after repay", balRes.reason);
         }
       }).catch((err) => {
         // Shouldn't happen with allSettled, but guard just in case
