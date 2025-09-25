@@ -13,12 +13,10 @@ type Props = {
   loading: boolean;
   error: string | null;
   summary?: DelegationSummaryEntry[];
-  refetch: () => void;
   availableBalance?: Balance | null;
   availableLoading?: boolean;
   refundsCount?: number;
   refundsLoading?: boolean;
-  onRefreshRefunds?: () => void;
   showClaimDisabledNote?: boolean;
 };
 
@@ -29,12 +27,10 @@ export function DelegationsCard({
   loading,
   error,
   summary,
-  refetch,
   availableBalance,
   availableLoading,
   refundsCount,
   refundsLoading,
-  onRefreshRefunds,
   showClaimDisabledNote,
 }: Props) {
   // With max 2 validators, keep UI minimal; no filters/inputs.
@@ -98,20 +94,8 @@ export function DelegationsCard({
     <section className="rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60" aria-labelledby="delegations-summary-heading">
       <header className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
         <h2 id="delegations-summary-heading" className="text-base font-medium">{STRINGS.delegationsSummaryTitle}</h2>
-        <div className="text-xs text-secondary-text">
-          {loading || refundsLoading ? (
-            "Loading…"
-          ) : (
-            <button
-              className="underline"
-              onClick={() => {
-                refetch();
-                onRefreshRefunds?.();
-              }}
-            >
-              Refresh
-            </button>
-          )}
+        <div className="text-xs text-secondary-text" aria-live="polite">
+          {loading || refundsLoading ? "Loading…" : null}
         </div>
       </header>
 

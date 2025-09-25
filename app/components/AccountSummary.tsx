@@ -28,7 +28,6 @@ export function AccountSummary({
   const usdcShort = shortAmount(usdc.toDisplay(), 3);
   const [sendOpen, setSendOpen] = React.useState(false);
   const [recvOpen, setRecvOpen] = React.useState(false);
-  const [refreshing, setRefreshing] = React.useState(false);
 
   return (
     <Card className="w-full p-4">
@@ -53,14 +52,6 @@ export function AccountSummary({
       </div>
       <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button
-            variant="ghost"
-            className="w-full sm:w-auto"
-            onClick={() => { setRefreshing(true); onRefreshBalances?.(); window.setTimeout(() => setRefreshing(false), 600); }}
-            disabled={refreshing}
-          >
-            {refreshing ? "Refreshing…" : "Refresh"}
-          </Button>
           <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>Receive</Button>
           <Button className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>Send</Button>
         </div>
