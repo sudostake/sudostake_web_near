@@ -3,7 +3,7 @@ Repayment (loan) – implementation plan
 High-level goal
 
 - Allow a vault owner to repay an active loan (principal + interest) in the requested FT (e.g., USDC) before liquidation begins.
-- Provide a clear, safe UX with preflight checks, a top-up path for the vault’s FT balance, and robust post‑tx indexing refresh.
+- Provide a clear, safe UX with preflight checks, a top-up path for the vault’s FT balance, and robust post‑tx indexing with automatic UI updates.
 
 Contract baseline (already implemented in sudostake_contracts_near)
 
@@ -46,7 +46,7 @@ UI/UX requirements (web)
 3) Post-transaction behavior
 - On repay success:
   - Trigger indexing (useIndexVault) with the returned tx hash so Firestore reflects cleared accepted_offer and liquidity_request
-  - Refresh vault FT balance (useAccountFtBalance) and available balance if displayed elsewhere
+  - Automatically update vault FT balance (useAccountFtBalance) and any displayed available balances via refetch side effects
   - Toast/inline success message
 - On failure:
   - Show concise error via getFriendlyErrorMessage; keep dialog open with retry option
@@ -163,4 +163,3 @@ Future enhancements
 - Partial repayments (contract support would be needed).
 - One‑click “Top up and repay” batched flow via ft_transfer followed by repay_loan (consider wallet’s multiple-actions UX).
 - Support non‑default tokens uniformly for balances and formatting throughout the page.
-

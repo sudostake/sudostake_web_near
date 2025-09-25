@@ -35,7 +35,7 @@ export default function Dashboard() {
   const { data: userVaultIds } = useUserVaults(signedAccountId, factoryId);
   const { data: lenderPositions } = useLenderPositions(signedAccountId, factoryId);
 
-  // Always refresh balances on dashboard entry to show up-to-date totals.
+  // Fetch balances on dashboard entry to show up-to-date totals.
   React.useEffect(() => {
     refetchBalances();
   }, [refetchBalances]);
@@ -111,7 +111,7 @@ export default function Dashboard() {
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSuccess={() => {
-          // Refresh main account balances (NEAR/USDC) after vault creation
+        // Update main account balances (NEAR/USDC) after vault creation
           refetchBalances();
         }}
       />
