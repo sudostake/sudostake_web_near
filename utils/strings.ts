@@ -101,6 +101,8 @@ export const STRINGS = {
   payoutsGoTo: "Payouts are sent directly to",
   viewAccountOnExplorer: "View account on Explorer",
   availableAfterExpiry: "Available after expiry",
+  // Post-term warning (owner sees ability to repay until liquidation begins)
+  expiredRepayWarning: "The loan duration has ended. Repayment is still possible until liquidation is triggered.",
   // Withdraw restrictions
   withdrawDisabledLiquidation: "Withdraw is disabled while liquidation is in progress.",
   withdrawDisabledActive: "Withdraw is disabled while a loan is active.",

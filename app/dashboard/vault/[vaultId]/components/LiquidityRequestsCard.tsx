@@ -58,7 +58,14 @@ import {
 } from "@/utils/liquidation";
 // Big is not directly used here anymore; conversions are handled by utils/numbers
 
-type Props = { vaultId: string; factoryId: string; onAfterAccept?: () => void; onAfterRepay?: () => void; onAfterTopUp?: () => void };
+type Props = {
+  vaultId: string;
+  factoryId: string;
+  onAfterAccept?: () => void;
+  onAfterRepay?: () => void;
+  onAfterTopUp?: () => void;
+  onAfterProcess?: () => void;
+};
 
 
 
@@ -77,7 +84,7 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 
 // Unbonding progress UI is handled inside UnbondingList for clarity.
 
-export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp }: Props) {
+export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp, onAfterProcess }: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
@@ -203,12 +210,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       refetchAvail();
       refetch();
       refetchDeleg();
+      onAfterProcess?.();
       // Kick off indexing; refetch again when done
       void indexAfterProcess({ factoryId, vault: vaultId, txHash })
         .then(() => {
           refetchAvail();
           refetch();
           refetchDeleg();
+          onAfterProcess?.();
         })
         .catch((e) => {
           console.error("Indexing after process_claims failed", e);
@@ -476,8 +485,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
-            <div className="mt-2 rounded border border-foreground/20 bg-background/80 text-foreground p-2 text-xs dark:bg-background/60">
-              The loan duration has ended. Repayment is still possible until liquidation is triggered.
+            <div className="mt-2 rounded border border-amber-300/40 bg-amber-50 text-amber-900 p-2 text-xs dark:bg-amber-900/30 dark:text-amber-100 dark:border-amber-500/30">
+              {STRINGS.expiredRepayWarning}
             </div>
           )}
           {/* Lender appreciation card intentionally removed for a leaner UI */}

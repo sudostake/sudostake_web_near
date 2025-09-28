@@ -142,6 +142,28 @@ export default function VaultPage() {
     refetch: refetchDeleg,
   } = useVaultDelegations(factoryId, vaultId);
 
+  // Debounced refresher for updates triggered by liquidation start/continue
+  const PROCESS_REFRESH_DEBOUNCE_MS = 400;
+  const processRefreshTimer = React.useRef<number | null>(null);
+  const debouncedProcessRefresh = React.useCallback(() => {
+    if (processRefreshTimer.current !== null) {
+      window.clearTimeout(processRefreshTimer.current);
+    }
+    processRefreshTimer.current = window.setTimeout(() => {
+      refetchAvail();
+      refetchDeleg();
+      processRefreshTimer.current = null;
+    }, PROCESS_REFRESH_DEBOUNCE_MS);
+  }, [refetchAvail, refetchDeleg]);
+  React.useEffect(() => {
+    return () => {
+      if (processRefreshTimer.current !== null) {
+        window.clearTimeout(processRefreshTimer.current);
+        processRefreshTimer.current = null;
+      }
+    };
+  }, []);
+
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
   const collapse = useProgressiveHeaderCollapse("vault-header-sentinel");
   let Body: React.ReactNode;
@@ -215,6 +237,7 @@ export default function VaultPage() {
             // Update USDC header balance promptly when a top-up is made
             refetchVaultUsdc();
           }}
+          onAfterProcess={debouncedProcessRefresh}
         />
       </div>
     );
@@ -296,6 +319,7 @@ export default function VaultPage() {
               loading={availLoading}
               defaultValidator={delegateValidator ?? undefined}
               onSuccess={() => {
+                refetchVaultNear();
                 refetchAvail();
                 refetchDeleg();
               }}
@@ -325,6 +349,7 @@ export default function VaultPage() {
               vaultId={vaultId}
               validator={claimValidator ?? ""}
               onSuccess={() => {
+                refetchVaultNear();
                 refetchAvail();
                 refetchDeleg();
               }}
