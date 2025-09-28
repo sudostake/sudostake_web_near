@@ -42,10 +42,7 @@ export function DepositDialog({
 
   const confirm = async () => {
     try {
-      // If user selected max, submit raw minimal-unit amount instead of display string
-      const finalAmount = amount === balanceObj.toDisplay() ? balanceObj.minimal : amount;
-
-      const { txHash } = await deposit({ vault: vaultId, amount: finalAmount });
+      const { txHash } = await deposit({ vault: vaultId, amount });
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
     } catch (err) {
