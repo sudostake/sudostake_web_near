@@ -143,6 +143,7 @@ export default function VaultPage() {
   } = useVaultDelegations(factoryId, vaultId);
 
   // Debounced refresher for updates triggered by liquidation start/continue
+  const PROCESS_REFRESH_DEBOUNCE_MS = 400;
   const processRefreshTimer = React.useRef<number | null>(null);
   const debouncedProcessRefresh = React.useCallback(() => {
     if (processRefreshTimer.current !== null) {
@@ -152,7 +153,7 @@ export default function VaultPage() {
       refetchAvail();
       refetchDeleg();
       processRefreshTimer.current = null;
-    }, 400);
+    }, PROCESS_REFRESH_DEBOUNCE_MS);
   }, [refetchAvail, refetchDeleg]);
   React.useEffect(() => {
     return () => {
