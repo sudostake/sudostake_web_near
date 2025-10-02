@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { isAbortError } from "@/utils/errors";
+import { useIndexingBlocker } from "./useIndexingBlocker";
 
 type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
 
@@ -28,9 +29,9 @@ export function useIndexVault(): UseIndexVaultResult {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Track fire-and-forget requests to avoid duplicate enqueues within a short window
   const inFlight = useRef<Set<string>>(new Set());
   const aborters = useRef<Set<AbortController>>(new Set());
+  const { setFailedJob, clearJobIfMatch } = useIndexingBlocker();
 
   useEffect(() => {
     return () => {
@@ -39,13 +40,10 @@ export function useIndexVault(): UseIndexVaultResult {
     };
   }, []);
 
-  // Fire-and-forget: enqueue and return immediately. The server/worker handles retries/backoff.
-
   const indexVault = useCallback(
     async ({ factoryId, vault, txHash }: IndexVaultParams, opts?: IndexVaultOptions) => {
       const dedupeKey = opts?.dedupeKey ?? `${factoryId}:${vault}:${txHash}`;
-
-      if (inFlight.current.has(dedupeKey)) return; // already scheduled
+      if (inFlight.current.has(dedupeKey)) return;
 
       const controller = new AbortController();
       const externalSignal = opts?.signal;
@@ -54,80 +52,69 @@ export function useIndexVault(): UseIndexVaultResult {
         externalSignal.addEventListener("abort", () => controller.abort(), { once: true });
       }
       aborters.current.add(controller);
-
-      // Immediately mark success for UX; this is fire-and-forget enqueue
-      setError(null);
-      setSuccess(true);
-      setPending(false);
-
       inFlight.current.add(dedupeKey);
 
-      const body = JSON.stringify({ factory_id: factoryId, vault, tx_hash: txHash });
+      setPending(true);
+      setError(null);
+      setSuccess(false);
 
-      // Try sendBeacon for true fire-and-forget when available
-      let sent = false;
       try {
-        if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
-          const blob = new Blob([body], { type: "application/json" });
-          sent = navigator.sendBeacon("/api/indexing/enqueue", blob);
-        }
-      } catch {
-        // ignore
-      }
-
-      const kickOffDirectIndex = () => {
-        const directController = new AbortController();
-        if (externalSignal) {
-          if (externalSignal.aborted) return;
-          externalSignal.addEventListener("abort", () => directController.abort(), { once: true });
-        }
-        aborters.current.add(directController);
-        const directOptions: FetchWithKeepAlive = {
+        const enqueueBody = JSON.stringify({ factory_id: factoryId, vault, tx_hash: txHash });
+        void fetch("/api/indexing/enqueue", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body,
-          signal: directController.signal,
-          keepalive: true,
-        };
-        fetch("/api/index_vault", directOptions)
-          // TODO: Add client-side retry with backoff for direct indexing kickoff when appropriate.
-          .catch((err) => {
-            if (isAbortError(err)) return; // ignore aborts silently
-            console.error("Direct indexing request failed", err);
-          })
-          .finally(() => {
-            aborters.current.delete(directController);
-          });
-      };
-
-      if (!sent) {
-        // Fallback to fetch with keepalive; don't await, swallow errors
-        const fetchOptions: FetchWithKeepAlive = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body,
+          body: enqueueBody,
           signal: controller.signal,
           keepalive: true,
-        };
+        }).catch(() => {});
+      } catch {}
 
-        fetch("/api/indexing/enqueue", fetchOptions)
-          // TODO: Implement client-side retry with jittered backoff for enqueue failures.
-          .catch((err) => {
-            if (isAbortError(err)) return; // ignore aborts silently
-            console.error("Enqueue indexing request failed", err);
-          })
-          .finally(() => {
-            aborters.current.delete(controller);
-            inFlight.current.delete(dedupeKey);
-          });
-        kickOffDirectIndex();
-      } else {
+      try {
+        const res = await fetch("/api/index_vault", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ factory_id: factoryId, vault, tx_hash: txHash }),
+          signal: controller.signal,
+          keepalive: true,
+        } as FetchWithKeepAlive);
+        if (!res.ok) {
+          let details: string | undefined;
+          try {
+            const j = await res.json();
+            details = typeof j?.error === "string" ? j.error : j?.message ?? JSON.stringify(j);
+          } catch {
+            details = await res.text();
+          }
+          const message = details ? `Indexing failed: ${details}` : `Indexing failed with status ${res.status}`;
+          setError(message);
+          setSuccess(false);
+          // Persist failed job and block UI
+          setFailedJob({ factoryId, vault, txHash, lastError: message });
+          throw new Error(message);
+        }
+
+        setSuccess(true);
+        setError(null);
+        clearJobIfMatch({ factoryId, vault, txHash });
+      } catch (err: unknown) {
+        if (isAbortError(err)) {
+          setPending(false);
+          aborters.current.delete(controller);
+          inFlight.current.delete(dedupeKey);
+          return;
+        }
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        setSuccess(false);
+        setFailedJob({ factoryId, vault, txHash, lastError: message });
+        throw err;
+      } finally {
+        setPending(false);
         aborters.current.delete(controller);
         inFlight.current.delete(dedupeKey);
-        kickOffDirectIndex();
       }
     },
-    []
+    [clearJobIfMatch, setFailedJob]
   );
 
   return { indexVault, pending, error, success };
