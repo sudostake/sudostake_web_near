@@ -66,7 +66,11 @@ export function useIndexVault(): UseIndexVaultResult {
           body: enqueueBody,
           signal: controller.signal,
           keepalive: true,
-        }).catch(() => {});
+        }).catch((err) => {
+          if (!isAbortError(err)) {
+            console.error("Failed to enqueue indexing job:", err);
+          }
+        });
       } catch {}
 
       try {
