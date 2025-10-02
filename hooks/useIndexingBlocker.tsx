@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { Button } from "@/app/components/ui/Button";
+import { extractResponseError } from "@/utils/errors";
 
 export type IndexingJob = {
   factoryId: string;
@@ -85,14 +86,8 @@ export function IndexingBlockerProvider({ children }: { children: React.ReactNod
         keepalive: true,
       });
       if (!res.ok) {
-        let details: string | undefined;
-        try {
-          const j = await res.json();
-          details = typeof j?.error === "string" ? j.error : j?.message ?? JSON.stringify(j);
-        } catch {
-          details = await res.text();
-        }
-        const message = details ? `Indexing failed: ${details}` : `Indexing failed with status ${res.status}`;
+        const details = await extractResponseError(res);
+        const message = `Indexing failed: ${details}`;
         setLastError(message);
         const updated: IndexingJob = { ...job, lastError: message };
         setJob(updated);

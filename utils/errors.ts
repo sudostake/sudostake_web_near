@@ -25,3 +25,25 @@ export function isAbortError(e: unknown): boolean {
   }
   return false;
 }
+
+/**
+ * Extract a human-readable error message from a failed fetch Response.
+ * Falls back to response text, then status code if JSON parsing fails.
+ */
+export async function extractResponseError(res: Response): Promise<string> {
+  try {
+    const j = await res.json();
+    const msg = (j as any)?.error;
+    if (typeof msg === "string") return msg;
+    const alt = (j as any)?.message;
+    if (typeof alt === "string") return alt;
+    return JSON.stringify(j);
+  } catch {
+    try {
+      const t = await res.text();
+      return t || `HTTP ${res.status}`;
+    } catch {
+      return `HTTP ${res.status}`;
+    }
+  }
+}

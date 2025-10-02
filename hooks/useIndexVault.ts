@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isAbortError } from "@/utils/errors";
+import { isAbortError, extractResponseError } from "@/utils/errors";
 import { useIndexingBlocker } from "./useIndexingBlocker";
 
 type FetchWithKeepAlive = RequestInit & { keepalive?: boolean };
@@ -82,14 +82,8 @@ export function useIndexVault(): UseIndexVaultResult {
           keepalive: true,
         } as FetchWithKeepAlive);
         if (!res.ok) {
-          let details: string | undefined;
-          try {
-            const j = await res.json();
-            details = typeof j?.error === "string" ? j.error : j?.message ?? JSON.stringify(j);
-          } catch {
-            details = await res.text();
-          }
-          const message = details ? `Indexing failed: ${details}` : `Indexing failed with status ${res.status}`;
+          const details = await extractResponseError(res);
+          const message = `Indexing failed: ${details}`;
           setError(message);
           setSuccess(false);
           // Persist failed job and block UI
