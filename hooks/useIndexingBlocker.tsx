@@ -30,7 +30,7 @@ export function IndexingBlockerProvider({ children }: { children: React.ReactNod
 
   useEffect(() => {
     try {
-      const raw = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY) : null;
+      const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as IndexingJob;
         setJob(parsed);
