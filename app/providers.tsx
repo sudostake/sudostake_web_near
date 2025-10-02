@@ -9,6 +9,7 @@ import { setupNightly } from "@near-wallet-selector/nightly";
 import { WalletSelectorProvider } from "@near-wallet-selector/react-hook";
 import type { WalletSelectorParams, WalletModuleFactory } from "@near-wallet-selector/core";
 import { getActiveNetwork, rpcPath, rpcUpstream } from "../utils/networks";
+import { IndexingBlockerProvider } from "@/hooks/useIndexingBlocker";
 
 // WalletModuleFactory is invariant in its generic; we assert here to satisfy WalletSelectorParams
 const modules = [
@@ -42,7 +43,9 @@ export default function Providers({
 }) {
   return (
     <WalletSelectorProvider config={walletSelectorConfig}>
-      {children}
+      <IndexingBlockerProvider>
+        {children}
+      </IndexingBlockerProvider>
     </WalletSelectorProvider>
   );
 }
