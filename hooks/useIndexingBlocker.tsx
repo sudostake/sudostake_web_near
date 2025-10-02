@@ -21,6 +21,8 @@ const IndexingBlockerContext = createContext<Ctx | undefined>(undefined);
 
 const STORAGE_KEY = "indexing:blocker:job";
 
+const NOOP = () => {};
+
 export function IndexingBlockerProvider({ children }: { children: React.ReactNode }) {
   const [job, setJob] = useState<IndexingJob | null>(null);
   const [retrying, setRetrying] = useState(false);
@@ -117,7 +119,7 @@ export function IndexingBlockerProvider({ children }: { children: React.ReactNod
       {children}
       <Modal
         open={!!job}
-        onClose={() => {}}
+        onClose={NOOP}
         title="Action pending: Index vault"
         disableBackdropClose
         showClose={false}
