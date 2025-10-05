@@ -298,6 +298,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-3 inline-flex items-center text-primary underline"
+                  aria-label={`View token ${token} on explorer`}
                 >
                   View token on Explorer
                 </a>

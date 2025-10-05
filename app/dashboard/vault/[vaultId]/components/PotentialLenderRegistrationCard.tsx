@@ -53,6 +53,7 @@ export function PotentialLenderRegistrationCard({
             target="_blank"
             rel="noopener noreferrer"
             className="ml-3 inline-flex items-center text-primary underline"
+            aria-label={`View token ${tokenId} on explorer`}
           >
             {STRINGS.viewTokenOnExplorer}
           </a>

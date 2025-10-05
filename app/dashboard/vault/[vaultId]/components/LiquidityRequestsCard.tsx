@@ -527,6 +527,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center text-primary underline"
+                      aria-label={`View vault ${vaultId} on explorer`}
                     >
                       {STRINGS.viewVaultOnExplorer}
                     </a>
@@ -536,6 +537,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         target="_blank"
                         rel="noopener noreferrer"
                         className="ml-3 inline-flex items-center text-primary underline"
+                        aria-label={`View token ${content.token} on explorer`}
                       >
                         {STRINGS.viewTokenOnExplorer}
                       </a>
@@ -673,19 +675,20 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           )}
-          {role !== "activeLender" && lenderId && (
-            <div className="mt-1 text-xs text-secondary-text">
-              {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
-              <a
-                href={explorerAccountUrl(network, lenderId)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="ml-2 underline text-primary"
-              >
-                {STRINGS.viewAccountOnExplorer}
-              </a>
-            </div>
-          )}
+              {role !== "activeLender" && lenderId && (
+                <div className="mt-1 text-xs text-secondary-text">
+                  {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
+                  <a
+                    href={explorerAccountUrl(network, lenderId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-2 underline text-primary"
+                    aria-label={`View lender ${lenderId} on explorer`}
+                  >
+                    {STRINGS.viewAccountOnExplorer}
+                  </a>
+                </div>
+              )}
           {/* Details toggle moved near the "Waiting to unlock" section */}
           {unbondingTotalLabel && unbondingEntries.length > 0 && (
             <div className={showDetails ? "" : " hidden"}>

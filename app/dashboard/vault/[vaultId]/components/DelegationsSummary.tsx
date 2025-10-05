@@ -113,6 +113,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
             rel="noopener noreferrer"
             className="font-mono text-sm underline truncate"
             title={entry.validator}
+            aria-label={`View validator ${entry.validator} on explorer`}
           >
             {truncateAccount(entry.validator)}
           </a>

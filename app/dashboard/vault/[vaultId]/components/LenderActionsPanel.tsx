@@ -74,6 +74,7 @@ export function LenderActionsPanel({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-2 underline text-primary"
+                  aria-label={`View lender ${lenderId} on explorer`}
                 >
                   {STRINGS.viewAccountOnExplorer}
                 </a>

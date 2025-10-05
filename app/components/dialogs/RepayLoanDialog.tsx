@@ -321,6 +321,7 @@ function TopUpSection({
           target="_blank"
           rel="noopener noreferrer"
           className="underline text-primary"
+          aria-label={`View token ${tokenId} on explorer`}
         >
           {STRINGS.viewTokenOnExplorer}
         </a>
@@ -337,6 +338,7 @@ function TopUpSection({
           target="_blank"
           rel="noopener noreferrer"
           className="underline text-primary ml-3"
+          aria-label={`View vault ${vaultId} on explorer`}
         >
           {STRINGS.viewVaultOnExplorer}
         </a>
