@@ -15,7 +15,6 @@ type Props = {
   lenderUrl?: string | null;
   remainingLabel?: string | null;
   compactLabels?: boolean;
-  unitLabel?: string | null;
   showBreakdownHint?: boolean;
 };
 
@@ -30,39 +29,34 @@ export function LiquidationSummary({
   lenderUrl,
   remainingLabel,
   compactLabels = false,
-  unitLabel = null,
   showBreakdownHint = true,
 }: Props) {
   const paidLabel = compactLabels ? STRINGS.paidShort : STRINGS.paidSoFar;
   const nowLabel = compactLabels ? STRINGS.nowShort : STRINGS.availableNow;
   const nextLabel = compactLabels ? STRINGS.nextShort : (remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext);
-  const withUnit = (val: string) => (unitLabel ? `${val} ${unitLabel}` : `${val} NEAR`);
   return (
-    <div className="relative mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
-      {unitLabel && (
-        <div className="absolute right-3 top-2 text-xs text-secondary-text">{unitLabel}</div>
-      )}
+    <div className="mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div>
           <div className="text-secondary-text">{paidLabel}</div>
-          <div className="font-medium">{withUnit(safeFormatYoctoNear(paidSoFarYocto, 5))}</div>
+          <div className="font-medium">{safeFormatYoctoNear(paidSoFarYocto, 5)} NEAR</div>
         </div>
         {expectedImmediateLabel && (
           <div>
             <div className="text-secondary-text">{nowLabel}</div>
-            <div className="font-medium">{withUnit(expectedImmediateLabel)}</div>
+            <div className="font-medium">{expectedImmediateLabel} NEAR</div>
           </div>
         )}
         <div>
           <div className="text-secondary-text">{nextLabel}</div>
-          <div className="font-medium">{withUnit(remainingLabel ?? expectedNextLabel ?? "0")}</div>
+          <div className="font-medium">{(remainingLabel ?? expectedNextLabel ?? "0")} NEAR</div>
         </div>
       </div>
       {showBreakdownHint && (maturedTotalLabel || unbondingTotalLabel) && (
         <div className="mt-1 text-xs text-secondary-text">
-          {maturedTotalLabel ? `Includes ${unitLabel ? maturedTotalLabel : `${maturedTotalLabel} NEAR`} matured` : ""}
+          {maturedTotalLabel ? `Includes ${maturedTotalLabel} NEAR matured` : ""}
           {maturedTotalLabel && unbondingTotalLabel ? " · " : ""}
-          {unbondingTotalLabel ? `Unbonding ${unitLabel ? unbondingTotalLabel : `${unbondingTotalLabel} NEAR`}` : ""}
+          {unbondingTotalLabel ? `Unbonding ${unbondingTotalLabel} NEAR` : ""}
         </div>
       )}
       {showPayoutNote && lenderId && (
