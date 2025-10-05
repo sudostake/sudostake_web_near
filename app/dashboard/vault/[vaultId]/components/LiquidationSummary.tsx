@@ -14,7 +14,6 @@ type Props = {
   lenderId?: string | null;
   lenderUrl?: string | null;
   remainingLabel?: string | null;
-  compactLabels?: boolean;
   showBreakdownHint?: boolean;
 };
 
@@ -28,12 +27,11 @@ export function LiquidationSummary({
   lenderId,
   lenderUrl,
   remainingLabel,
-  compactLabels = false,
   showBreakdownHint = true,
 }: Props) {
-  const paidLabel = compactLabels ? STRINGS.paidShort : STRINGS.paidSoFar;
-  const nowLabel = compactLabels ? STRINGS.nowShort : STRINGS.availableNow;
-  const nextLabel = compactLabels ? STRINGS.nextShort : (remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext);
+  const paidLabel = STRINGS.paidSoFar;
+  const nowLabel = STRINGS.availableNow;
+  const nextLabel = remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext;
   return (
     <div className="mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

@@ -591,7 +591,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 maturedTotalLabel={maturedTotalLabel ?? undefined}
                 unbondingTotalLabel={unbondingTotalLabel ?? undefined}
                 remainingLabel={remainingTargetLabel ?? undefined}
-                compactLabels
                 showBreakdownHint={showDetails}
               />
               <div className="mt-2 text-right">
