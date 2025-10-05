@@ -608,7 +608,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                   aria-busy={processPending ? true : undefined}
                 >
-                  {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
+                  {processPending ? STRINGS.processing : STRINGS.processNow}
                 </button>
                 {processError && (
                   <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
