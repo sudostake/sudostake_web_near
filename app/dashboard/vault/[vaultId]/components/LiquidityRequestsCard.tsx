@@ -615,7 +615,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             <Card className="mt-2">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
               <div className="mt-1 text-sm text-secondary-text">
-                {role === "activeLender" ? STRINGS.waitingOnUnbondingBody : STRINGS.ownerWaitingOnUnbondingBody}
+                {STRINGS.ownerWaitingOnUnbondingBody}
               </div>
             </Card>
           )}
