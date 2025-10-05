@@ -81,7 +81,7 @@ export function LenderActionsPanel({
               </div>
             )}
             {processError && (
-              <div className="text-xs text-red-600">{processError}</div>
+              <div className="text-xs text-red-600" role="alert">{processError}</div>
             )}
             {maturedYocto > BigInt(0) && (
               <div className="text-xs text-secondary-text">

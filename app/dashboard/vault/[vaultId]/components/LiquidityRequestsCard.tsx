@@ -503,7 +503,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               >
                 {cancelPending ? "Cancelling…" : STRINGS.cancelRequest}
               </Button>
-              {cancelError && <div className="mt-2 text-xs text-red-600">{cancelError}</div>}
+              {cancelError && <div className="mt-2 text-xs text-red-600" role="alert">{cancelError}</div>}
               {cancelPending && (
                 <div className="sr-only" role="status" aria-live="polite">Cancelling…</div>
               )}

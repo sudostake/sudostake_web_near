@@ -90,7 +90,7 @@ export function TransferOwnershipDialog({
         {newOwner && !isValidAccountId(newOwner.trim()) && (
           <div className="text-xs text-red-500">Recipient account ID is invalid</div>
         )}
-        {error && <div className="text-xs text-red-500">{error}</div>}
+        {error && <div className="text-xs text-red-500" role="alert">{error}</div>}
         <div className="text-xs text-secondary-text">
           You must be the current owner. A 1 yoctoNEAR deposit is required to confirm intent.
         </div>
