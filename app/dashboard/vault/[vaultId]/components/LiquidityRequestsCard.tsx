@@ -601,7 +601,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   disabled={processPending || !hasClaimableNow}
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                 >
-                  {processPending ? STRINGS.processing : STRINGS.processNow}
+                  {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
                 </button>
                 {processError && (
                   <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
