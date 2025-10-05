@@ -36,7 +36,7 @@ export function LiquidationSummary({
   const paidLabel = compactLabels ? STRINGS.paidShort : STRINGS.paidSoFar;
   const nowLabel = compactLabels ? STRINGS.nowShort : STRINGS.availableNow;
   const nextLabel = compactLabels ? STRINGS.nextShort : (remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext);
-  const withUnit = (val: string) => (unitLabel ? val : `${val} NEAR`);
+  const withUnit = (val: string) => (unitLabel ? `${val} ${unitLabel}` : `${val} NEAR`);
   return (
     <div className="relative mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
       {unitLabel && (
