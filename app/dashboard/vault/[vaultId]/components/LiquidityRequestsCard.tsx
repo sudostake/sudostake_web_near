@@ -602,11 +602,15 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   onClick={() => setPostExpiryOpen(true)}
                   disabled={processPending || !hasClaimableNow}
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+                  aria-busy={processPending ? true : undefined}
                 >
                   {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
                 </button>
                 {processError && (
                   <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
+                )}
+                {processPending && (
+                  <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
                 )}
               </div>
             </div>
