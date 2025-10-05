@@ -43,6 +43,7 @@ export function UnbondingList({ entries }: Props) {
                   rel="noopener noreferrer"
                   className="font-mono text-sm underline truncate"
                   title={validator}
+                  aria-label={`View validator ${validator} on explorer`}
                 >
                   {truncateAccount(validator)}
                 </a>
