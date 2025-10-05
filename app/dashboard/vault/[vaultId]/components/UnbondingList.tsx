@@ -25,6 +25,7 @@ type Props = {
 export function UnbondingList({ entries }: Props) {
   const titleId = useId();
   if (!Array.isArray(entries) || entries.length === 0) return null;
+  const network = getActiveNetwork();
   return (
     <div className="mt-3 rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60 p-3">
       <div id={titleId} className="font-medium text-foreground">{STRINGS.waitingToUnlock}</div>
@@ -39,7 +40,7 @@ export function UnbondingList({ entries }: Props) {
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="flex items-center gap-1 min-w-0">
                   <a
-                  href={explorerAccountUrl(getActiveNetwork(), validator)}
+                  href={explorerAccountUrl(network, validator)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono text-sm underline truncate"
