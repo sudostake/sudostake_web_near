@@ -24,7 +24,7 @@ export function CopyButton({ value, className = "", size = 16, title }: Props) {
   return (
     <button
       type="button"
-      aria-label={STRINGS.copy}
+      aria-label={title ?? STRINGS.copy}
       title={title ?? STRINGS.copy}
       onClick={onCopy}
       className={`inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 ${className}`}
@@ -36,4 +36,3 @@ export function CopyButton({ value, className = "", size = 16, title }: Props) {
     </button>
   );
 }
-

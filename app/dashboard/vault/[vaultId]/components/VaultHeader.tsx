@@ -127,7 +127,7 @@ export function VaultHeader({
               >
                 {vaultId}
               </a>
-              <CopyButton value={vaultId} />
+              <CopyButton value={vaultId} title="Copy vault ID" />
             </span>
           }
         />
@@ -146,7 +146,7 @@ export function VaultHeader({
                 >
                   <span className="font-mono break-all">{owner}</span>
                 </a>
-                <CopyButton value={owner} />
+                <CopyButton value={owner} title="Copy owner ID" />
               </span>
             }
           />
