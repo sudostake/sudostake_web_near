@@ -29,24 +29,21 @@ export function LiquidationSummary({
   remainingLabel,
   showBreakdownHint = true,
 }: Props) {
-  const paidLabel = STRINGS.paidSoFar;
-  const nowLabel = STRINGS.availableNow;
-  const nextLabel = remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext;
   return (
     <div className="mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div>
-          <div className="text-secondary-text">{paidLabel}</div>
+          <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
           <div className="font-medium">{safeFormatYoctoNear(paidSoFarYocto, 5)} NEAR</div>
         </div>
         {expectedImmediateLabel && (
           <div>
-            <div className="text-secondary-text">{nowLabel}</div>
+            <div className="text-secondary-text">{STRINGS.availableNow}</div>
             <div className="font-medium">{expectedImmediateLabel} NEAR</div>
           </div>
         )}
         <div>
-          <div className="text-secondary-text">{nextLabel}</div>
+          <div className="text-secondary-text">{remainingLabel ? STRINGS.remainingLabel : STRINGS.expectedNext}</div>
           <div className="font-medium">{(remainingLabel ?? expectedNextLabel ?? "0")} NEAR</div>
         </div>
       </div>

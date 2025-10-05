@@ -47,7 +47,9 @@ export function CopyButton({ value, className = "", size = 16, title }: Props) {
         <path d="M16 1H6a2 2 0 0 0-2 2v10h2V3h10V1z"/>
         <path d="M18 5H10a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 14H10V7h8v12z"/>
       </svg>
-      <VisuallyHidden role="status" aria-live="polite">{status ?? ""}</VisuallyHidden>
+      {status && (
+        <VisuallyHidden role="status" aria-live="polite">{status}</VisuallyHidden>
+      )}
     </button>
   );
 }

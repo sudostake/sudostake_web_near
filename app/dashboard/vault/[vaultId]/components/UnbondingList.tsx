@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useId } from "react";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { EpochDetails } from "./EpochDetails";
 import { STRINGS } from "@/utils/strings";
@@ -23,11 +23,12 @@ type Props = {
 };
 
 export function UnbondingList({ entries }: Props) {
+  const titleId = useId();
   if (!Array.isArray(entries) || entries.length === 0) return null;
   return (
     <div className="mt-3 rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60 p-3">
-      <div className="font-medium text-foreground">{STRINGS.waitingToUnlock}</div>
-      <ul className="mt-2 space-y-2">
+      <div id={titleId} className="font-medium text-foreground">{STRINGS.waitingToUnlock}</div>
+      <ul className="mt-2 space-y-2" aria-labelledby={titleId}>
         {entries.map((row, idx) => {
           const { validator, unlockEpoch, unstakeEpoch, remaining } = row;
           return (
