@@ -4,6 +4,8 @@ import React from "react";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { EpochDetails } from "./EpochDetails";
 import { STRINGS } from "@/utils/strings";
+import { explorerAccountUrl, getActiveNetwork } from "@/utils/networks";
+import { CopyButton } from "@/app/components/ui/CopyButton";
 
 export type UnbondingEntryRow = {
   validator: string;
@@ -25,19 +27,30 @@ export function UnbondingList({ entries }: Props) {
   return (
     <div className="mt-3 rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60 p-3">
       <div className="font-medium text-foreground">{STRINGS.waitingToUnlock}</div>
-      <div className="mt-2 space-y-2">
+      <ul className="mt-2 space-y-2">
         {entries.map((row, idx) => {
           const { validator, unlockEpoch, unstakeEpoch, remaining } = row;
           return (
-            <div key={`${validator}-${idx}`} className="text-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div>
-                  <div className="text-secondary-text">{STRINGS.amountLabel}</div>
-                  <div className="font-medium">{safeFormatYoctoNear(row.amount)} NEAR</div>
+            <li
+              key={`${validator}-${idx}`}
+              className="rounded border border-foreground/10 bg-background/70 p-3 dark:bg-background/50"
+            >
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <div className="flex items-center gap-1 min-w-0">
+                  <a
+                  href={explorerAccountUrl(getActiveNetwork(), validator)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm underline truncate"
+                  title={validator}
+                >
+                  {truncateAccount(validator)}
+                </a>
+                  <CopyButton value={validator} title="Copy validator" />
                 </div>
-                <div className="sm:col-span-2">
-                  <div className="text-secondary-text">{STRINGS.validatorLabel}</div>
-                  <div className="font-medium truncate" title={validator}>{validator}</div>
+                <div className="text-right">
+                  <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.amountLabel}</div>
+                  <div className="font-mono text-sm">{safeFormatYoctoNear(row.amount)} NEAR</div>
                 </div>
               </div>
               <div className="mt-2">
@@ -47,11 +60,18 @@ export function UnbondingList({ entries }: Props) {
                   unstakeEpoch={unstakeEpoch}
                 />
               </div>
-            </div>
+            </li>
           );
         })}
-              </div>
-              {/* ETA is rendered per entry above */}
+      </ul>
+      {/* ETA is rendered per entry above */}
     </div>
   );
+}
+
+function truncateAccount(id: string, max = 24) {
+  if (id.length <= max) return id;
+  const head = id.slice(0, Math.ceil(max / 2) - 2);
+  const tail = id.slice(-Math.floor(max / 2) + 2);
+  return `${head}…${tail}`;
 }

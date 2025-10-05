@@ -565,13 +565,23 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
         <div className="mt-4 rounded border border-zinc-300/40 bg-zinc-50 text-zinc-900 p-3 dark:border-foreground/20 dark:bg-background/70 dark:text-foreground">
-          <div className="flex items-center gap-2">
-            <div className="text-base font-medium">{role === "activeLender" ? STRINGS.gettingYourMoney : STRINGS.ownerLiquidationHeader}</div>
-            <Badge variant={role === "activeLender" ? "warn" : "danger"} title={expiryDate ? formatDateTime(expiryDate) : undefined}>{STRINGS.expiredLabel}</Badge>
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-base font-medium">
+              {role === "activeLender" ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
+            </div>
+            <Badge
+              variant={role === "activeLender" ? "neutral" : "danger"}
+              title={expiryDate ? formatDateTime(expiryDate) : undefined}
+            >
+              {STRINGS.expiredLabel}
+            </Badge>
           </div>
-          <div className={`mt-1 text-xs ${role === "activeLender" ? "text-zinc-700 dark:text-zinc-300" : "text-zinc-700 dark:text-zinc-300"}`}>
-            {STRINGS.loanExpired}{expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STRINGS.liquidationInProgress}
-          </div>
+          {role !== "activeLender" && (
+            <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+              {STRINGS.loanExpired}
+              {expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STRINGS.liquidationInProgress}
+            </div>
+          )}
           {role === "activeLender" && (
             <div>
               <LiquidationSummary
@@ -581,6 +591,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 maturedTotalLabel={maturedTotalLabel ?? undefined}
                 unbondingTotalLabel={unbondingTotalLabel ?? undefined}
                 remainingLabel={remainingTargetLabel ?? undefined}
+                compactLabels
+                unitLabel="NEAR"
+                showBreakdownHint={showDetails}
               />
               <div className="mt-2 text-right">
                 <button
@@ -590,7 +603,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   disabled={processPending || !hasClaimableNow}
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                 >
-                  {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
+                  {processPending ? STRINGS.processing : STRINGS.processNow}
                 </button>
                 {processError && (
                   <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
@@ -598,7 +611,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               </div>
             </div>
           )}
-          {unbondingTotalLabel && (
+          {unbondingTotalLabel && role !== "activeLender" && (
             <Card className="mt-2">
               <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
               <div className="mt-1 text-sm text-secondary-text">
@@ -607,21 +620,27 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </Card>
           )}
           <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
-            {role !== "activeLender" && (
-              <LiquidationSummary
-                paidSoFarYocto={data.liquidation.liquidated}
-                expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
-                expectedImmediateLabel={expectedImmediateLabel ?? undefined}
-                maturedTotalLabel={maturedTotalLabel ?? undefined}
-                unbondingTotalLabel={unbondingTotalLabel ?? undefined}
-                showPayoutNote={Boolean(lenderId)}
-                lenderId={lenderId ?? undefined}
-                lenderUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
-              />
-            )}
+          {role !== "activeLender" && (
+            <LiquidationSummary
+              paidSoFarYocto={data.liquidation.liquidated}
+              expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
+              expectedImmediateLabel={expectedImmediateLabel ?? undefined}
+              maturedTotalLabel={maturedTotalLabel ?? undefined}
+              unbondingTotalLabel={unbondingTotalLabel ?? undefined}
+              showPayoutNote={Boolean(lenderId)}
+              lenderId={lenderId ?? undefined}
+              lenderUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
+              showBreakdownHint
+            />
+          )}
             {unbondingTotalLabel && (
               <Card className="p-2">
-                <div className="text-secondary-text">{STRINGS.waitingToUnlock}</div>
+                <div className="text-secondary-text flex items-center gap-2">
+                  <span>{STRINGS.waitingToUnlock}</span>
+                  {unbondingEntries && unbondingEntries.length > 0 && (
+                    <Badge variant="neutral">{unbondingEntries.length} {unbondingEntries.length === 1 ? "validator" : "validators"}</Badge>
+                  )}
+                </div>
                 <div className="font-medium">{unbondingTotalLabel} NEAR</div>
                 {longestEtaLabel && (
                   <div className="text-xs text-secondary-text mt-0.5">up to ~{longestEtaLabel}</div>
@@ -692,7 +711,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 <div className="font-medium">{safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR</div>
               </div>
               <div className="mt-1">
-                <div className="text-secondary-text">{STRINGS.maturedClaimableNow}</div>
+                <div className="text-secondary-text flex items-center gap-2">
+                  <span>{STRINGS.maturedClaimableNow}</span>
+                  {maturedEntries.length > 0 && (
+                    <Badge variant="neutral">{maturedEntries.length} {maturedEntries.length === 1 ? "validator" : "validators"}</Badge>
+                  )}
+                </div>
                 {maturedEntries.length > 0 ? (
                   <ul className="mt-1 text-sm space-y-1">
                     {maturedEntries.map((m, idx) => (
@@ -709,9 +733,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </div>
           </Card>
           )}
-          {role === "activeLender" ? (
-            <div className="mt-2 text-xs text-secondary-text">{STRINGS.lenderLiquidationNote}</div>
-          ) : isOwner ? (
+          {role !== "activeLender" && isOwner ? (
             <div className="mt-2 text-xs text-secondary-text">{STRINGS.ownerLiquidationNote}</div>
           ) : null}
         </div>
