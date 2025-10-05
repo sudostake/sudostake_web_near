@@ -105,7 +105,7 @@ export function AcceptLiquidityConfirm({
           You’ll approve this in your wallet. It moves the tokens from your account to the vault.
           A tiny network fee applies and a minimal deposit is attached (1 yoctoNEAR) as required by the network.
         </div>
-        {error && <div className="text-xs text-red-600">{error}</div>}
+        {error && <div className="text-xs text-red-600" role="alert">{error}</div>}
       </div>
     </Modal>
   );

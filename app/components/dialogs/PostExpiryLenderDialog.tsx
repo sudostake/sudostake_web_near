@@ -183,7 +183,7 @@ export function PostExpiryLenderDialog({
           </ul>
         </div>
         <p className="text-secondary-text">{STRINGS.liquidationGuideNote}</p>
-        {error && <div className="text-xs text-red-600">{error}</div>}
+        {error && <div className="text-xs text-red-600" role="alert">{error}</div>}
       </div>
     </Modal>
   );

@@ -84,7 +84,7 @@ export function PostExpiryOwnerDialog({
             <li>{STRINGS.safetyOnChain}</li>
           </ul>
         </div>
-        {error && <div className="text-xs text-red-600">{error}</div>}
+        {error && <div className="text-xs text-red-600" role="alert">{error}</div>}
       </div>
     </Modal>
   );

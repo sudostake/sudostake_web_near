@@ -184,9 +184,13 @@ export function RepayLoanDialog({
             onClick={confirm}
             disabled={pending || balLoading || missingMinimal !== "0"}
             title={missingMinimal !== "0" ? `Missing ${missingLabel} ${symbol} on vault` : undefined}
+            aria-busy={pending ? true : undefined}
           >
             {pending ? "Repaying…" : "Repay now"}
           </Button>
+          {pending && (
+            <div className="sr-only" role="status" aria-live="polite">Repaying…</div>
+          )}
         </div>
       }
     >
@@ -236,7 +240,7 @@ export function RepayLoanDialog({
             />
           )}
         </div>
-        {error && <div className="text-xs text-red-600">{error}</div>}
+        {error && <div className="text-xs text-red-600" role="alert">{error}</div>}
       </div>
     </Modal>
   );
@@ -321,6 +325,7 @@ function TopUpSection({
           target="_blank"
           rel="noopener noreferrer"
           className="underline text-primary"
+          aria-label={`View token ${tokenId} on explorer`}
         >
           {STRINGS.viewTokenOnExplorer}
         </a>
@@ -337,6 +342,7 @@ function TopUpSection({
           target="_blank"
           rel="noopener noreferrer"
           className="underline text-primary ml-3"
+          aria-label={`View vault ${vaultId} on explorer`}
         >
           {STRINGS.viewVaultOnExplorer}
         </a>
@@ -351,9 +357,12 @@ function TopUpSection({
       </div>
       {vaultRegistered === false ? (
         <div className="mt-2">
-          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit}>
+          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit} aria-busy={regPending ? true : undefined}>
             {regPending ? "Registering…" : STRINGS.registerVaultWithToken}
           </Button>
+          {regPending && (
+            <div className="mt-1 sr-only" role="status" aria-live="polite">Registering…</div>
+          )}
           {vaultMinDeposit && (
             <div className="mt-1 text-xs text-amber-900">
               Requires ~{utils.format.formatNearAmount(vaultMinDeposit)} NEAR storage deposit
@@ -362,17 +371,23 @@ function TopUpSection({
         </div>
       ) : ownerRegistered === false ? (
         <div className="mt-2">
-          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit}>
+          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit} aria-busy={regPending ? true : undefined}>
             {regPending ? "Registering…" : STRINGS.registerAccountWithToken}
           </Button>
-          {regError && <div className="mt-1 text-xs text-red-700">{regError}</div>}
+          {regError && <div className="mt-1 text-xs text-red-700" role="alert">{regError}</div>}
+          {regPending && (
+            <div className="mt-1 sr-only" role="status" aria-live="polite">Registering…</div>
+          )}
         </div>
       ) : (
         <div className="mt-2">
-          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip}>
+          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip} aria-busy={transferPending ? true : undefined}>
             {transferPending ? STRINGS.transferring : STRINGS.topUpToVault(missingLabel, symbol)}
           </Button>
-          {transferError && <div className="mt-1 text-xs text-red-700">{transferError}</div>}
+          {transferError && <div className="mt-1 text-xs text-red-700" role="alert">{transferError}</div>}
+          {transferPending && (
+            <div className="mt-1 sr-only" role="status" aria-live="polite">{STRINGS.transferring}</div>
+          )}
         </div>
       )}
     </div>

@@ -123,10 +123,11 @@ export function VaultHeader({
                 rel="noopener noreferrer"
                 className="underline break-all"
                 title={vaultId}
+                aria-label={`View vault ${vaultId} on explorer`}
               >
                 {vaultId}
               </a>
-              <CopyButton value={vaultId} />
+              <CopyButton value={vaultId} title="Copy vault ID" />
             </span>
           }
         />
@@ -141,10 +142,11 @@ export function VaultHeader({
                   rel="noopener noreferrer"
                   className="underline break-all"
                   title={owner}
+                  aria-label={`View owner ${owner} on explorer`}
                 >
                   <span className="font-mono break-all">{owner}</span>
                 </a>
-                <CopyButton value={owner} />
+                <CopyButton value={owner} title="Copy owner ID" />
               </span>
             }
           />

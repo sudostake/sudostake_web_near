@@ -63,9 +63,12 @@ export function DepositDialog({
           <Button variant="secondary" onClick={resetAndClose} disabled={depositing}>
             Cancel
           </Button>
-          <Button onClick={confirm} disabled={disableContinue || depositing}>
+          <Button onClick={confirm} disabled={disableContinue || depositing} aria-busy={depositing ? true : undefined}>
             {depositing ? "Depositing..." : "Continue"}
           </Button>
+          {depositing && (
+            <div className="sr-only" role="status" aria-live="polite">Depositing…</div>
+          )}
         </div>
       }
     >
@@ -84,7 +87,7 @@ export function DepositDialog({
           onChange={(e) => setAmount(e.target.value)}
         />
         {depositError && (
-          <div className="text-xs text-red-500">{depositError}</div>
+          <div className="text-xs text-red-500" role="alert">{depositError}</div>
         )}
         <MaxAvailable
           loading={balancesLoading}

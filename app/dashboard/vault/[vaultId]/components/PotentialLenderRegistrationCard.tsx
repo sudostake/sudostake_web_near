@@ -44,15 +44,20 @@ export function PotentialLenderRegistrationCard({
           variant="secondary"
           size="sm"
           className="gap-2"
+          aria-busy={storagePending ? true : undefined}
         >
           {STRINGS.registerAccountWithToken}
         </Button>
+        {storagePending && (
+          <div className="sr-only" role="status" aria-live="polite">Registering…</div>
+        )}
         {tokenId && (
           <a
             href={explorerAccountUrl(network, tokenId)}
             target="_blank"
             rel="noopener noreferrer"
             className="ml-3 inline-flex items-center text-primary underline"
+            aria-label={`View token ${tokenId} on explorer`}
           >
             {STRINGS.viewTokenOnExplorer}
           </a>

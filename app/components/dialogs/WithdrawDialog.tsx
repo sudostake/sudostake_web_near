@@ -135,9 +135,12 @@ export function WithdrawDialog({
           <Button variant="secondary" onClick={resetAndClose} disabled={withdrawing}>
             Cancel
           </Button>
-          <Button onClick={confirm} disabled={disableContinue || withdrawing}>
+          <Button onClick={confirm} disabled={disableContinue || withdrawing} aria-busy={withdrawing ? true : undefined}>
             {withdrawing ? "Withdrawing..." : "Continue"}
           </Button>
+          {withdrawing && (
+            <div className="sr-only" role="status" aria-live="polite">Withdrawing…</div>
+          )}
         </div>
       }
     >
@@ -169,7 +172,7 @@ export function WithdrawDialog({
           onChange={(e) => setAmount(e.target.value)}
         />
         {withdrawError && (
-          <div className="text-xs text-red-500">{withdrawError}</div>
+          <div className="text-xs text-red-500" role="alert">{withdrawError}</div>
         )}
         {kind === "NEAR" ? (
           <MaxAvailable
@@ -204,9 +207,13 @@ export function WithdrawDialog({
                     console.warn("Storage registration failed", e);
                   }
                 }}
+                aria-busy={storagePending ? true : undefined}
               >
                 {storagePending ? "Registering..." : `Register USDC storage`}
               </Button>
+              {storagePending && (
+                <div className="sr-only" role="status" aria-live="polite">Registering…</div>
+              )}
               {ownerMinDeposit && (
                 <span>One-time deposit: {safeFormatYoctoNear(ownerMinDeposit, 5)} NEAR</span>
               )}

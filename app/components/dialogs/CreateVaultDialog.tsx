@@ -45,9 +45,12 @@ export function CreateVaultDialog({
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={confirm} disabled={pending || indexing}>
+          <Button onClick={confirm} disabled={pending || indexing} aria-busy={pending || indexing ? true : undefined}>
             {pending || indexing ? "Creating..." : "Create Vault"}
           </Button>
+          {(pending || indexing) && (
+            <div className="sr-only" role="status" aria-live="polite">Creating…</div>
+          )}
         </div>
       </div>
     </Modal>

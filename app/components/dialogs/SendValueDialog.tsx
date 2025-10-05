@@ -215,9 +215,12 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
           <Button variant="secondary" onClick={onClose} disabled={submitting || ftPending}>
             Cancel
           </Button>
-          <Button onClick={onSubmit} disabled={!canSubmit}>
+          <Button onClick={onSubmit} disabled={!canSubmit} aria-busy={submitting || ftPending ? true : undefined}>
             {submitting || ftPending ? "Sending…" : `Send ${kind}`}
           </Button>
+          {(submitting || ftPending) && (
+            <div className="sr-only" role="status" aria-live="polite">Sending…</div>
+          )}
         </div>
       }
     >
@@ -362,7 +365,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
           </div>
         </div>
 
-        {error && <div className="text-sm text-red-500">{error}</div>}
+        {error && <div className="text-sm text-red-500" role="alert">{error}</div>}
       </div>
     </Modal>
   );

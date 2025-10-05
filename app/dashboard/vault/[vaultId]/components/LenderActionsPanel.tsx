@@ -74,13 +74,14 @@ export function LenderActionsPanel({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="ml-2 underline text-primary"
+                  aria-label={`View lender ${lenderId} on explorer`}
                 >
                   {STRINGS.viewAccountOnExplorer}
                 </a>
               </div>
             )}
             {processError && (
-              <div className="text-xs text-red-600">{processError}</div>
+              <div className="text-xs text-red-600" role="alert">{processError}</div>
             )}
             {maturedYocto > BigInt(0) && (
               <div className="text-xs text-secondary-text">
@@ -95,9 +96,13 @@ export function LenderActionsPanel({
               onClick={onOpenProcess}
               disabled={processPending || !hasClaimableNow}
               title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+              aria-busy={processPending ? true : undefined}
             >
               {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
             </Button>
+            {processPending && (
+              <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
+            )}
           </div>
         </div>
       )}
