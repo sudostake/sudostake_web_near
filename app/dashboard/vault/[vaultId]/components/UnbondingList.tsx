@@ -71,7 +71,9 @@ export function UnbondingList({ entries }: Props) {
   );
 }
 
-function truncateAccount(id: string, max = 24) {
+const DEFAULT_TRUNCATE_LENGTH = 24;
+
+function truncateAccount(id: string, max = DEFAULT_TRUNCATE_LENGTH) {
   if (id.length <= max) return id;
   const head = id.slice(0, Math.ceil(max / 2) - 2);
   const tail = id.slice(-Math.floor(max / 2) + 2);
