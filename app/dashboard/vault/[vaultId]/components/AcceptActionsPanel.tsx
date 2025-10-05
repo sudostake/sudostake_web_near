@@ -59,9 +59,15 @@ export function AcceptActionsPanel({
         size="md"
         className="gap-2"
         title={title}
+        aria-busy={pending || balLoading ? true : undefined}
       >
         {label}
       </Button>
+      {(pending || balLoading) && (
+        <div className="sr-only" role="status" aria-live="polite">
+          {pending ? STRINGS.accepting : STRINGS.checkingBalance}
+        </div>
+      )}
     </div>
   );
 }

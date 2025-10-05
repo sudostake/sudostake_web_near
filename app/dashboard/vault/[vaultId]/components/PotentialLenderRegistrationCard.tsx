@@ -44,9 +44,13 @@ export function PotentialLenderRegistrationCard({
           variant="secondary"
           size="sm"
           className="gap-2"
+          aria-busy={storagePending ? true : undefined}
         >
           {STRINGS.registerAccountWithToken}
         </Button>
+        {storagePending && (
+          <div className="sr-only" role="status" aria-live="polite">Registering…</div>
+        )}
         {tokenId && (
           <a
             href={explorerAccountUrl(network, tokenId)}

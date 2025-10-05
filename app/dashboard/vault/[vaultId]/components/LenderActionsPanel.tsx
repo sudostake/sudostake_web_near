@@ -96,9 +96,13 @@ export function LenderActionsPanel({
               onClick={onOpenProcess}
               disabled={processPending || !hasClaimableNow}
               title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+              aria-busy={processPending ? true : undefined}
             >
               {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
             </Button>
+            {processPending && (
+              <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
+            )}
           </div>
         </div>
       )}

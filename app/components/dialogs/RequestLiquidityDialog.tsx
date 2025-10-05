@@ -289,9 +289,12 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               )}
             </div>
             <div className="mt-2">
-              <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit}>
+              <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit} aria-busy={regPending ? true : undefined}>
                 {regPending ? "Registering…" : "Register vault with token"}
               </Button>
+              {regPending && (
+                <div className="sr-only" role="status" aria-live="polite">Registering…</div>
+              )}
               {token && (
                 <a
                   href={explorerAccountUrl(network, token)}

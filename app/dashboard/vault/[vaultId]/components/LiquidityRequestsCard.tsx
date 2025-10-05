@@ -499,10 +499,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 variant="secondary"
                 size="md"
                 className="gap-2"
+                aria-busy={cancelPending ? true : undefined}
               >
                 {cancelPending ? "Cancelling…" : STRINGS.cancelRequest}
               </Button>
               {cancelError && <div className="mt-2 text-xs text-red-600">{cancelError}</div>}
+              {cancelPending && (
+                <div className="sr-only" role="status" aria-live="polite">Cancelling…</div>
+              )}
             </div>
           ) : data?.state === "pending" && role === "potentialLender" ? (
             <div className="mt-3 text-right space-y-2">
