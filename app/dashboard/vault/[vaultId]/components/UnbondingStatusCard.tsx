@@ -34,7 +34,7 @@ export function UnbondingStatusCard({
     <Card className={["p-3", className].filter(Boolean).join(" ")}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="text-sm font-medium truncate">{title}</div>
+          <div className="text-sm font-medium">{title}</div>
           <Badge variant="neutral" aria-label={countLabel}>{countLabel}</Badge>
         </div>
         {entries.length > 0 && (
