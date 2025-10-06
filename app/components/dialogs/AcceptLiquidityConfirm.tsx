@@ -16,7 +16,6 @@ export type AcceptLiquidityConfirmProps = {
   pending?: boolean;
   error?: string | null;
   vaultId: string;
-  tokenId: string;
   tokenSymbol: string;
   decimals: number;
   amountRaw: string; // minimal
@@ -32,7 +31,6 @@ export function AcceptLiquidityConfirm({
   pending = false,
   error,
   vaultId,
-  tokenId,
   tokenSymbol,
   decimals,
   amountRaw,

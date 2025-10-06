@@ -73,7 +73,7 @@ export function DelegateDialog({
   }, []);
 
   // Merge default validators with those from vault delegations
-  const activeValidators = data?.active_validators ?? [];
+  const activeValidators = useMemo(() => data?.active_validators ?? [], [data?.active_validators]);
   const activeCount = activeValidators.length;
   const canAddNewValidator = activeCount < MAX_ACTIVE_VALIDATORS;
 
