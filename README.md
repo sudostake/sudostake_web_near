@@ -1,4 +1,11 @@
-## Getting Started
+## SudoStake Web App
+
+Next.js + TypeScript web app for SudoStake with NEAR Wallet Selector and Firebase. This guide walks you from clone to running locally, with the minimum you need to configure.
+
+Prerequisites
+
+- Node.js 18.18+ (or 20/22). Recommended via nvm
+- npm (uses package-lock.json)
 
 1) Install dependencies
 
@@ -8,9 +15,9 @@ npm install
 
 2) Configure environment variables
 
-Create a `.env.local` file in the project root and set the following:
+Create a .env.local file in the project root with the following. Values marked optional can be omitted.
 
-Client (public) Firebase config:
+Client Firebase config (public):
 
 ```bash
 NEXT_PUBLIC_FIREBASE_API_KEY=...
@@ -23,10 +30,23 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
 ```
 
-Server-side Firebase Admin (required for API routes using Firebase Admin):
+Server Firebase Admin (required for API routes):
 
 ```bash
+# Paste the full JSON of a Firebase service account. Keep it on one line or wrap in quotes.
+# Tip: wrapping in single quotes often works well: ' {...} '
 FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"<PROJECT_ID>", ...}'
+```
+
+Optional feature flags and overrides:
+
+```bash
+# Use REST API instead of Firestore realtime for lender positions (default: false)
+NEXT_PUBLIC_LENDING_USE_API=false
+# Use REST API instead of Firestore realtime for pending requests (default: false)
+NEXT_PUBLIC_PENDING_USE_API=false
+# Override the NEAR mainnet USDC implicit account (64 hex chars) if needed
+NEXT_PUBLIC_USDC_MAINNET_ID=17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1
 ```
 
 3) Run the development server
@@ -35,79 +55,29 @@ FIREBASE_SERVICE_ACCOUNT_KEY='{"type":"service_account","project_id":"<PROJECT_I
 npm run dev
 ```
 
-Then open http://localhost:3000 in your browser.
+Open http://localhost:3000
 
-Guides
+Testing and linting
 
-- Onboarding: Open your first liquidity request → docs/onboarding-liquidity-request.md
+- Lint: npm run lint
+- Scripted tests (run individually):
+  - npm run test:account
+  - npm run test:transform
+  - npm run test:epochs
+  - npm run test:format
+  - npm run test:strings
+  - npm run test:acceptActions
 
+Notes
 
-UI style guide (vault primitives)
+- NEAR network: The app defaults to testnet and uses an internal /api/rpc proxy to avoid CORS.
+- API routes: Any route that accesses Firestore via Firebase Admin requires FIREBASE_SERVICE_ACCOUNT_KEY to be set in your environment during development.
 
-We use a simple neutral theme (zinc-like) with reusable UI primitives. These live in `app/components/ui/`.
+Troubleshooting
 
-- Card: neutral container for panels
+- FIREBASE_SERVICE_ACCOUNT_KEY contains invalid JSON: Ensure the value is the exact JSON for the service account. If using .env files, keep the JSON on one line or wrap it in single quotes; escape newlines and backslashes if necessary.
+- Missing FIREBASE_SERVICE_ACCOUNT_KEY: API routes that use Firebase Admin will fail. Set it to a valid service account JSON.
 
-```tsx
-import { Card } from "@/app/components/ui/Card";
+Additional docs
 
-<Card className="p-3">
-  <div className="text-secondary-text text-[11px] uppercase tracking-wide">Label</div>
-  <div className="font-medium text-foreground">Value</div>
-</Card>
-```
-
-- Badge: status chips
-
-```tsx
-import { Badge } from "@/app/components/ui/Badge";
-
-<Badge variant="warn">Expired</Badge>
-<Badge variant="danger">Error</Badge>
-<Badge variant="success">Ready</Badge>
-```
-
-- LabelValue: caption + value block
-
-```tsx
-import { LabelValue } from "@/app/components/ui/LabelValue";
-
-<LabelValue label="Unlock epoch" value={3969} mono />
-```
-
-- CopyButton: icon-only copy with toast
-
-```tsx
-import { CopyButton } from "@/app/components/ui/CopyButton";
-
-<CopyButton value="vault-1.factory.testnet" />
-```
-
-- SectionHeader: standardized section titles and actions
-
-```tsx
-import { SectionHeader } from "@/app/components/ui/SectionHeader";
-
-<SectionHeader
-  title="Your Vaults"
-  caption="3 vaults"
-  right={<button className="text-xs underline text-primary">Action</button>}
-/>
-```
-
-Theme tokens
-
-- Structural
-  - `bg-background`, `text-foreground`, `border-foreground/20`
-- Secondary/muted
-  - `text-secondary-text`
-- Primary action
-  - `bg-primary`, `text-primary-text`
-
-Dark mode
-
-Use the provided primitives; they are already balanced for dark mode. For one-off elements, prefer neutral tokens:
-
-- Neutral labels: `text-secondary-text dark:text-neutral-400`
-- Values: `text-foreground dark:text-neutral-100`
-- Panels: `border-foreground/20 bg-background/80 dark:bg-background/60`
+- docs/ contains architecture, features, guides and reference. For a first tutorial, see docs/guides/opening-liquidity-request.md

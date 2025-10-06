@@ -11,7 +11,7 @@ export function Footer() {
         <div>© {new Date().getFullYear()} SudoStake — non‑custodial vaults</div>
         <div className="flex items-center gap-4">
           <Link href="/discover" className="hover:underline">Discover</Link>
-          <Link href="/docs/token-registration" className="hover:underline">Docs</Link>
+          <Link href="/docs" className="hover:underline">Docs</Link>
         </div>
       </Container>
     </footer>
