@@ -1,8 +1,7 @@
 import fs from "fs";
 import path from "path";
-import Link from "next/link";
 import { Container } from "@/app/components/layout/Container";
-import DocsIndexClient, { type Section } from "./DocsIndexClient";
+import DocsIndexClient from "./DocsIndexClient";
 
 type DocLink = { title: string; href: string; description?: string };
 type Section = { id: string; title: string; items: DocLink[] };

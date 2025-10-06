@@ -108,16 +108,23 @@ function titleCase(s: string) {
 }
 
 function renderJsonDoc(raw: string, slug: string[]): string {
-  let data: any;
+  let parsed: unknown;
   try {
-    data = JSON.parse(raw);
+    parsed = JSON.parse(raw) as unknown;
   } catch {
     return `<h1 class="text-2xl font-semibold mb-3">Document</h1><p class="my-3">This document is not valid JSON.</p>`;
   }
 
-  const guessTitle = () => data.title || data.name || titleCase(slug[slug.length - 1] || "Document");
+  const data: Record<string, unknown> = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+
+  const getString = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
+  const getArray = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+  const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object";
+
+  const guessTitle = () =>
+    getString(data.title) || getString(data.name) || titleCase(slug[slug.length - 1] || "Document");
   const title = String(guessTitle());
-  const description = typeof data.description === "string" ? data.description : undefined;
+  const description = getString(data.description);
 
   // Build high-level sections without exposing internal structure.
   const sections: Array<{ heading: string; body: string[] }> = [];
@@ -125,42 +132,45 @@ function renderJsonDoc(raw: string, slug: string[]): string {
   // Overview
   const overview: string[] = [];
   if (description) overview.push(description);
-  if (typeof data.summary === "string") overview.push(data.summary);
-  if (Array.isArray(data.tags) && data.tags.length) overview.push(`Tags: ${data.tags.join(", ")}`);
+  const summary = getString(data.summary);
+  if (summary) overview.push(summary);
+  const tags = getArray(data.tags).filter((t): t is string => typeof t === "string");
+  if (tags.length) overview.push(`Tags: ${tags.join(", ")}`);
   if (overview.length) sections.push({ heading: "Overview", body: overview });
 
   // Features / What it does
   const features: string[] = [];
-  const featSrc = data.features || data.capabilities || data.highlights;
-  if (Array.isArray(featSrc)) {
-    for (const f of featSrc) {
-      if (typeof f === "string") features.push(f);
-      else if (f && typeof f === "object" && typeof f.title === "string") features.push(f.title);
+  const featSrc = getArray(data.features || data.capabilities || data.highlights);
+  for (const f of featSrc) {
+    if (typeof f === "string") features.push(f);
+    else if (isObj(f)) {
+      const t = getString(f.title);
+      if (t) features.push(t);
     }
   }
   if (features.length) sections.push({ heading: "What it does", body: features });
 
   // Endpoints / Actions (keep high-level)
   const actions: string[] = [];
-  const endpoints = data.endpoints || data.routes || data.actions;
-  if (Array.isArray(endpoints)) {
-    for (const e of endpoints) {
-      if (typeof e === "string") actions.push(e);
-      else if (e && typeof e === "object") {
-        const method = e.method || e.type || "";
-        const name = e.name || e.path || e.id || "endpoint";
-        const desc = e.description || e.summary || "";
-        const line = [method, name, desc].filter(Boolean).join(" – ");
-        actions.push(line);
-      }
+  const endpoints = getArray(data.endpoints || data.routes || data.actions);
+  for (const e of endpoints) {
+    if (typeof e === "string") actions.push(e);
+    else if (isObj(e)) {
+      const method = getString(e.method) || getString(e.type) || "";
+      const name = getString(e.name) || getString(e.path) || getString(e.id) || "endpoint";
+      const desc = getString(e.description) || getString(e.summary) || "";
+      const line = [method, name, desc].filter(Boolean).join(" – ");
+      actions.push(line);
     }
   }
   if (actions.length) sections.push({ heading: "Endpoints", body: actions });
 
   // Usage / Notes
   const notes: string[] = [];
-  if (typeof data.usage === "string") notes.push(data.usage);
-  if (Array.isArray(data.notes)) notes.push(...data.notes.filter((n: any) => typeof n === "string"));
+  const usage = getString(data.usage);
+  if (usage) notes.push(usage);
+  const notesArr = getArray(data.notes).filter((n): n is string => typeof n === "string");
+  if (notesArr.length) notes.push(...notesArr);
   if (notes.length) sections.push({ heading: "Notes", body: notes });
 
   // Fallback: if no sections, show a short message
