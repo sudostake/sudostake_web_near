@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState } from "react";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
-import { Modal } from "@/app/components/dialogs/Modal";
 import { useVault } from "@/hooks/useVault";
 import { useViewerRole } from "@/hooks/useViewerRole";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
@@ -11,10 +10,9 @@ import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
-import { toYoctoBigInt } from "@/utils/numbers";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS } from "@/utils/constants";
 import { formatDateTime } from "@/utils/datetime";
-import { STRINGS as STR } from "@/utils/strings";
+
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
@@ -24,7 +22,7 @@ import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
-import { formatDurationShort, formatDays } from "@/utils/time";
+import { formatDurationShort } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
@@ -33,9 +31,9 @@ import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLende
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
-import { STRINGS, includesMaturedString, fundedByString } from "@/utils/strings";
-import { UnbondingList } from "./UnbondingList";
-import { LiquidationSummary } from "./LiquidationSummary";
+import { STRINGS, fundedByString } from "@/utils/strings";
+// UnbondingList is now encapsulated inside UnbondingStatusCard for owner view
+import { UnbondingStatusCard } from "./UnbondingStatusCard";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
@@ -89,13 +87,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const { data, refetch, loading: vaultLoading } = useVault(factoryId, vaultId);
+  const { data, refetch } = useVault(factoryId, vaultId);
   const { data: delData, refetch: refetchDeleg } = useVaultDelegations(factoryId, vaultId);
-  const { balance: availableNear, loading: availLoading, refetch: refetchAvail } = useAvailableBalance(vaultId);
+  const { balance: availableNear, refetch: refetchAvail } = useAvailableBalance(vaultId);
   const network = networkFromFactoryId(factoryId);
   const { isOwner, role } = useViewerRole(factoryId, vaultId);
   const { acceptLiquidity, pending, error: acceptError } = useAcceptLiquidityRequest();
-  const { cancelLiquidityRequest, pending: cancelPending, error: cancelError, success: cancelSuccess } = useCancelLiquidityRequest();
+  const { cancelLiquidityRequest, pending: cancelPending, error: cancelError } = useCancelLiquidityRequest();
   const { indexVault } = useIndexVault();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const { storageBalanceOf, storageBounds, registerStorage, pending: storagePending, error: storageError } = useFtStorage();
@@ -247,7 +245,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     [remainingYocto]
   );
 
-  const { maturedYocto, maturedTotalLabel, maturedEntries } = useMemo(
+  const { maturedYocto, maturedTotalLabel } = useMemo(
     () => computeMaturedTotals(delData?.summary),
     [delData?.summary]
   );
@@ -259,7 +257,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     () => computeExpectedImmediate(availableNear?.minimal, remainingYocto),
     [availableNear?.minimal, remainingYocto]
   );
-  const { yocto: expectedNextYocto, label: expectedNextLabel } = useMemo(
+  const { label: expectedNextLabel } = useMemo(
     () => computeExpectedNext(availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto),
     [availableNear?.minimal, remainingYocto, maturedYocto, unbondingYocto]
   );
@@ -268,6 +266,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     [expectedImmediateYocto, maturedYocto, remainingYocto]
   );
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
+  const hasVaultBalanceNow = expectedImmediateYocto > BigInt(0);
+  const hasMaturedNow = maturedYocto > BigInt(0);
   const closesRepay = true;
   const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0);
 
@@ -590,15 +590,81 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {role === "activeLender" && (
             <div>
-              <LiquidationSummary
-                paidSoFarYocto={data.liquidation.liquidated}
-                expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
-                expectedImmediateLabel={expectedImmediateLabel ?? undefined}
-                maturedTotalLabel={maturedTotalLabel ?? undefined}
-                unbondingTotalLabel={unbondingTotalLabel ?? undefined}
-                remainingLabel={remainingTargetLabel ?? undefined}
-                showBreakdownHint={showDetails}
-              />
+              <Card className="mt-2 p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
+                    <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated, 5)} NEAR</div>
+                  </div>
+                  {remainingTargetLabel && (
+                    <div>
+                      <div className="text-secondary-text">{STRINGS.remainingLabel}</div>
+                      <div className="font-medium">{remainingTargetLabel} NEAR{collateralLabel ? ` (Target: ${collateralLabel} NEAR)` : ""}</div>
+                    </div>
+                  )}
+                </div>
+                <div className="-mx-3 my-2 h-px bg-foreground/10" />
+                <div className="text-sm">
+                  <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
+                  <div className="mt-1">
+                    {hasClaimableNow ? (
+                      <div className="font-medium">{claimableNowLabel} NEAR {STRINGS.availableNow.toLowerCase()}</div>
+                    ) : (
+                      <div className="text-secondary-text">{STRINGS.nothingAvailableNow}</div>
+                    )}
+                    <ul className="mt-2 space-y-1">
+                      <li className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <svg
+                            aria-hidden
+                            className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                          >
+                            <rect x="2" y="6" width="12" height="6" rx="2" />
+                            <rect x="4" y="4" width="8" height="3" rx="1.5" />
+                            <circle cx="6" cy="9" r="0.6" />
+                            <circle cx="10" cy="9" r="0.6" />
+                          </svg>
+                          <span className="text-secondary-text truncate">{STRINGS.sourceVaultBalanceNow}</span>
+                          {hasVaultBalanceNow && (
+                            <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                          )}
+                        </div>
+                        <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
+                          {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
+                        </span>
+                      </li>
+                      {maturedTotalLabel && (
+                        <li className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <svg
+                              aria-hidden
+                              className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="8" cy="8" r="6" />
+                              <path d="M5.5 8l2 2 3.5-3.5" />
+                            </svg>
+                            <span className="text-secondary-text truncate">{STRINGS.maturedClaimableNow}</span>
+                            {hasMaturedNow && (
+                              <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                            )}
+                          </div>
+                          <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
+                            {maturedTotalLabel} NEAR
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </Card>
               <div className="mt-2 text-right">
                 <button
                   type="button"
@@ -617,134 +683,119 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
                 )}
               </div>
+              {unbondingTotalLabel && (
+                <UnbondingStatusCard
+                  className="mt-2"
+                  open={showDetails}
+                  onToggle={() => setShowDetails((v) => !v)}
+                  count={unbondingEntries?.length ?? 0}
+                  totalLabel={unbondingTotalLabel}
+                  etaLabel={longestEtaLabel}
+                  entries={unbondingEntries}
+                  footnote={STRINGS.unbondingFootnoteLender}
+                />
+              )}
             </div>
           )}
-          {unbondingTotalLabel && role !== "activeLender" && (
-            <Card className="mt-2">
-              <div className="font-medium">{STRINGS.waitingOnUnbondingTitle}</div>
-              <div className="mt-1 text-sm text-secondary-text">
-                {STRINGS.ownerWaitingOnUnbondingBody}
-              </div>
-            </Card>
-          )}
-          <div className="mt-2 grid grid-cols-1 gap-2 text-sm">
           {role !== "activeLender" && (
-            <LiquidationSummary
-              paidSoFarYocto={data.liquidation.liquidated}
-              expectedNextLabel={expectedNextLabel ?? expectedImmediateLabel ?? maturedTotalLabel ?? "0"}
-              expectedImmediateLabel={expectedImmediateLabel ?? undefined}
-              maturedTotalLabel={maturedTotalLabel ?? undefined}
-              unbondingTotalLabel={unbondingTotalLabel ?? undefined}
-              showPayoutNote={Boolean(lenderId)}
-              lenderId={lenderId ?? undefined}
-              lenderUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
-              showBreakdownHint
-            />
-          )}
-            {unbondingTotalLabel && (
-              <Card className="p-2">
-                <div className="text-secondary-text flex items-center gap-2">
-                  <span>{STRINGS.waitingToUnlock}</span>
-                  {unbondingEntries && unbondingEntries.length > 0 && (
-                    <Badge variant="neutral">{unbondingEntries.length} {unbondingEntries.length === 1 ? "validator" : "validators"}</Badge>
-                  )}
-                </div>
-                <div className="font-medium">{unbondingTotalLabel} NEAR</div>
-                {longestEtaLabel && (
-                  <div className="text-xs text-secondary-text mt-0.5">up to ~{longestEtaLabel}</div>
-                )}
-                {Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0 && (
-                  <div className="mt-1">
-                    <button
-                      type="button"
-                      className="text-xs underline text-primary"
-                      onClick={() => setShowDetails((v) => !v)}
-                    >
-                      {showDetails ? STRINGS.hideDetails : STRINGS.showDetails}
-                    </button>
+            <>
+              <Card className="mt-2 p-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
+                    <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated, 5)} NEAR</div>
                   </div>
-                )}
-              </Card>
-            )}
-          </div>
-          {role !== "activeLender" && (remainingTargetLabel || collateralLabel) && (
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-              {remainingTargetLabel && (
-                <div>
-                  <div className="text-secondary-text">Remaining</div>
-                  <div className="font-medium">{remainingTargetLabel} NEAR</div>
-                </div>
-              )}
-              {collateralLabel && (
-                <div>
-                  <div className="text-secondary-text">Target</div>
-                  <div className="font-medium">{collateralLabel} NEAR</div>
-                </div>
-              )}
-            </div>
-          )}
-              {role !== "activeLender" && lenderId && (
-                <div className="mt-1 text-xs text-secondary-text">
-                  {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
-                  <a
-                    href={explorerAccountUrl(network, lenderId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-2 underline text-primary"
-                    aria-label={`View lender ${lenderId} on explorer`}
-                  >
-                    {STRINGS.viewAccountOnExplorer}
-                  </a>
-                </div>
-              )}
-          {/* Details toggle moved near the "Waiting to unlock" section */}
-          {unbondingTotalLabel && unbondingEntries.length > 0 && (
-            <div className={showDetails ? "" : " hidden"}>
-              <UnbondingList entries={unbondingEntries} />
-              <div className="mt-2 text-xs text-secondary-text">
-                {role === "activeLender" ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
-              </div>
-            </div>
-          )}
-          {role !== "activeLender" && (
-          <Card className={`mt-3 ${showDetails ? "" : " hidden"}`}>
-            <div className="font-medium">{STRINGS.nextPayoutSources}</div>
-            <div className="mt-2 text-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="text-secondary-text">{STRINGS.availableNow}</div>
-                <div className="font-medium">{claimableNowLabel} NEAR</div>
-              </div>
-              <div className="h-px bg-foreground/10" />
-              <div className="flex items-center justify-between">
-                <div className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</div>
-                <div className="font-medium">{safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR</div>
-              </div>
-              <div className="mt-1">
-                <div className="text-secondary-text flex items-center gap-2">
-                  <span>{STRINGS.maturedClaimableNow}</span>
-                  {maturedEntries.length > 0 && (
-                    <Badge variant="neutral">{maturedEntries.length} {maturedEntries.length === 1 ? "validator" : "validators"}</Badge>
+                  {remainingTargetLabel && (
+                    <div>
+                      <div className="text-secondary-text">{STRINGS.remainingLabel}</div>
+                      <div className="font-medium">{remainingTargetLabel} NEAR{collateralLabel ? ` (Target: ${collateralLabel} NEAR)` : ""}</div>
+                    </div>
                   )}
                 </div>
-                {maturedEntries.length > 0 ? (
-                  <ul className="mt-1 text-sm space-y-1">
-                    {maturedEntries.map((m, idx) => (
-                      <li key={idx} className="flex items-center justify-between">
-                        <span className="truncate" title={m.validator}>{m.validator}</span>
-                        <span className="font-mono">{safeFormatYoctoNear(m.amount)} NEAR</span>
+                <div className="-mx-3 my-2 h-px bg-foreground/10" />
+                <div className="text-sm">
+                  <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
+                  <div className="mt-1">
+                    {hasClaimableNow ? (
+                      <div className="font-medium">{claimableNowLabel} NEAR {STRINGS.availableNow.toLowerCase()}</div>
+                    ) : (
+                      <div className="text-secondary-text">{STRINGS.nothingAvailableNow}</div>
+                    )}
+                    <ul className="mt-2 space-y-1">
+                      <li className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <svg
+                            aria-hidden
+                            className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
+                            viewBox="0 0 16 16"
+                            fill="currentColor"
+                          >
+                            <rect x="2" y="6" width="12" height="6" rx="2" />
+                            <rect x="4" y="4" width="8" height="3" rx="1.5" />
+                            <circle cx="6" cy="9" r="0.6" />
+                            <circle cx="10" cy="9" r="0.6" />
+                          </svg>
+                          <span className="text-secondary-text truncate">{STRINGS.sourceVaultBalanceNow}</span>
+                          {hasVaultBalanceNow && (
+                            <span
+                              aria-hidden
+                              className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
+                            />
+                          )}
+                        </div>
+                        <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
+                          {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
+                        </span>
                       </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-xs text-secondary-text">{STRINGS.noMaturedYet}</div>
-                )}
-              </div>
-            </div>
-          </Card>
+                      {maturedTotalLabel && (
+                        <li className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <svg
+                              aria-hidden
+                              className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <circle cx="8" cy="8" r="6" />
+                              <path d="M5.5 8l2 2 3.5-3.5" />
+                            </svg>
+                            <span className="text-secondary-text truncate">{STRINGS.maturedClaimableNow}</span>
+                            {hasMaturedNow && (
+                              <span
+                                aria-hidden
+                                className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
+                              />
+                            )}
+                          </div>
+                          <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
+                            {maturedTotalLabel} NEAR
+                          </span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </Card>
+
+              {unbondingTotalLabel && (
+                <UnbondingStatusCard
+                  className="mt-2"
+                  open={showDetails}
+                  onToggle={() => setShowDetails((v) => !v)}
+                  count={unbondingEntries?.length ?? 0}
+                  totalLabel={unbondingTotalLabel}
+                  etaLabel={longestEtaLabel}
+                  entries={unbondingEntries}
+                  footnote={STRINGS.unbondingFootnoteOwner}
+                />
+              )}
+            </>
           )}
-          {role !== "activeLender" && isOwner ? (
-            <div className="mt-2 text-xs text-secondary-text">{STRINGS.ownerLiquidationNote}</div>
-          ) : null}
+          {/* Removed redundant owner note; the header and expired+in-progress line already convey this */}
         </div>
       )}
 
@@ -777,7 +828,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           pending={pending}
           error={acceptError ?? undefined}
           vaultId={vaultId}
-          tokenId={content.token}
           tokenSymbol={tokenSymbol}
           decimals={tokenDecimals}
           amountRaw={data.liquidity_request.amount}
