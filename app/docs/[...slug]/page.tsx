@@ -54,18 +54,25 @@ function toHtml(md: string): string {
   html = html.replace(/^###\s+(.*)$/gm, '<h3 class="text-xl font-semibold mt-6 mb-2">$1</h3>');
   html = html.replace(/^##\s+(.*)$/gm, '<h2 class="text-2xl font-semibold mt-6 mb-2">$1</h2>');
   html = html.replace(/^#\s+(.*)$/gm, '<h1 class="text-3xl font-semibold mt-6 mb-2">$1</h1>');
+  // bold and italics (basic)
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
   // inline code
   html = html.replace(/`([^`]+)`/g, '<code class="px-1 rounded bg-foreground/10">$1</code>');
+  // markdown links [text](url)
+  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" class="underline" target="_blank" rel="noreferrer noopener">$1</a>');
   // unordered lists
   html = html.replace(/^(?:-\s+.*(?:\n|$))+?/gm, (block) => {
     const items = block
       .trim()
       .split(/\n/)
-      .map((l) => l.replace(/^-[\s]+/, "").trim())
+      .map((l) => l.replace(/^[\-\*][\s]+/, "").trim())
       .map((li) => `<li class="ml-5 list-disc">${li}</li>`) 
       .join("");
     return `<ul class="my-3">${items}</ul>`;
   });
+  // autolink plain URLs (best-effort)
+  html = linkifyHtml(html);
   // paragraphs (simple: wrap non-empty lines that are not already tags)
   html = html
     .split(/\n\n+/)
@@ -86,6 +93,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
   return (
     <div className="py-8">
       <Container>
+        <Breadcrumbs slug={slug} />
         <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
       </Container>
     </div>
@@ -163,14 +171,50 @@ function renderJsonDoc(raw: string, slug: string[]): string {
 
   const bodyHtml = sections
     .map((s) => {
-      const lis = s.body.map((b) => `<li class="ml-5 list-disc">${escapeHtml(String(b))}</li>`).join("");
+      const lis = s.body.map((b) => `<li class="ml-5 list-disc">${formatText(String(b))}</li>`).join("");
       return `<h2 class="text-xl font-semibold mt-6 mb-2">${escapeHtml(s.heading)}</h2><ul class="my-3">${lis}</ul>`;
     })
     .join("");
 
-  return `<h1 class="text-2xl font-semibold mb-3">${escapeHtml(title)}</h1>${description ? `<p class="my-3 leading-7">${escapeHtml(description)}</p>` : ""}${bodyHtml}`;
+  return `<h1 class="text-2xl font-semibold mb-3">${escapeHtml(title)}</h1>${description ? `<p class="my-3 leading-7">${formatText(description)}</p>` : ""}${bodyHtml}`;
 }
 
 function escapeHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function linkifyHtml(s: string) {
+  return s.replace(/(https?:\/\/[^\s<]+[^\s<\.])/g, '<a href="$1" class="underline" target="_blank" rel="noreferrer noopener">$1</a>');
+}
+
+function formatText(s: string) {
+  return linkifyHtml(escapeHtml(s));
+}
+
+function Breadcrumbs({ slug }: { slug: string[] }) {
+  const parts = Array.isArray(slug) ? slug : [];
+  const crumbs: Array<{ name: string; href: string }> = [];
+  crumbs.push({ name: "Docs", href: "/docs" });
+  let acc = "";
+  for (let i = 0; i < parts.length; i++) {
+    acc += "/" + parts[i];
+    const nameMap: Record<string, string> = {
+      features: "Features",
+      reference: "Reference",
+      guides: "Guides",
+      operations: "Operations",
+    };
+    const name = nameMap[parts[i]] || titleCase(parts[i]);
+    crumbs.push({ name, href: "/docs" + acc });
+  }
+  return (
+    <nav aria-label="Breadcrumb" className="text-sm text-secondary-text mb-4">
+      {crumbs.map((c, i) => (
+        <span key={c.href}>
+          {i > 0 ? <span className="mx-1">/</span> : null}
+          <a href={c.href} className="hover:underline">{c.name}</a>
+        </span>
+      ))}
+    </nav>
+  );
 }
