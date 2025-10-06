@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { notFound } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
+import BackToTop from "../BackToTop";
 
 function docsRoot() {
   return path.join(process.cwd(), "docs");
@@ -112,6 +113,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
         <Breadcrumbs slug={slug} />
         <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
       </Container>
+      <BackToTop />
     </div>
   );
 }
