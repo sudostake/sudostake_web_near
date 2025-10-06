@@ -1,6 +1,6 @@
 Viewer roles and UI gating
 
-This app derives viewer roles from on-chain indexed vault state (see sudostake_contracts_near/contracts/vault/src/types.rs and view.rs) and the connected wallet.
+This app derives viewer roles from on-chain indexed vault state and the connected wallet.
 
 Roles
 
@@ -29,3 +29,4 @@ Contract reference
 - Only the vault owner may call request_liquidity (1 yoctoNEAR required).
 - Only the vault owner may call transfer_ownership(new_owner) (1 yoctoNEAR required).
 - Accepted offer stores the lender account; this determines the activeLender role.
+

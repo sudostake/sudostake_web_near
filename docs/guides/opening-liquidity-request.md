@@ -71,3 +71,4 @@ Notes
 - The UI attaches safe gas and the required 1 yoctoNEAR deposit for `request_liquidity`.
 - Duration is stored in seconds; acceptance timestamps are in nanoseconds on-chain.
 - For repayment and liquidation flows, see the contracts repo sections “Repay” and “Liquidation (after expiry, NEAR out)”.
+

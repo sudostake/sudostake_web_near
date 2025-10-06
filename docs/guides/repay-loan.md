@@ -117,38 +117,6 @@ Indexing considerations
 
 - The indexer should already interpret repay_loan_successful by observing state changes (liquidity_request and accepted_offer cleared). We will proactively call /api/index_vault with txHash after the wallet call resolves to speed up UI updates.
 
-Minimal code stubs (for reference)
-
-// hooks/useRepayLoan.ts
-// "use client";
-// export function useRepayLoan() {
-//   const { wallet, signedAccountId } = useWalletSelector();
-//   const [pending, setPending] = useState(false);
-//   const [error, setError] = useState<string|null>(null);
-//   const [success, setSuccess] = useState(false);
-//   const repayLoan = useCallback(async ({ vault }: { vault: string }) => {
-//     if (!signedAccountId || !wallet) throw new Error("No wallet");
-//     setPending(true); setError(null); setSuccess(false);
-//     try {
-//       const outcomeRaw = await wallet.signAndSendTransaction({
-//         receiverId: vault,
-//         actions: [{
-//           type: "FunctionCall",
-//           params: { methodName: "repay_loan", args: {}, gas: DEFAULT_GAS, deposit: ONE_YOCTO },
-//         }],
-//       });
-//       const txHash = (outcomeRaw as FinalExecutionOutcome).transaction.hash;
-//       setSuccess(true);
-//       return { txHash };
-//     } catch (e) {
-//       setError(getFriendlyErrorMessage(e));
-//       setSuccess(false);
-//       throw e;
-//     } finally { setPending(false); }
-//   }, [wallet, signedAccountId]);
-//   return { repayLoan, pending, error, success };
-// }
-
 QA checklist
 
 - Owner with sufficient vault USDC can repay before expiry; vault state transitions to idle; Firestore reflects cleared request and accepted_offer.
@@ -163,3 +131,4 @@ Future enhancements
 - Partial repayments (contract support would be needed).
 - One‑click “Top up and repay” batched flow via ft_transfer followed by repay_loan (consider wallet’s multiple-actions UX).
 - Support non‑default tokens uniformly for balances and formatting throughout the page.
+
