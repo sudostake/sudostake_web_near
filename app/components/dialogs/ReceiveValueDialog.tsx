@@ -79,7 +79,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
           <section>
             <div className="text-sm font-medium mb-1">Receive NEAR (native)</div>
             <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-              <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
+              <div className="break-all" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
               {signedAccountId && <CopyButton value={signedAccountId} title="Copy account" />}
             </div>
             <div className="mt-2 text-xs text-secondary-text">Share your account to receive NEAR.</div>
@@ -97,7 +97,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
               <div>
                 <div className="text-xs text-secondary-text mb-1">Receiver (your account)</div>
                 <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-                  <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
+                  <div className="break-all" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
                   {signedAccountId && <CopyButton value={signedAccountId} title="Copy receiver" />}
                 </div>
               </div>
@@ -119,7 +119,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
                 <div>
                   Token contract ID:
                   <div className="mt-1 flex items-center justify-between gap-2 rounded border bg-background px-3 h-8">
-                    <div className="truncate" title={usdcId ?? undefined}>{usdcId ?? "Not configured"}</div>
+                    <div className="break-all" title={usdcId ?? undefined}>{usdcId ?? "Not configured"}</div>
                     {usdcId && <CopyButton value={usdcId} title="Copy token id" />}
                   </div>
                 </div>

@@ -133,8 +133,8 @@ export function IndexingBlockerProvider({ children }: { children: React.ReactNod
               <div>
                 Vault: <span className="font-mono" title={job.vault}>{job.vault}</span>
               </div>
-              <div className="truncate">
-                Tx: <span className="font-mono" title={job.txHash}>{job.txHash}</span>
+              <div>
+                Tx: <span className="font-mono break-all" title={job.txHash}>{job.txHash}</span>
               </div>
             </div>
             {lastError && (

@@ -327,7 +327,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
           <div>
             <div className="text-sm text-secondary-text mb-1">Token contract</div>
             <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-              <div className="truncate" title={defaultUsdc}>{defaultUsdc}</div>
+              <div className="break-all" title={defaultUsdc}>{defaultUsdc}</div>
               <CopyButton value={defaultUsdc} title="Copy token id" />
             </div>
           </div>
