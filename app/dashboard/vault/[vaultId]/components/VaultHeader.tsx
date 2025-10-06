@@ -7,7 +7,6 @@ import { STRINGS } from "@/utils/strings";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { LabelValue } from "@/app/components/ui/LabelValue";
 import { NATIVE_TOKEN } from "@/utils/constants";
-import type { HeaderCollapseResult } from "@/hooks/useProgressiveHeaderCollapse";
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -34,7 +33,6 @@ type Props = {
   vaultNearLoading: boolean;
   usdcDisplay: string | null | undefined;
   vaultUsdcLoading: boolean;
-  collapse: HeaderCollapseResult;
 };
 
 export function VaultHeader({
@@ -47,26 +45,8 @@ export function VaultHeader({
   vaultNearLoading,
   usdcDisplay,
   vaultUsdcLoading,
-  collapse,
 }: Props) {
-  const [expanded, setExpanded] = React.useState(false);
-  React.useEffect(() => {
-    // If user scrolls back to top (no collapse progress), clear expanded state
-    if (collapse.pId === 0 && collapse.pBal === 0) setExpanded(false);
-  }, [collapse.pId, collapse.pBal]);
-
-  // Show toggle on mobile while sticky/collapsing
-  const canToggle = collapse.isMobile && (collapse.stuck || collapse.pId > 0 || collapse.pBal > 0);
-
-  const identityStyle = expanded
-    ? { marginTop: 4 }
-    : collapse.identityStyle;
-  const balancesStyle = expanded
-    ? { marginTop: 8 }
-    : collapse.balancesStyle;
-  const titleStyle = expanded
-    ? { transform: "scale(1)", transition: "transform 150ms ease-out" }
-    : collapse.titleStyle;
+  // Static header (no progressive collapse)
 
   return (
     <div className="py-2 sm:py-3">
@@ -75,44 +55,16 @@ export function VaultHeader({
         <BackButton onClick={onBack} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-center sm:justify-start">
-            <h1
-              className={["text-lg sm:text-2xl font-semibold break-all", collapse.titleCentered ? "text-center sm:text-left" : ""].join(" ")}
-              style={titleStyle}
-              title={vaultId}
-            >
+            <h1 className="text-lg sm:text-2xl font-semibold break-all text-center sm:text-left" title={vaultId}>
               {vaultShortName}
             </h1>
           </div>
         </div>
-        {canToggle ? (
-          <button
-            type="button"
-            aria-label={expanded ? "Collapse details" : "Expand details"}
-            className="inline-flex items-center justify-center h-9 w-9 sm:hidden rounded bg-surface hover:bg-surface/90 focus:outline-none focus:ring-2 focus:ring-primary/40"
-            onClick={() => setExpanded((v) => !v)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className={["h-5 w-5 transition-transform", expanded ? "rotate-180" : "rotate-0"].join(" ")}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
-        ) : (
-          <div className="shrink-0 w-9 h-9 sm:hidden" aria-hidden />
-        )}
+        <div className="shrink-0 w-9 h-9 sm:hidden" aria-hidden />
       </div>
 
       {/* Identity row */}
-      <div
-        ref={collapse.identityRef}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 items-start min-w-0 overflow-hidden"
-        style={identityStyle}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 items-start min-w-0 mt-1">
         <LabelValue
           label={STRINGS.vaultIdLabel}
           value={
@@ -154,11 +106,7 @@ export function VaultHeader({
       </div>
 
       {/* Balances row */}
-      <div
-        ref={collapse.balancesRef}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 overflow-hidden"
-        style={balancesStyle}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-2">
         <LabelValue
           label={STRINGS.contractBalanceLabel}
           value={
