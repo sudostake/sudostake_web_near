@@ -53,15 +53,7 @@ export function serverNow(): FirebaseFirestore.FieldValue {
   return getAdmin().firestore.FieldValue.serverTimestamp();
 }
 
-/**
- * Upper bound for error message length stored on a job document.
- * The limit of 5000 characters was chosen to avoid exceeding Firestore document
- * size constraints and to ensure error summaries remain concise and manageable
- * for review. If an error message exceeds this length, it will be truncated to
- * 5000 characters before storage (see usage in markJobFailed). This prevents
- * oversized documents and ensures consistent error handling.
- */
-const MAX_ERROR_MESSAGE_LENGTH = 5000;
+// Store full error messages without truncation to preserve complete context.
 
 /** A small helper to create a Firestore Timestamp for a date in the future. */
 export function timestampFromDate(date: Date): FirebaseFirestore.Timestamp {
@@ -180,7 +172,7 @@ export async function markJobFailed(
     status: "failed",
     lease_until: getAdmin().firestore.FieldValue.delete(),
     next_run_at: nextRunAt,
-    last_error: errorMessage.substring(0, MAX_ERROR_MESSAGE_LENGTH),
+    last_error: errorMessage,
     updated_at: serverNow(),
   });
 }
