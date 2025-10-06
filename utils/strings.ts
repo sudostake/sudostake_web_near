@@ -129,7 +129,7 @@ export const STRINGS = {
   waitingToUnlock: "Unlocking summary",
   showDetails: "Show details",
   hideDetails: "Hide details",
-  nextPayoutSources: "Where the next payout comes from",
+  nextPayoutSources: "Next payout",
   sourceVaultBalanceNow: "Vault balance (available now)",
   sourceMaturedUnbonding: "Matured (claimable now)",
   maturedClaimableNow: "Matured (claimable now)",
@@ -156,7 +156,7 @@ export const STRINGS = {
   availableNowLabel: "Available now",
   // Note: dynamic strings should be implemented as functions outside STRINGS
   // Liquidation card: role-specific headings/notes
-  ownerLiquidationHeader: "Paying lender from collateral",
+  ownerLiquidationHeader: "Collateral payout",
   ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
   unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the remaining amount owed to you as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
   unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",

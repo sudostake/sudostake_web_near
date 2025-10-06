@@ -53,3 +53,14 @@ body {
 @utility max-h-modal {
   max-height: 85vh;
 }
+
+/* Subtle, accessible pulse for live indicators */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+  .animate-pulse-soft {
+    animation: pulse-soft 2.2s ease-in-out infinite;
+  }
+}
