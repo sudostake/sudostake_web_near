@@ -406,7 +406,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         <div className="flex-1 min-w-0">
           {hasOpenRequest ? (
             <>
-              <div className="text-base font-medium truncate">
+              <div className="text-base font-medium">
                 {isOwner
                   ? data?.state === "active"
                     ? STRINGS.ownerRequestTitleActive
@@ -431,7 +431,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </>
           ) : (
             <>
-              <div className="text-base font-medium truncate">{STRINGS.accessUsdcTitle}</div>
+              <div className="text-base font-medium">{STRINGS.accessUsdcTitle}</div>
               <div className="mt-1 text-sm text-secondary-text">{STRINGS.accessUsdcCaption}</div>
             </>
           )}
@@ -626,7 +626,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             <circle cx="6" cy="9" r="0.6" />
                             <circle cx="10" cy="9" r="0.6" />
                           </svg>
-                          <span className="text-secondary-text truncate">{STRINGS.sourceVaultBalanceNow}</span>
+                          <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
                             <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                           )}
@@ -651,7 +651,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                               <circle cx="8" cy="8" r="6" />
                               <path d="M5.5 8l2 2 3.5-3.5" />
                             </svg>
-                            <span className="text-secondary-text truncate">{STRINGS.maturedClaimableNow}</span>
+                            <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
                               <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                             )}
@@ -735,7 +735,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             <circle cx="6" cy="9" r="0.6" />
                             <circle cx="10" cy="9" r="0.6" />
                           </svg>
-                          <span className="text-secondary-text truncate">{STRINGS.sourceVaultBalanceNow}</span>
+                          <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
                             <span
                               aria-hidden
@@ -763,7 +763,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                               <circle cx="8" cy="8" r="6" />
                               <path d="M5.5 8l2 2 3.5-3.5" />
                             </svg>
-                            <span className="text-secondary-text truncate">{STRINGS.maturedClaimableNow}</span>
+                            <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
                               <span
                                 aria-hidden

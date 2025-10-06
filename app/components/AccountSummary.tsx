@@ -98,7 +98,7 @@ function BalanceStat({
           <div className="h-7 w-28 rounded bg-background animate-pulse" aria-hidden />
         ) : (
           <>
-            <span className="truncate tabular-nums" title={`${valueFull} ${symbol}`}>{valueDisplay}</span>
+            <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>{valueDisplay}</span>
             <span className="text-base text-secondary-text shrink-0">{symbol}</span>
           </>
         )}

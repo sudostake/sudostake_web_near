@@ -18,12 +18,6 @@ export enum DelegationStatus {
   Active = "active",
 }
 
-function truncateAccount(id: string, max = 24) {
-  if (id.length <= max) return id;
-  const head = id.slice(0, Math.ceil(max / 2) - 2);
-  const tail = id.slice(-Math.floor(max / 2) + 2);
-  return `${head}…${tail}`;
-}
 
 function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
   const unstakedParsed = parseNumber(entry.unstaked_balance.toDisplay());
@@ -111,11 +105,11 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
             href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-mono text-sm underline truncate"
+            className="font-mono text-sm underline break-all"
             title={entry.validator}
             aria-label={`View validator ${entry.validator} on explorer`}
           >
-            {truncateAccount(entry.validator)}
+            {entry.validator}
           </a>
           <CopyButton value={entry.validator} title="Copy validator" />
           {status && (

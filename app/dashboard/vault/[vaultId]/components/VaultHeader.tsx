@@ -111,7 +111,7 @@ export function VaultHeader({
           label={STRINGS.contractBalanceLabel}
           value={
             <span className="inline-flex items-baseline gap-1">
-              <span className="truncate" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+              <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
                 {vaultNearLoading ? "Loading…" : vaultNear}
               </span>
               <span className="text-secondary-text">{NATIVE_TOKEN}</span>
@@ -123,7 +123,7 @@ export function VaultHeader({
             label={STRINGS.usdcBalanceLabel}
             value={
               <span className="inline-flex items-baseline gap-1">
-                <span className="truncate" title={`${usdcDisplay} USDC`}>
+                <span className="break-all" title={`${usdcDisplay} USDC`}>
                   {vaultUsdcLoading ? "Loading…" : usdcDisplay}
                 </span>
                 <span className="text-secondary-text">USDC</span>

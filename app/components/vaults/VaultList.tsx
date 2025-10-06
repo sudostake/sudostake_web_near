@@ -37,7 +37,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
       <div className="flex items-center gap-3 min-w-0">
         <VaultIcon id={id} size="sm" />
         <div className="min-w-0">
-          <div className="font-medium truncate" title={id}>
+          <div className="font-medium break-all" title={id}>
             {id}
             {badge(stateFor(id))}
           </div>

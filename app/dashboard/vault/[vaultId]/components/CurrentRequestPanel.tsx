@@ -26,7 +26,7 @@ export function CurrentRequestPanel({
       <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
         <div>
           <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.tokenLabel}</div>
-          <div className="font-medium truncate" title={content.token}>{content.token}</div>
+          <div className="font-medium break-all" title={content.token}>{content.token}</div>
         </div>
         <div>
           <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.amountLabel}</div>

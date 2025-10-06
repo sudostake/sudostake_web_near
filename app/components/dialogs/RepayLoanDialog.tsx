@@ -201,7 +201,7 @@ export function RepayLoanDialog({
         <div className="rounded border bg-background p-3 text-sm">
           <div className="grid grid-cols-2 gap-2">
             <div className="text-secondary-text">Token</div>
-            <div className="font-medium truncate" title={tokenId}>{tokenId}</div>
+            <div className="font-medium break-all" title={tokenId}>{tokenId}</div>
             <div className="text-secondary-text">Principal</div>
             <div className="font-medium">{principalLabel} {symbol}</div>
             <div className="text-secondary-text">Interest</div>

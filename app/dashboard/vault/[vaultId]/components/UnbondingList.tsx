@@ -47,11 +47,11 @@ export function UnbondingList({ entries, bare = false }: Props) {
                   href={explorerAccountUrl(network, validator)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-sm underline truncate"
+                  className="font-mono text-sm underline break-all"
                   title={validator}
                   aria-label={`View validator ${validator} on explorer`}
                 >
-                  {truncateAccount(validator)}
+                  {validator}
                 </a>
                 <CopyButton value={validator} title="Copy validator" />
               </div>
@@ -82,13 +82,4 @@ export function UnbondingList({ entries, bare = false }: Props) {
       {/* ETA is rendered per entry above */}
     </div>
   );
-}
-
-const DEFAULT_TRUNCATE_LENGTH = 24;
-
-function truncateAccount(id: string, max = DEFAULT_TRUNCATE_LENGTH) {
-  if (id.length <= max) return id;
-  const head = id.slice(0, Math.ceil(max / 2) - 2);
-  const tail = id.slice(-Math.floor(max / 2) + 2);
-  return `${head}…${tail}`;
 }
