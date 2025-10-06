@@ -78,14 +78,14 @@ function toHtml(md: string): string {
     const header = lines[0];
     const rows = lines.slice(2);
     const parseRow = (line: string) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/\|/).map((c) => c.trim());
-    const ths = parseRow(header).map((h) => `<th class="px-2 py-1 border">${escapeHtml(h)}</th>`).join("");
+    const ths = parseRow(header).map((h) => `<th class="px-2 py-1 border border-foreground/20 bg-surface text-left">${escapeHtml(h)}</th>`).join("");
     const trs = rows
       .map((r) => {
-        const tds = parseRow(r).map((c) => `<td class="px-2 py-1 border">${escapeHtml(c)}</td>`).join("");
+        const tds = parseRow(r).map((c) => `<td class="px-2 py-1 border border-foreground/20">${escapeHtml(c)}</td>`).join("");
         return `<tr>${tds}</tr>`;
       })
       .join("");
-    return `<table class="table-auto w-full text-sm border-collapse my-3"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    return `<table class="table-auto w-full text-sm border-collapse my-3 border border-foreground/20"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
   });
   // autolink plain URLs (best-effort)
   html = linkifyHtml(html);

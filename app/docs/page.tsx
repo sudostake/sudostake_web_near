@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 import { Container } from "@/app/components/layout/Container";
+import DocsIndexClient, { type Section } from "./DocsIndexClient";
 
 type DocLink = { title: string; href: string; description?: string };
 type Section = { id: string; title: string; items: DocLink[] };
@@ -71,50 +72,7 @@ export default function DocsIndex() {
       <Container>
         <h1 className="text-2xl font-semibold mb-4">Documentation</h1>
         <p className="text-secondary-text mb-4">Architecture, features, guides, and reference for the SudoStake web app.</p>
-        {/* Mobile nav */}
-        <nav className="md:hidden mb-4 text-sm flex flex-wrap gap-2">
-          {sections.map((s) => (
-            <a key={s.id} href={`#${s.id}`} className="rounded border bg-surface px-2.5 py-1 hover:bg-surface/90">
-              {s.title}
-            </a>
-          ))}
-        </nav>
-        <div className="md:flex md:items-start md:gap-6">
-          {/* Sidebar (desktop) */}
-          <aside className="hidden md:block md:w-56 lg:w-64 sticky top-[calc(var(--nav-height,56px)+16px)] self-start">
-            <nav className="text-sm">
-              <ul className="space-y-1">
-                {sections.map((s) => (
-                  <li key={s.id}>
-                    <a href={`#${s.id}`} className="block rounded px-2 py-1 hover:bg-foreground/10">
-                      {s.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-          {/* Main content */}
-          <div className="flex-1 space-y-8">
-            {sections.map((s) => (
-              <section key={s.id} id={s.id}>
-                <h2 className="text-xl font-medium mb-3">{s.title}</h2>
-                <ul className="grid sm:grid-cols-2 gap-2">
-                  {s.items.map((item) => (
-                    <li key={item.href} className="rounded border bg-surface hover:bg-surface/90 transition-colors">
-                      <Link href={item.href} className="block px-3 py-2">
-                        <div className="font-medium">{item.title}</div>
-                        {item.description ? (
-                          <div className="text-sm text-secondary-text">{item.description}</div>
-                        ) : null}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            ))}
-          </div>
-        </div>
+        <DocsIndexClient sections={sections} />
       </Container>
     </div>
   );
