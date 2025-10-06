@@ -28,7 +28,6 @@ import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
 import { Container } from "@/app/components/layout/Container";
-import { useProgressiveHeaderCollapse } from "@/hooks/useProgressiveHeaderCollapse";
 import { VaultHeader } from "./components/VaultHeader";
 
 
@@ -165,7 +164,6 @@ export default function VaultPage() {
   }, []);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
-  const collapse = useProgressiveHeaderCollapse("vault-header-sentinel");
   let Body: React.ReactNode;
   if (error) {
     Body = (
@@ -246,15 +244,7 @@ export default function VaultPage() {
   return (
     <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
       <main id="main" className="w-full" aria-busy={loading || undefined}>
-        {/* Sentinel used to detect when the sticky header is affixed to the top */}
-        <div id="vault-header-sentinel" aria-hidden className="h-px" />
-        <header
-          className={[
-            "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
-            collapse.stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
-          ].join(" ")}
-          style={{ top: "var(--nav-height, 56px)" }}
-        >
+        <header className="mb-2 sm:mb-4">
           <Container>
             <VaultHeader
               onBack={() => router.back()}
@@ -266,10 +256,8 @@ export default function VaultPage() {
               vaultNearLoading={vaultNearLoading}
               usdcDisplay={vaultUsdc?.toDisplay()}
               vaultUsdcLoading={vaultUsdcLoading}
-              collapse={collapse}
             />
           </Container>
-          {/* Removed gradient; subtle shadow + border provide a cleaner separation */}
         </header>
         <Container>
           {Body}
