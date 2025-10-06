@@ -71,22 +71,6 @@ function toHtml(md: string): string {
       .join("");
     return `<ul class="my-3">${items}</ul>`;
   });
-  // tables (GFM-like): header |---| separator, then rows
-  html = html.replace(/(^\|.*\|\s*\n\|[ \-:\|]+\|\s*\n(?:\|.*\|\s*\n?)+)/gm, (block) => {
-    const lines = block.trim().split(/\n/);
-    if (lines.length < 2) return block;
-    const header = lines[0];
-    const rows = lines.slice(2);
-    const parseRow = (line: string) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/\|/).map((c) => c.trim());
-    const ths = parseRow(header).map((h) => `<th class="px-2 py-1 border border-foreground/20 bg-surface text-left">${escapeHtml(h)}</th>`).join("");
-    const trs = rows
-      .map((r) => {
-        const tds = parseRow(r).map((c) => `<td class="px-2 py-1 border border-foreground/20">${escapeHtml(c)}</td>`).join("");
-        return `<tr>${tds}</tr>`;
-      })
-      .join("");
-    return `<table class="table-auto w-full text-sm border-collapse my-3 border border-foreground/20"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
-  });
   // autolink plain URLs (best-effort)
   html = linkifyHtml(html);
   // paragraphs (simple: wrap non-empty lines that are not already tags)
@@ -109,7 +93,6 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
   return (
     <div className="py-8">
       <Container>
-        <Breadcrumbs slug={slug} />
         <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
       </Container>
     </div>
@@ -207,30 +190,4 @@ function formatText(s: string) {
   return linkifyHtml(escapeHtml(s));
 }
 
-function Breadcrumbs({ slug }: { slug: string[] }) {
-  const parts = Array.isArray(slug) ? slug : [];
-  const crumbs: Array<{ name: string; href: string }> = [];
-  crumbs.push({ name: "Docs", href: "/docs" });
-  let acc = "";
-  for (let i = 0; i < parts.length; i++) {
-    acc += "/" + parts[i];
-    const nameMap: Record<string, string> = {
-      features: "Features",
-      reference: "Reference",
-      guides: "Guides",
-      operations: "Operations",
-    };
-    const name = nameMap[parts[i]] || titleCase(parts[i]);
-    crumbs.push({ name, href: "/docs" + acc });
-  }
-  return (
-    <nav aria-label="Breadcrumb" className="text-sm text-secondary-text mb-4">
-      {crumbs.map((c, i) => (
-        <span key={c.href}>
-          {i > 0 ? <span className="mx-1">/</span> : null}
-          <a href={c.href} className="hover:underline">{c.name}</a>
-        </span>
-      ))}
-    </nav>
-  );
-}
+// Breadcrumbs intentionally omitted to keep the page minimal
