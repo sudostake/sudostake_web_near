@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Container } from "@/app/components/layout/Container";
 
 type DocLink = { title: string; href: string; description?: string };
+type Section = { id: string; title: string; items: DocLink[] };
 
 function exists(p: string) {
   try {
@@ -14,9 +15,9 @@ function exists(p: string) {
   }
 }
 
-function buildSection(title: string, items: DocLink[]): { title: string; items: DocLink[] } | null {
+function buildSection(id: string, title: string, items: DocLink[]): Section | null {
   if (items.length === 0) return null;
-  return { title, items };
+  return { id, title, items };
 }
 
 function docsRoot() {
@@ -30,8 +31,9 @@ function linkIfFile(rel: string, title: string, description?: string): DocLink |
 
 export default function DocsIndex() {
   const sections = [
-    buildSection("Architecture", [linkIfFile("architecture.md", "Architecture overview")!].filter(Boolean) as DocLink[]),
+    buildSection("architecture", "Architecture", [linkIfFile("architecture.md", "Architecture overview")!].filter(Boolean) as DocLink[]),
     buildSection(
+      "features",
       "Features",
       [
         linkIfFile("features/authentication.md", "Authentication"),
@@ -43,6 +45,7 @@ export default function DocsIndex() {
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
+      "guides",
       "Guides",
       [
         linkIfFile("guides/opening-liquidity-request.md", "Open a liquidity request"),
@@ -50,6 +53,7 @@ export default function DocsIndex() {
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
+      "reference",
       "Reference",
       [
         linkIfFile("reference/api.md", "API reference"),
@@ -59,35 +63,59 @@ export default function DocsIndex() {
         linkIfFile("reference/roles.md", "Viewer roles"),
       ].filter(Boolean) as DocLink[]
     ),
-    buildSection("Operations", [linkIfFile("operations/indexing.md", "Indexing and consistency")!].filter(Boolean) as DocLink[]),
-  ].filter(Boolean) as Array<{ title: string; items: DocLink[] }>;
+    buildSection("operations", "Operations", [linkIfFile("operations/indexing.md", "Indexing and consistency")!].filter(Boolean) as DocLink[]),
+  ].filter(Boolean) as Section[];
 
   return (
     <div className="py-8">
       <Container>
         <h1 className="text-2xl font-semibold mb-4">Documentation</h1>
-        <p className="text-secondary-text mb-6">Architecture, features, guides, and reference for the SudoStake web app.</p>
-        <div className="space-y-8">
+        <p className="text-secondary-text mb-4">Architecture, features, guides, and reference for the SudoStake web app.</p>
+        {/* Mobile nav */}
+        <nav className="md:hidden mb-4 text-sm flex flex-wrap gap-2">
           {sections.map((s) => (
-            <section key={s.title}>
-              <h2 className="text-xl font-medium mb-3">{s.title}</h2>
-              <ul className="grid sm:grid-cols-2 gap-2">
-                {s.items.map((item) => (
-                  <li key={item.href} className="rounded border bg-surface hover:bg-surface/90 transition-colors">
-                    <Link href={item.href} className="block px-3 py-2">
-                      <div className="font-medium">{item.title}</div>
-                      {item.description ? (
-                        <div className="text-sm text-secondary-text">{item.description}</div>
-                      ) : null}
-                    </Link>
+            <a key={s.id} href={`#${s.id}`} className="rounded border bg-surface px-2.5 py-1 hover:bg-surface/90">
+              {s.title}
+            </a>
+          ))}
+        </nav>
+        <div className="md:flex md:items-start md:gap-6">
+          {/* Sidebar (desktop) */}
+          <aside className="hidden md:block md:w-56 lg:w-64 sticky top-[calc(var(--nav-height,56px)+16px)] self-start">
+            <nav className="text-sm">
+              <ul className="space-y-1">
+                {sections.map((s) => (
+                  <li key={s.id}>
+                    <a href={`#${s.id}`} className="block rounded px-2 py-1 hover:bg-foreground/10">
+                      {s.title}
+                    </a>
                   </li>
                 ))}
               </ul>
-            </section>
-          ))}
+            </nav>
+          </aside>
+          {/* Main content */}
+          <div className="flex-1 space-y-8">
+            {sections.map((s) => (
+              <section key={s.id} id={s.id}>
+                <h2 className="text-xl font-medium mb-3">{s.title}</h2>
+                <ul className="grid sm:grid-cols-2 gap-2">
+                  {s.items.map((item) => (
+                    <li key={item.href} className="rounded border bg-surface hover:bg-surface/90 transition-colors">
+                      <Link href={item.href} className="block px-3 py-2">
+                        <div className="font-medium">{item.title}</div>
+                        {item.description ? (
+                          <div className="text-sm text-secondary-text">{item.description}</div>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
         </div>
       </Container>
     </div>
   );
 }
-

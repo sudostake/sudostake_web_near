@@ -71,6 +71,22 @@ function toHtml(md: string): string {
       .join("");
     return `<ul class="my-3">${items}</ul>`;
   });
+  // tables (GFM-like): header |---| separator, then rows
+  html = html.replace(/(^\|.*\|\s*\n\|[ \-:\|]+\|\s*\n(?:\|.*\|\s*\n?)+)/gm, (block) => {
+    const lines = block.trim().split(/\n/);
+    if (lines.length < 2) return block;
+    const header = lines[0];
+    const rows = lines.slice(2);
+    const parseRow = (line: string) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split(/\|/).map((c) => c.trim());
+    const ths = parseRow(header).map((h) => `<th class="px-2 py-1 border">${escapeHtml(h)}</th>`).join("");
+    const trs = rows
+      .map((r) => {
+        const tds = parseRow(r).map((c) => `<td class="px-2 py-1 border">${escapeHtml(c)}</td>`).join("");
+        return `<tr>${tds}</tr>`;
+      })
+      .join("");
+    return `<table class="table-auto w-full text-sm border-collapse my-3"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  });
   // autolink plain URLs (best-effort)
   html = linkifyHtml(html);
   // paragraphs (simple: wrap non-empty lines that are not already tags)
