@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import Link from "next/link";
 import { Container } from "@/app/components/layout/Container";
 import DocsIndexClient from "./DocsIndexClient";
 
@@ -98,8 +99,45 @@ export default function DocsIndex() {
         <p className="text-secondary-text mb-4">
           Start with the overview, then follow the path for vault owners or lenders. Each section links the next step so newcomers and power users stay in sync.
         </p>
+        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <DocQuickLink
+            href="/docs/playbook"
+            title="Follow the playbook"
+            description="Understand how vault owners and lenders move through SudoStake from connect → repay."
+          />
+          <DocQuickLink
+            href="/docs/guides/create-vault"
+            title="Mint a vault"
+            description="Mint, index, and secure your first vault so you can request liquidity with confidence."
+          />
+          <DocQuickLink
+            href="/docs/guides/fund-liquidity-request"
+            title="Fund a request"
+            description="Review, fund, and monitor liquidity offers without missing repayment signals."
+          />
+        </div>
         <DocsIndexClient sections={sections} />
       </Container>
     </div>
+  );
+}
+
+function DocQuickLink({ href, title, description }: { href: string; title: string; description: string }) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-xl border border-foreground/10 bg-surface/70 px-4 py-4 transition-all hover:border-foreground/20 hover:bg-surface/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className="font-semibold text-foreground">{title}</span>
+        <span
+          aria-hidden="true"
+          className="text-lg text-secondary-text transition-transform duration-150 group-hover:translate-x-1 group-focus-visible:translate-x-1"
+        >
+          →
+        </span>
+      </span>
+      <span className="mt-2 block text-sm text-secondary-text leading-6">{description}</span>
+    </Link>
   );
 }

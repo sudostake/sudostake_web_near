@@ -9,8 +9,8 @@
 
 | Network | Factory contract | RPC endpoint | Explorer |
 | ------- | ---------------- | ------------ | -------- |
-| testnet | `nzaza.testnet` | `https://rpc.testnet.fastnear.com` | https://testnet.nearblocks.io |
-| mainnet | `sudostake.near` | `https://rpc.mainnet.fastnear.com` | https://nearblocks.io |
+| testnet | `nzaza.testnet` | `https://rpc.testnet.fastnear.com` | [testnet.nearblocks.io](https://testnet.nearblocks.io) |
+| mainnet | `sudostake.near` | `https://rpc.mainnet.fastnear.com` | [nearblocks.io](https://nearblocks.io) |
 
 ## Active network logic
 - The selector defaults to **testnet**.
