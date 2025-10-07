@@ -6,6 +6,7 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { Button } from "@/app/components/ui/Button";
 import { getActiveNetwork } from "@/utils/networks";
+import { showToast } from "@/utils/toast";
 
 export function Hero() {
   const { signIn, walletSelector } = useWalletSelector();
@@ -37,7 +38,9 @@ export function Hero() {
         setSlowConnect(false);
       };
       subscription = modal.on("onHide", handleHide);
-    }).catch(() => {
+    }).catch((err) => {
+      console.error("Failed to initialise wallet selector modal", err);
+      showToast("Wallet connection failed to initialise.", { variant: "error" });
       setConnecting(false);
       setSlowConnect(false);
     });
@@ -48,7 +51,9 @@ export function Hero() {
   }, [walletSelector]);
   const handleConnect = React.useCallback(() => {
     setConnecting(true);
-    Promise.resolve(signIn()).catch(() => {
+    Promise.resolve(signIn()).catch((err) => {
+      console.error("Wallet sign-in failed", err);
+      showToast("Wallet connection failed. Please try again.", { variant: "error" });
       setConnecting(false);
       setSlowConnect(false);
     });

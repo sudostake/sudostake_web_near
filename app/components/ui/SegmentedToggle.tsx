@@ -75,14 +75,16 @@ export function SegmentedToggle({
     }
   }
 
+  const containerClasses = [
+    "relative inline-flex w-full select-none items-center overflow-hidden rounded-full border border-foreground/10 bg-surface-muted/60",
+    paddingClass,
+    disabled ? "opacity-60 cursor-not-allowed" : "",
+    className,
+  ].join(" ");
+
   return (
     <div
-      className={[
-        "relative inline-flex w-full select-none items-center overflow-hidden rounded-full border border-foreground/10 bg-surface-muted/60",
-        paddingClass,
-        disabled ? "opacity-60 cursor-not-allowed" : "",
-        className,
-      ].join(" ")}
+      className={containerClasses}
       role="tablist"
       aria-label={ariaLabel}
       onKeyDown={(e) => {
