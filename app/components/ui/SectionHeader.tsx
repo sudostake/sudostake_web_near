@@ -11,14 +11,12 @@ type Props = {
 
 export function SectionHeader({ title, caption, right, className = "" }: Props) {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between ${className}`}>
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        {caption && (
-          <div className="text-sm text-secondary-text mt-1">{caption}</div>
-        )}
+    <div className={`flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${className}`}>
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+        {caption && <p className="text-sm text-secondary-text">{caption}</p>}
       </div>
-      {right && <div className="mt-2 sm:mt-0 w-full sm:flex-1 sm:ml-4">{right}</div>}
+      {right && <div className="sm:ml-6 sm:flex-1">{right}</div>}
     </div>
   );
 }

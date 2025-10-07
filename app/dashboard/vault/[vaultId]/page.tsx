@@ -29,6 +29,8 @@ import { STRINGS } from "@/utils/strings";
 import { useRefundEntries } from "@/hooks/useRefundEntries";
 import { Container } from "@/app/components/layout/Container";
 import { VaultHeader } from "./components/VaultHeader";
+import { ErrorMessage } from "@/app/components/vaults/ErrorMessage";
+import { Card } from "@/app/components/ui/Card";
 
 
 export default function VaultPage() {
@@ -166,32 +168,31 @@ export default function VaultPage() {
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
   let Body: React.ReactNode;
   if (error) {
-    Body = (
-      <div className="text-center text-sm text-red-500" role="alert" aria-live="polite">
-        Failed to load vault.
-        <div className="mt-1 text-xs opacity-80">{error}</div>
-        <button className="underline mt-2" onClick={refetch}>Retry</button>
-      </div>
-    );
+    Body = <ErrorMessage message={error} onRetry={refetch} />;
   } else if (loading) {
     Body = (
-      <div className="animate-pulse space-y-3" aria-live="polite" aria-busy="true">
-        <div className="h-6 bg-surface rounded w-1/3" />
-        <div className="h-24 bg-surface rounded" />
-        <div className="h-6 bg-surface rounded w-1/2" />
-        <div className="h-32 bg-surface rounded" />
+      <div className="space-y-4" aria-live="polite" aria-busy="true">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="animate-pulse rounded-3xl border border-foreground/5 bg-surface p-6">
+            <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
+            <div className="mt-4 h-20 rounded-2xl bg-foreground/5" />
+          </div>
+        ))}
       </div>
     );
   } else {
     Body = (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <AvailableBalanceCard
           balance={availBalance}
           loading={availLoading}
         />
 
         {isOwner && (
-          <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
+          <Card className="space-y-4">
+            <h2 className="text-lg font-semibold">Manage vault funds</h2>
+            <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
+          </Card>
         )}
 
         {/* Delegations list & controls */}
@@ -232,7 +233,6 @@ export default function VaultPage() {
             refetchDeleg();
           }}
           onAfterTopUp={() => {
-            // Update USDC header balance promptly when a top-up is made
             refetchVaultUsdc();
           }}
           onAfterProcess={debouncedProcessRefresh}
@@ -242,24 +242,20 @@ export default function VaultPage() {
   }
 
   return (
-    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="min-h-screen bg-background pb-24">
       <main id="main" className="w-full" aria-busy={loading || undefined}>
-        <header className="mb-2 sm:mb-4">
-          <Container>
-            <VaultHeader
-              onBack={() => router.back()}
-              vaultId={String(vaultId)}
-              vaultShortName={vaultShortName}
-              network={network}
-              owner={data?.owner}
-              vaultNear={vaultNear}
-              vaultNearLoading={vaultNearLoading}
-              usdcDisplay={vaultUsdc?.toDisplay()}
-              vaultUsdcLoading={vaultUsdcLoading}
-            />
-          </Container>
-        </header>
-        <Container>
+        <Container className="pt-20 space-y-6">
+          <VaultHeader
+            onBack={() => router.back()}
+            vaultId={String(vaultId)}
+            vaultShortName={vaultShortName}
+            network={network}
+            owner={data?.owner}
+            vaultNear={vaultNear}
+            vaultNearLoading={vaultNearLoading}
+            usdcDisplay={vaultUsdc?.toDisplay()}
+            vaultUsdcLoading={vaultUsdcLoading}
+          />
           {Body}
         </Container>
         {isOwner && (

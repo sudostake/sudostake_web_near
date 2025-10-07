@@ -11,10 +11,12 @@ export type ErrorMessageProps = {
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <Card role="alert" className="max-w-xl mx-auto p-4">
-      <p className="font-medium text-foreground">Error: <span className="font-normal">{message}</span></p>
+    <Card role="alert" className="mx-auto max-w-xl space-y-3">
+      <p className="text-sm text-red-600">
+        <span className="font-semibold">Error:</span> {message}
+      </p>
       {onRetry && (
-        <Button className="mt-2" onClick={onRetry}>
+        <Button variant="secondary" onClick={onRetry} className="w-full sm:w-auto">
           Retry
         </Button>
       )}

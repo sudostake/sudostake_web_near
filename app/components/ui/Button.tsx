@@ -18,7 +18,7 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40";
+    "inline-flex items-center justify-center rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40";
   const sizes: Record<Size, string> = {
     sm: "px-2.5 h-8 text-sm",
     md: "px-3 h-9 text-sm",
@@ -35,4 +35,3 @@ export function Button({
     </button>
   );
 }
-

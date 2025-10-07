@@ -30,18 +30,16 @@ export function AccountSummary({
   const [recvOpen, setRecvOpen] = React.useState(false);
 
   return (
-    <Card className="w-full p-4">
-      <HeaderWithActions />
-      <div className="mt-3 grid grid-cols-2 gap-4">
-        {/* NEAR */}
+    <Card className="w-full p-6">
+      <HeaderWithActions onRefreshBalances={onRefreshBalances} />
+      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
         <BalanceStat
-          label={`${near.symbol} Balance`}
+          label={`${near.symbol} balance`}
           valueDisplay={nearShort}
           valueFull={near.toDisplay()}
           symbol={near.symbol}
           loading={Boolean(loading)}
         />
-        {/* USDC */}
         <BalanceStat
           label={usdcLabel}
           valueDisplay={usdcShort}
@@ -50,10 +48,14 @@ export function AccountSummary({
           loading={Boolean(loading)}
         />
       </div>
-      <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>Receive</Button>
-          <Button className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>Send</Button>
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
+            Receive
+          </Button>
+          <Button className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>
+            Send
+          </Button>
         </div>
       </div>
 
@@ -68,12 +70,19 @@ export function AccountSummary({
   );
 }
 
-function HeaderWithActions() {
-
+function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
   return (
-    <>
-      <SectionHeader title="Account Balances" />
-    </>
+    <SectionHeader
+      title="Account balances"
+      caption="Track liquid NEAR and USDC ready to deploy."
+      right={
+        onRefreshBalances && (
+          <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>
+            Refresh
+          </Button>
+        )
+      }
+    />
   );
 }
 
@@ -91,15 +100,17 @@ function BalanceStat({
   loading: boolean;
 }) {
   return (
-    <div>
-      <div className="text-xs text-secondary-text">{label}</div>
-      <div className="mt-1 text-2xl font-semibold flex items-baseline gap-1 min-w-0">
+    <div className="rounded-2xl border border-foreground/5 bg-surface-muted/60 p-4">
+      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
+      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-3xl font-semibold">
         {loading ? (
-          <div className="h-7 w-28 rounded bg-background animate-pulse" aria-hidden />
+          <div className="h-8 w-28 animate-pulse rounded-full bg-background" aria-hidden />
         ) : (
           <>
-            <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>{valueDisplay}</span>
-            <span className="text-base text-secondary-text shrink-0">{symbol}</span>
+            <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>
+              {valueDisplay}
+            </span>
+            <span className="shrink-0 text-sm text-secondary-text">{symbol}</span>
           </>
         )}
       </div>

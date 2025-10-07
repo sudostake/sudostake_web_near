@@ -4,9 +4,9 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Hero } from "@/app/components/landing/Hero";
-import { HowItWorks } from "@/app/components/landing/HowItWorks";
 import { Features } from "@/app/components/landing/Features";
 import { LandingFAQ } from "@/app/components/landing/FAQ";
+import { SocialStrip } from "@/app/components/landing/SocialStrip";
 import { Container } from "@/app/components/layout/Container";
 
 export default function Home() {
@@ -25,8 +25,8 @@ export default function Home() {
         <Container>
           <Hero />
           <Features />
-          <HowItWorks />
           <LandingFAQ />
+          <SocialStrip />
         </Container>
       </main>
     </div>
