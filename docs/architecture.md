@@ -1,41 +1,34 @@
-Architecture overview
+# How SudoStake stays in sync
 
-This app is a Next.js frontend. It talks to NEAR for chain data and to Firestore for fast reads. Here’s the simple picture:
+## TL;DR
+- SudoStake keeps your dashboard fast by caching vault information off-chain while still trusting NEAR as the source of truth.
+- Wallet Selector handles every connection so you can move between testnet and mainnet without reconfiguring anything.
+- Whenever you complete an action (fund, request, repay), the app refreshes the vault directly from chain so everyone sees the same state.
 
-- Wallets: NEAR Wallet Selector handles connect, sign, and send.
-- Chain reads: the app calls our /api/rpc proxy, which forwards requests to NEAR RPC (no CORS issues).
-- Indexed data: we store a cleaned-up copy of on-chain vault state in Firestore for quick queries.
-- Realtime or REST: views can subscribe to Firestore directly, or use REST endpoints that read from Firestore.
+## Before you dive in
+- **Follow the flow:** Not sure where to start? The [SudoStake playbook](./playbook.md) walks vault owners and lenders through the full journey.
+- **Pick a network:** Use testnet for rehearsals and mainnet for real funds. Factory IDs and explorer links live in [Network quick facts](./reference/networks.md).
+- **Know what we store:** Curious about what the dashboard tracks for each vault? See [What the app stores](./reference/data-model.md).
 
-Networks and factory contracts
+## The moving parts (plain language)
+### Wallets
+- You connect once with Wallet Selector. It remembers your account and signs every transaction you approve.
+- Switching the network toggle reconnects the selector so the right contracts and tokens appear automatically.
 
-- Supported networks: testnet and mainnet
-- Each network has a factory contract (e.g., nzaza.testnet). We use the factory id as the Firestore collection name.
-- See reference/networks.md for exact values.
+### Live vault data
+- Think of the dashboard as a snapshot of your vault. Right after a transaction, the app fetches the fresh state from NEAR and updates the snapshot.
+- If something looks out of date, the “Retry indexing” prompt forces a refresh—use it like a manual sync button.
 
-How data flows
+### Behind-the-scenes safety
+- Each vault action on the UI includes guardrails (for example, lenders can’t see owner-only buttons). Those checks rely on the latest vault snapshot and your connected wallet.
+- If the snapshot says you’re the owner, you’ll see owner tools. If you’re the lender, you’ll see repayment status and reminders.
 
-1) The server fetches on-chain vault state via NEAR RPC (get_vault_state).
-2) It transforms that into a VaultDocument and writes it to Firestore.
-3) The UI reads from Firestore (realtime) or via REST endpoints.
-4) If the UI needs fresher data, it can call /api/index_vault to re-index a vault and update Firestore.
+## Why this matters to you
+- **Speed:** Cached data means the Discover page and dashboards load instantly, even before indexing finishes.
+- **Accuracy:** Every meaningful click triggers a fresh read from the chain so balances and statuses stay trustworthy.
+- **Simplicity:** You don’t need to manage RPC URLs or network IDs—SudoStake handles that once you pick a network.
 
-Firebase
-
-- Client: firebase/app + firebase/firestore for realtime reads.
-- Server: firebase-admin for reading/writing Firestore in API routes.
-
-RPC proxy
-
-- POST /api/rpc forwards JSON-RPC to the selected network. This avoids CORS issues and centralizes network selection.
-
-Where data lives
-
-- Firestore
-  - One collection per factory (e.g., nzaza.testnet, sudostake.near)
-  - One document per vault (keyed by the vault account id)
-  - See reference/data-model.md for fields
-
-Feature flags
-
-- NEXT_PUBLIC_LENDING_USE_API and NEXT_PUBLIC_PENDING_USE_API control whether a view uses REST polling or Firestore realtime.
+## Need a deeper dive?
+- [Indexing and consistency](./operations/indexing.md) explains what the “Retry indexing” dialog is doing in plain terms.
+- [Tokens and balances](./features/tokens.md) shows how we keep wallet and vault balances tidy.
+- [Who can do what](./reference/roles.md) spells out why certain buttons appear or stay hidden.

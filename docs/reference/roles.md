@@ -1,32 +1,23 @@
-Viewer roles and UI gating
+# Viewer roles
 
-This app derives viewer roles from on-chain indexed vault state and the connected wallet.
+## TL;DR
+- The app decides which buttons to show based on who you are in relation to the vault: guest, owner, active lender, or interested lender.
+- Once you connect a wallet, the correct set of tools appears automatically—no extra configuration needed.
+- If something seems missing, use this guide to double-check which role you’re in.
 
-Roles
+## Roles at a glance
+- **Guest** — You have not connected a wallet yet. Browse requests and vault details, but you can’t take any actions.
+- **Vault owner** — Your connected wallet matches the vault owner. You can deposit, delegate, open or cancel requests, repay, and transfer ownership.
+- **Active lender** — You funded the current request. You’ll see repayment status, loan details, and reminders.
+- **Potential lender** — You’re connected with a wallet that hasn’t funded this vault. You can review the request and, if it’s open, fund it.
 
-- guest: no connected wallet
-- owner: connected wallet matches vault.owner
-- activeLender: connected wallet matches accepted_offer.lender
-- potentialLender: connected wallet, but neither owner nor active lender
+## What you’ll see in the UI
+- **Opening or managing requests:** Only vault owners can open, edit, or cancel a liquidity request.
+- **Funding:** Potential lenders get the “Fund request” button while the state is **Pending**. Once you fund it, the button disappears and the status changes to **Active**.
+- **Vault tools:** Deposit, withdraw, delegate, and transfer ownership buttons remain owner-only. Everyone else can still view balances and delegations.
+- **Lender dashboard:** Positions only appear after you connect a wallet so we can show the loans tied to your account.
 
-How it’s computed
-
-- Hook: hooks/useViewerRole.ts uses the wallet selector and the indexed vault document (useVault) to determine the role.
-- Source of truth: VaultDocument mirrors the contract view (get_vault_state), including owner and accepted_offer.lender.
-
-Current UI rules
-
-- Liquidity requests
-  - Only the owner can open or cancel a liquidity request in the UI.
-  - Non-owners see the current request details when present, but no action buttons.
-- Vault actions
-  - Deposit, Withdraw, Delegate, Undelegate, and Claim Unstaked dialogs are only rendered for the owner.
-  - Delegations summary remains visible to all viewers; onboarding CTAs are disabled unless the viewer is the owner.
-  - Transfer ownership is owner-only and requires attaching exactly 1 yoctoNEAR to confirm intent.
-
-Contract reference
-
-- Only the vault owner may call request_liquidity (1 yoctoNEAR required).
-- Only the vault owner may call transfer_ownership(new_owner) (1 yoctoNEAR required).
-- Accepted offer stores the lender account; this determines the activeLender role.
-
+## Quick troubleshooting
+- Button missing? Check the account shown in the top-right corner. If it’s not the vault owner or active lender, connect the right wallet.
+- Want to preview what others see? Disconnect your wallet to browse as a guest or connect with a different account.
+- Unsure whether the app picked up a recent change (for example you just funded a request)? Press **Retry indexing** so the role information refreshes.

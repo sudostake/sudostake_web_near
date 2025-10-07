@@ -1,21 +1,91 @@
 import fs from "fs";
 import path from "path";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
+import { renderJsonDoc, renderMarkdownDoc, type RenderedDoc } from "../lib/docRenderer";
+
+type ResolvedDoc = { file: string; type: "md" | "json" };
+
+export default async function DocPage({ params }: { params: Promise<{ slug: string[] }> }) {
+  const { slug } = await params;
+  const resolved = safeJoinDocs(slug || []);
+  if (!resolved) notFound();
+
+  const content = fs.readFileSync(resolved.file, "utf8");
+  const rendered: RenderedDoc =
+    resolved.type === "md" ? renderMarkdownDoc(content) : renderJsonDoc(content, slug || []);
+  const hasToc = rendered.toc.length > 1;
+
+  const renderTocItems = (prefix: string) =>
+    rendered.toc.map((entry) => {
+      const indent = tocIndent(entry.level);
+      return (
+        <li key={`${prefix}-${entry.id}`}>
+          <a
+            href={`#${entry.id}`}
+            className={`block rounded px-2 py-1 transition-colors hover:bg-foreground/10 ${indent}`}
+          >
+            {entry.title}
+          </a>
+        </li>
+      );
+    });
+
+  return (
+    <div className="py-8">
+      <Container>
+        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
+          <article className="flex-1 max-w-3xl">
+            <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-foreground">
+              <span aria-hidden="true">←</span>
+              Back to docs
+            </Link>
+            {hasToc ? (
+              <nav className="mt-6 mb-10 lg:hidden" aria-label="Page sections">
+                <details className="docs-toc overflow-hidden rounded-lg border border-foreground/10 bg-surface/70 text-sm" open>
+                  <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 font-medium text-foreground transition-colors hover:bg-surface/90">
+                    <span>On this page</span>
+                    <svg
+                      aria-hidden="true"
+                      className="docs-toc__icon h-4 w-4 text-secondary-text transition-transform duration-200"
+                      focusable="false"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                    </svg>
+                  </summary>
+                  <div className="border-t border-foreground/5 px-4 py-3">
+                    <ul className="space-y-1">{renderTocItems("mobile")}</ul>
+                  </div>
+                </details>
+              </nav>
+            ) : null}
+            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+          </article>
+          {hasToc ? (
+            <aside className="mt-10 hidden w-64 flex-shrink-0 lg:mt-0 lg:block" aria-label="Page sections">
+              <nav className="sticky top-[calc(var(--nav-height,56px)+24px)]">
+                <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-secondary-text">On this page</div>
+                <ul className="space-y-1 text-sm">{renderTocItems("desktop")}</ul>
+              </nav>
+            </aside>
+          ) : null}
+        </div>
+      </Container>
+    </div>
+  );
+}
 
 function docsRoot() {
   return path.join(process.cwd(), "docs");
 }
 
-type ResolvedDoc = { file: string; type: "md" | "json" };
-
 function safeJoinDocs(slug: string[]): ResolvedDoc | null {
-  // Allow only .md files within the docs directory; default to README.md for empty slug
   const rel = slug.length ? slug.join("/") : "README";
   const candidates: Array<{ p: string; t: "md" | "json" }> = [
     { p: path.join(docsRoot(), rel + ".md"), t: "md" },
     { p: path.join(docsRoot(), rel + ".json"), t: "json" },
-    // Fallbacks for legacy short links (e.g., /docs/token-registration)
     { p: path.join(docsRoot(), "reference", rel + ".md"), t: "md" },
     { p: path.join(docsRoot(), "reference", rel + ".json"), t: "json" },
     { p: path.join(docsRoot(), "features", rel + ".md"), t: "md" },
@@ -25,6 +95,7 @@ function safeJoinDocs(slug: string[]): ResolvedDoc | null {
     { p: path.join(docsRoot(), "operations", rel + ".md"), t: "md" },
     { p: path.join(docsRoot(), "operations", rel + ".json"), t: "json" },
   ];
+
   const root = docsRoot();
   for (const { p: abs, t } of candidates) {
     const normalized = path.normalize(abs);
@@ -32,172 +103,16 @@ function safeJoinDocs(slug: string[]): ResolvedDoc | null {
     try {
       const stat = fs.statSync(normalized);
       if (stat.isFile()) return { file: normalized, type: t };
-    } catch {}
+    } catch {
+      // ignore
+    }
   }
   return null;
 }
 
-function toHtml(md: string): string {
-  // Minimal markdown rendering: headings, code fences, inline code, lists, paragraphs.
-  // This is intentionally simple to avoid adding deps.
-  let html = md
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  // code fences ```
-  html = html.replace(/```([\s\S]*?)```/g, (_m, code) => `<pre class="rounded bg-foreground/5 p-3 overflow-x-auto"><code>${code}</code></pre>`);
-  // headings
-  html = html.replace(/^######\s+(.*)$/gm, '<h6 class="text-sm font-semibold mt-6 mb-2">$1</h6>');
-  html = html.replace(/^#####\s+(.*)$/gm, '<h5 class="text-base font-semibold mt-6 mb-2">$1</h5>');
-  html = html.replace(/^####\s+(.*)$/gm, '<h4 class="text-lg font-semibold mt-6 mb-2">$1</h4>');
-  html = html.replace(/^###\s+(.*)$/gm, '<h3 class="text-xl font-semibold mt-6 mb-2">$1</h3>');
-  html = html.replace(/^##\s+(.*)$/gm, '<h2 class="text-2xl font-semibold mt-6 mb-2">$1</h2>');
-  html = html.replace(/^#\s+(.*)$/gm, '<h1 class="text-3xl font-semibold mt-6 mb-2">$1</h1>');
-  // bold and italics (basic)
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
-  // inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="px-1 rounded bg-foreground/10">$1</code>');
-  // markdown links [text](url)
-  html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" class="underline" target="_blank" rel="noreferrer noopener">$1</a>');
-  // unordered lists
-  html = html.replace(/^(?:-\s+.*(?:\n|$))+?/gm, (block) => {
-    const items = block
-      .trim()
-      .split(/\n/)
-      .map((l) => l.replace(/^[\-\*][\s]+/, "").trim())
-      .map((li) => `<li class="ml-5 list-disc">${li}</li>`) 
-      .join("");
-    return `<ul class="my-3">${items}</ul>`;
-  });
-  // autolink plain URLs (best-effort)
-  html = linkifyHtml(html);
-  // paragraphs (simple: wrap non-empty lines that are not already tags)
-  html = html
-    .split(/\n\n+/)
-    .map((b) => (b.match(/^\s*</) ? b : `<p class="my-3 leading-7">${b.replace(/\n/g, " ")}</p>`))
-    .join("");
-  return html;
+function tocIndent(level: number) {
+  if (level <= 2) return "";
+  if (level === 3) return "pl-3";
+  if (level === 4) return "pl-5";
+  return "pl-7";
 }
-
-export default async function DocPage({ params }: { params: Promise<{ slug: string[] }> }) {
-  const { slug } = await params;
-  const resolved = safeJoinDocs(slug || []);
-  if (!resolved) notFound();
-  const content = fs.readFileSync(resolved.file, "utf8");
-  const html =
-    resolved.type === "md"
-      ? toHtml(content)
-      : renderJsonDoc(content, slug);
-  return (
-    <div className="py-8">
-      <Container>
-        <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: html }} />
-      </Container>
-    </div>
-  );
-}
-
-function titleCase(s: string) {
-  return s
-    .replace(/[-_]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/^\w|\s\w/g, (m) => m.toUpperCase());
-}
-
-function renderJsonDoc(raw: string, slug: string[]): string {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw) as unknown;
-  } catch {
-    return `<h1 class="text-2xl font-semibold mb-3">Document</h1><p class="my-3">This document is not valid JSON.</p>`;
-  }
-
-  const data: Record<string, unknown> = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
-
-  const getString = (v: unknown): string | undefined => (typeof v === "string" ? v : undefined);
-  const getArray = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
-  const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object";
-
-  const guessTitle = () =>
-    getString(data.title) || getString(data.name) || titleCase(slug[slug.length - 1] || "Document");
-  const title = String(guessTitle());
-  const description = getString(data.description);
-
-  // Build high-level sections without exposing internal structure.
-  const sections: Array<{ heading: string; body: string[] }> = [];
-
-  // Overview
-  const overview: string[] = [];
-  if (description) overview.push(description);
-  const summary = getString(data.summary);
-  if (summary) overview.push(summary);
-  const tags = getArray(data.tags).filter((t): t is string => typeof t === "string");
-  if (tags.length) overview.push(`Tags: ${tags.join(", ")}`);
-  if (overview.length) sections.push({ heading: "Overview", body: overview });
-
-  // Features / What it does
-  const features: string[] = [];
-  const featSrc = getArray(data.features || data.capabilities || data.highlights);
-  for (const f of featSrc) {
-    if (typeof f === "string") features.push(f);
-    else if (isObj(f)) {
-      const t = getString(f.title);
-      if (t) features.push(t);
-    }
-  }
-  if (features.length) sections.push({ heading: "What it does", body: features });
-
-  // Endpoints / Actions (keep high-level)
-  const actions: string[] = [];
-  const endpoints = getArray(data.endpoints || data.routes || data.actions);
-  for (const e of endpoints) {
-    if (typeof e === "string") actions.push(e);
-    else if (isObj(e)) {
-      const method = getString(e.method) || getString(e.type) || "";
-      const name = getString(e.name) || getString(e.path) || getString(e.id) || "endpoint";
-      const desc = getString(e.description) || getString(e.summary) || "";
-      const line = [method, name, desc].filter(Boolean).join(" – ");
-      actions.push(line);
-    }
-  }
-  if (actions.length) sections.push({ heading: "Endpoints", body: actions });
-
-  // Usage / Notes
-  const notes: string[] = [];
-  const usage = getString(data.usage);
-  if (usage) notes.push(usage);
-  const notesArr = getArray(data.notes).filter((n): n is string => typeof n === "string");
-  if (notesArr.length) notes.push(...notesArr);
-  if (notes.length) sections.push({ heading: "Notes", body: notes });
-
-  // Fallback: if no sections, show a short message
-  if (sections.length === 0) {
-    sections.push({ heading: "Overview", body: ["This document provides a high-level description."] });
-  }
-
-  const bodyHtml = sections
-    .map((s) => {
-      const lis = s.body.map((b) => `<li class="ml-5 list-disc">${formatText(String(b))}</li>`).join("");
-      return `<h2 class="text-xl font-semibold mt-6 mb-2">${escapeHtml(s.heading)}</h2><ul class="my-3">${lis}</ul>`;
-    })
-    .join("");
-
-  return `<h1 class="text-2xl font-semibold mb-3">${escapeHtml(title)}</h1>${description ? `<p class="my-3 leading-7">${formatText(description)}</p>` : ""}${bodyHtml}`;
-}
-
-function escapeHtml(s: string) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-function linkifyHtml(s: string) {
-  return s.replace(/(https?:\/\/[^\s<]+[^\s<\.])/g, '<a href="$1" class="underline" target="_blank" rel="noreferrer noopener">$1</a>');
-}
-
-function formatText(s: string) {
-  return linkifyHtml(escapeHtml(s));
-}
-
-// Breadcrumbs intentionally omitted to keep the page minimal

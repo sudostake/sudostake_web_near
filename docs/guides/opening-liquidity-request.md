@@ -1,74 +1,53 @@
-# Open your first liquidity request
+# Open a liquidity request
 
-This guide is grounded in the actual source code of both repos and follows the contract flow as specified in sudostake_contracts_near/value_flows.md.
+## TL;DR
+- Time: about 5 minutes once your vault has collateral.
+- You need: a vault, a NEAR wallet with a bit of NEAR for gas, and any stake you want counted as collateral.
+- Outcome: your request appears on Discover so lenders can fund it. If collateral is too low, the request is rejected and nothing leaves your vault.
+- Still exploring? Walk through the steps in read-only mode first; mint a vault only after you’re comfortable with the flow.
 
-Prerequisites
+## Before you start
+- **Confirm your vault:** From the dashboard, open the vault you want to fund. If you still need one, follow [Mint a vault](./create-vault.md) first.
+- **Check collateral:** Only staked NEAR counts. Delegate more stake first if you want a larger loan limit.
+- **Know your numbers:** Decide the token (USDC by default), amount you want to borrow, interest you’re offering, collateral you’re willing to lock, and how long you need the funds.
+- **New owners:** Make sure your wallet is registered with the token you’ll borrow and keep at least 0.1 NEAR in the vault for safety margins.
 
-- A NEAR wallet with some NEAR for gas and fees
-- A minted Vault on the selected network (testnet by default)
-- Optional: delegated stake in your Vault to serve as collateral (only staked NEAR counts; liquid NEAR does not)
+## Step-by-step
 
-1) Create or open your Vault
-- If you don’t have a Vault, mint one via the Factory (the UI guides you through this). The Factory creates `vault-<index>.<factory_id>` and deploys/initializes it. The factory emits an `EVENT_JSON` log with `event: "vault_minted"` that the UI parses to determine your new vault account ID.
-- If you already have a Vault, open Dashboard → your Vault.
+### 1. Open the request form
+- In your vault dashboard, click **Request liquidity**.
+- The form pre-fills the default stablecoin and a suggested interest rate; adjust as needed.
 
-2) Fund your Vault (optional, recommended)
-- Send NEAR directly to your Vault account to increase its liquid balance. Note: liquid NEAR does not count toward collateral.
-- Delegate to validators from your Vault to build collateral. Only staked balance counts toward collateral checks.
+### 2. Enter the details
+- **Token:** Pick the NEP-141 token you want to borrow. We show symbol and decimals so you know the unit.
+- **Amount:** Enter it in display units (for USDC, whole dollars). We convert to minimal units for the contract.
+- **Interest:** Set the total interest you’re willing to pay back.
+- **Collateral:** Enter the NEAR amount you will lock. Remember, only staked NEAR counts.
+- **Duration:** Choose how many days you need the funds. We turn this into seconds when we send the transaction.
 
-3) Open a liquidity request (what the UI sends and the contract checks)
-- UI signs a transaction to your vault calling `request_liquidity` with:
-  - gas: `300 Tgas` and deposit: `1 yoctoNEAR`
-  - args: `{ token, amount, interest, collateral, duration }`
-    - `token`: NEP‑141 contract ID (on testnet the default is `usdc.tkn.primitives.testnet`, 6 decimals)
-    - `amount` and `interest`: provided in token display units in the dialog; the UI converts to minimal units based on token decimals
-    - `collateral`: provided in NEAR; the UI converts to yoctoNEAR
-    - `duration`: provided in days; the UI converts to seconds (days × 86400)
-- Contract side constraints (vault/src/request_liquidity.rs):
-  - Only the vault owner may call; must attach exactly 1 yoctoNEAR
-  - No other async workflow may be in progress and no existing liquidity request or accepted offer may exist; counter offers must be cleared
-  - Inputs must be valid: `collateral > 0`, `amount > 0`, `duration > 0`
-  - The contract acquires a lock, then batch‑queries total staked balance across active validators
-  - If total staked < `collateral`: it logs `liquidity_request_failed_insufficient_stake` and releases the lock without opening a request
-- Otherwise it opens the request, logs `liquidity_request_opened` (including token, amount, interest, collateral, duration) and records `created_at = block_timestamp()` (nanoseconds). Liquid NEAR is ignored for this collateral check; only delegated (staked) balance is counted.
+Heads up: you must keep 1 yoctoNEAR in your wallet for the contract call. We handle the gas estimate automatically.
 
-After submission, the UI enqueues indexing and triggers a direct index of your vault’s state via `/api/index_vault`. The indexer fetches `get_vault_state` from the chain and stores it. Your request will appear after indexing completes. If staked balance was insufficient, the request won’t appear because it was not opened by the contract.
+### 3. Review and send
+- Double-check the summary pane. It shows the total you’ll repay (amount + interest) and the collateral check.
+- Click **Request liquidity**. Your wallet opens and asks you to approve a single transaction to your vault with method `request_liquidity`.
+- Approve the transaction. If you close the wallet, nothing is sent and you stay on the form.
 
-4) Lender proposals and direct acceptance (reference)
-- Lenders send `ft_transfer_call` to the requested token with one of these messages:
-  - `NewCounterOffer` — creates a counter offer for the owner to consider
-  - `AcceptLiquidityRequest` — directly accepts the open request
+### 4. Let indexing finish
+- After the wallet confirms, we trigger `/api/index_vault` to refresh the vault from chain.
+- You’ll see a small “Indexing…” banner for a few seconds. Once it clears, your request appears on Discover.
+- If indexing fails or takes too long, tap **Retry indexing**.
 
-5) Owner selects the winning offer (reference)
-- The Owner may accept a single counter offer. Non‑winning proposers are refunded by the vault.
+## Check it worked
+- Your vault status switches to **Pending** with the request details.
+- The Discover page lists your request with the same numbers.
+- You receive a confirmation toast with the transaction hash (handy for support).
 
-Reference diagram (from contracts repo)
+## If something goes wrong
+- **“Insufficient collateral” error:** Stake more NEAR from the vault, then retry. Liquid NEAR in the vault does not count.
+- **Wallet shows a failure:** Nothing is locked. Fix the issue (e.g., insufficient balance) and re-open the form.
+- **Still pending indexing:** Press **Retry indexing**. If it persists, share the transaction hash with support.
 
-```mermaid
-%%{init: {'flowchart': {'curve': 'step'}}}%%
-flowchart LR
-  subgraph Users
-    O[Owner]
-    L[Lender]
-  end
-  subgraph Protocol
-    V[Vault]
-    T[FT Token]
-  end
-  O -.-> V
-  V -.-> O
-  L -.-> T
-  T --> V
-  classDef user fill:#E3F2FD,stroke:#1E88E5,color:#0D47A1;
-  classDef protocol fill:#E8F5E9,stroke:#43A047,color:#1B5E20;
-  class O,L user
-  class V,T protocol
-```
-
-Notes
-
-- Keep collateral conservative relative to the requested amount to avoid liquidation risk.
-- The UI attaches safe gas and the required 1 yoctoNEAR deposit for `request_liquidity`.
-- Duration is stored in seconds; acceptance timestamps are in nanoseconds on-chain.
-- For repayment and liquidation flows, see the contracts repo sections “Repay” and “Liquidation (after expiry, NEAR out)”.
-
+## Next steps
+- Share the request link with lenders or let it surface on Discover.
+- Monitor incoming offers from the dashboard. You’ll see counter-offers and direct acceptances in real time.
+- Ready for the other side of the journey? Read [Repay a loan](./repay-loan.md).

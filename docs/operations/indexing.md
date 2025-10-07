@@ -1,25 +1,22 @@
-Indexing: keeping Firestore in sync
+# Indexing: keeping Firestore fresh
 
-Why indexing exists
+## TL;DR
+- Indexing is the “refresh” step the app runs after important actions so your dashboard matches the chain.
+- You’ll see a short blocker with a **Retry indexing** button whenever the app is waiting for fresh data.
+- Both vault owners and lenders benefit—owners trigger most refreshes, lenders get the up-to-date status.
 
-After you send a transaction, the chain updates first. Firestore follows. Some screens need the latest state. Indexing closes that gap.
+## What actually happens
+1. You finish something important (funding, opening a request, repaying, delegating).
+2. The wallet confirms the transaction.
+3. SudoStake fetches the latest vault information from NEAR.
+4. The dashboard, Discover page, and lender views update instantly with the new data.
 
-How it works
+## About the blocker
+- It appears only when the app knows it needs fresh data.
+- You can safely wait a few seconds; it usually clears on its own.
+- If it lingers, press **Retry indexing**. You’re simply asking SudoStake to fetch the vault state again.
 
-1) You finish an action that changes a vault.
-2) If fresh data is required, the app shows a small modal that blocks the next step.
-3) Clicking “Retry indexing” calls POST /api/index_vault with { factory_id, vault, tx_hash }.
-4) The server fetches get_vault_state, transforms it, and writes a VaultDocument to Firestore.
-5) The modal closes and you can continue.
-
-Notes
-
-- The indexing blocker stores the job in localStorage so a refresh won’t lose it.
-- /api/index_vault retries briefly when the vault isn’t visible yet.
-
-Related code
-
-- hooks/useIndexingBlocker.tsx – Provider and modal
-- app/api/index_vault/route.ts – Server endpoint
-- utils/indexing/service.ts – Fetch, transform, persist
-- utils/db/vaults.ts – Firestore helpers
+## Common questions
+- **Will I lose my place?** No. Even if you refresh the page, the blocker remembers what it was waiting for.
+- **Is my transaction safe?** Yes. The chain already confirmed it. Indexing just keeps the UI in sync.
+- **When should I contact support?** If retrying doesn’t clear the blocker after a minute or you suspect the wrong wallet is showing, share the transaction hash with support for a deeper check.
