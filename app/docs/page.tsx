@@ -35,6 +35,7 @@ export default function DocsIndex() {
       "start",
       "Start here",
       [
+        linkIfFile("playbook.md", "SudoStake playbook", "End-to-end tour for vault owners and lenders"),
         linkIfFile("README.md", "Docs home", "Map of every section and how to use it"),
         linkIfFile("architecture.md", "Architecture overview", "How wallets, Firestore, and NEAR connect"),
         linkIfFile("reference/networks.md", "Networks & RPC", "Factory IDs, RPC hosts, and explorer links"),
@@ -54,6 +55,7 @@ export default function DocsIndex() {
       "owners",
       "Vault owners",
       [
+        linkIfFile("guides/create-vault.md", "Mint a vault"),
         linkIfFile("features/vaults.md", "Vault actions overview"),
         linkIfFile("guides/opening-liquidity-request.md", "Open a liquidity request"),
         linkIfFile("guides/repay-loan.md", "Repay a loan"),
@@ -64,6 +66,7 @@ export default function DocsIndex() {
       "lenders",
       "Lenders",
       [
+        linkIfFile("guides/fund-liquidity-request.md", "Fund a liquidity request"),
         linkIfFile("features/discover.md", "Discover open requests"),
         linkIfFile("features/lender-positions.md", "Track lender positions"),
       ].filter(Boolean) as DocLink[]

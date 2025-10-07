@@ -4,6 +4,7 @@
 - The Discover page is the public window into vaults that are currently asking for liquidity.
 - By default it streams updates live from Firestore. You can flip an env flag to switch to the REST API if you prefer scheduled polling.
 - Sorting and filtering are lightweight on the client so the page stays fast even on slower devices.
+- New to lending? Register your wallet with the token first and keep [Track lender positions](./lender-positions.md) open in another tab once you fund an offer.
 
 ## What you see
 - A card for each pending request: vault name, requested token, amount, interest, collateral, and time remaining.
@@ -29,4 +30,5 @@ GET /api/view_pending_liquidity_requests?factory_id=<factoryId>&limit=<n>
 
 ## Tips for everyday use
 - Use Discover to compare offers quickly: we highlight annualised interest so you can skim.
+- Ready to lend? Follow [Fund a liquidity request](../guides/fund-liquidity-request.md) from the vault page linked on each card.
 - If a request disappears after funding, it either filled or expired; refresh to confirm and check your lender dashboard for the new position.

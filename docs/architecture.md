@@ -4,8 +4,10 @@
 - SudoStake is a Next.js app that reads on-chain vault data from NEAR and mirrors it in Firestore so the UI feels instant.
 - Wallet Selector manages every wallet connection; all blockchain calls flow through the `/api/rpc` proxy so we can swap networks safely.
 - Each factory contract gets its own Firestore collection—one document per vault—so the UI can stream updates or fall back to REST endpoints.
+- Vault owners and lenders consume the same data; the UI simply gates actions based on viewer role.
 
 ## Before you dive in
+- **Follow the playbook:** Need the high-level journey for vault owners and lenders? Start with the [SudoStake playbook](./playbook.md).
 - **Pick a network:** Testnet and mainnet are both supported. Factory IDs and RPC hosts live in [networks and RPC](./reference/networks.md).
 - **Skim the data model:** Each Firestore document is a `VaultDocument`. See [data model](./reference/data-model.md) for the exact fields.
 - **Remember the toggle flags:** `NEXT_PUBLIC_PENDING_USE_API` and `NEXT_PUBLIC_LENDING_USE_API` switch pages between realtime Firestore and REST polling.

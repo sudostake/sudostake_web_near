@@ -10,14 +10,16 @@
 ### If you run (or want to run) a vault
 1. Read the [architecture overview](./architecture.md) so you know how your vault talks to NEAR and Firestore.
 2. Connect a wallet with the [sign-in flow](./features/authentication-signin-flow.md) and make sure you’re [registered with each token](./reference/token-registration.md).
-3. Follow the [vault actions overview](./features/vaults.md) and the guide to [open your first liquidity request](./guides/opening-liquidity-request.md).
-4. Keep the [repay a loan](./guides/repay-loan.md) and [indexing playbook](./operations/indexing.md) handy for day-to-day operations.
+3. [Mint a vault](./guides/create-vault.md) on the network you care about, then follow the [vault actions overview](./features/vaults.md).
+4. Open your first request with [Open a liquidity request](./guides/opening-liquidity-request.md).
+5. Keep [Repay a loan](./guides/repay-loan.md) and the [indexing playbook](./operations/indexing.md) handy for day-to-day operations.
 
 ### If you lend liquidity (or you’re considering it)
 1. Skim the [architecture overview](./architecture.md) for context, then connect your wallet with the [sign-in flow](./features/authentication-signin-flow.md).
 2. Make sure you’re [registered with the token](./reference/token-registration.md) you plan to lend.
-3. Use [Discover open requests](./features/discover.md) to find opportunities and [Track lender positions](./features/lender-positions.md) to monitor the loans you’ve funded.
-4. Review [Repay a loan](./guides/repay-loan.md) so you know what the owner sees when they return funds.
+3. Walk through [Fund a liquidity request](./guides/fund-liquidity-request.md) so you know exactly what happens when you lend.
+4. Use [Discover open requests](./features/discover.md) to find opportunities and [Track lender positions](./features/lender-positions.md) to monitor the loans you’ve funded.
+5. Review [Repay a loan](./guides/repay-loan.md) so you know what the owner sees when they return funds.
 
 ## How to use these docs
 - **Learn the shape of the product:** Read the [architecture overview](./architecture.md) to see how wallets, Firestore, and the NEAR blockchain work together.
@@ -28,6 +30,7 @@
 ## Quick map
 
 ### Product overview
+- [SudoStake playbook](./playbook.md)
 - [Architecture overview](./architecture.md)
 
 ### Core features
@@ -39,7 +42,9 @@
 - [Tokens and balances](./features/tokens.md)
 
 ### Step-by-step guides
+- [Mint a vault](./guides/create-vault.md)
 - [Open a liquidity request](./guides/opening-liquidity-request.md)
+- [Fund a liquidity request](./guides/fund-liquidity-request.md)
 - [Repay an active loan](./guides/repay-loan.md)
 
 ### Reference

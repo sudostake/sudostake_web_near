@@ -4,6 +4,7 @@
 - We ship with a tiny registry that knows about USDC on both testnet and mainnet.
 - Helper hooks take care of metadata, balances, transfers, and the storage deposits required by NEP-141 tokens.
 - If a token needs a different address, use `NEXT_PUBLIC_USDC_MAINNET_ID` (or extend the registry) and the UI will follow along.
+- Vault owners and lenders rely on the same registry—owners to request liquidity, lenders to fund it—so keeping this list accurate helps everyone.
 
 ## Everyday tasks
 - **Show token info:** `useTokenMetadata` returns the symbol, decimals, and icon for the active network.

@@ -184,6 +184,26 @@ function renderMarkdownDoc(raw: string): RenderedDoc {
       continue;
     }
 
+    // Tables (GitHub-style)
+    const nextLine = lines[i + 1]?.trim() ?? "";
+    const isTableHeader = trimmed.startsWith("|") && trimmed.endsWith("|");
+    const isDividerLine = nextLine.startsWith("|") && /^(\|\s*:?-{3,}:?\s*)+\|$/.test(nextLine);
+    if (isTableHeader && isDividerLine) {
+      flushParagraph();
+      flushList();
+      const tableLines = [trimmed];
+      let j = i + 2;
+      while (j < lines.length) {
+        const candidate = lines[j]?.trim() ?? "";
+        if (!(candidate.startsWith("|") && candidate.endsWith("|"))) break;
+        tableLines.push(candidate);
+        j++;
+      }
+      i = j - 1;
+      parts.push(renderTable(tableLines));
+      continue;
+    }
+
     if (trimmed === "") {
       flushParagraph();
       flushList();
@@ -359,6 +379,43 @@ function renderHeading(level: number, rawText: string, toc: TocEntry[], slugCoun
   const id = uniqueSlug(plain, slugCounts);
   toc.push({ id, title: plain, level });
   return `<h${level} id="${id}" class="${headingClass(level)}">${formatInline(rawText)}</h${level}>`;
+}
+
+function renderTable(lines: string[]): string {
+  if (lines.length < 2) return "";
+  const headerCells = splitTableRow(lines[0]);
+  const alignmentLine = splitTableRow(lines[1]);
+  const alignments = alignmentLine.map((cell) => {
+    const trimmed = cell.trim();
+    const left = trimmed.startsWith(":");
+    const right = trimmed.endsWith(":");
+    if (left && right) return "center";
+    if (right) return "right";
+    if (left) return "left";
+    return undefined;
+  });
+
+  const thead = `<thead><tr>${headerCells
+    .map((cell, idx) => `<th${alignments[idx] ? ` style="text-align:${alignments[idx]};"` : ""}>${formatInline(cell)}</th>`)
+    .join("")}</tr></thead>`;
+
+  const tbodyRows = lines.slice(2).map((line) => {
+    const cells = splitTableRow(line);
+    return `<tr>${cells
+      .map((cell, idx) => `<td${alignments[idx] ? ` style="text-align:${alignments[idx]};"` : ""}>${formatInline(cell)}</td>`)
+      .join("")}</tr>`;
+  });
+
+  return `<div class="docs-table__wrapper"><table class="docs-table">${thead}<tbody>${tbodyRows.join("")}</tbody></table></div>`;
+}
+
+function splitTableRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim());
 }
 
 function headingClass(level: number) {

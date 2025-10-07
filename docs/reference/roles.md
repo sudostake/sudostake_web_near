@@ -4,6 +4,7 @@
 - The UI tailors actions based on who is looking at a vault: guest, owner, active lender, or curious lender.
 - Roles are derived from the connected wallet and the latest Firestore copy of the vault.
 - Understanding these rules helps you explain why certain buttons appear or stay hidden.
+- Planning to become a vault owner or lender? Check which capabilities unlock when you connect so you know what to expect.
 
 ## Role definitions
 - **Guest** — No wallet connected. Can browse public data only.

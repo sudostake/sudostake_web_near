@@ -4,6 +4,7 @@
 - Indexing bridges the gap between on-chain state (instant) and Firestore (eventually consistent).
 - After important transactions, the UI triggers `/api/index_vault` to re-fetch the vault and rewrite the Firestore document.
 - If indexing stalls, users see a blocker with a retry button so they never act on stale data.
+- Both vault owners and lenders rely on fresh data; owners trigger most re-indexes, lenders benefit from the updated dashboards.
 
 ## When indexing runs
 1. You send a transaction that changes vault state (request, accept, repay, stake, etc.).

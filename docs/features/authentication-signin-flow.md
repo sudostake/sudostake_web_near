@@ -4,6 +4,7 @@
 - Connecting a wallet takes less than a minute: open the selector, approve the connection, and you’re ready to use protected actions.
 - If anything goes wrong, the UI keeps you safe—no transaction is sent until the wallet confirms success.
 - Signing out is instant and clears the session from both the selector and the UI.
+- Vault owners and lenders follow the exact same steps; roles diverge only after this flow completes.
 
 ## Step-by-step journey
 

@@ -11,10 +11,12 @@
 - **State:** `idle`, `pending`, `active`, or `closed` based on liquidity status.
 - **Mirror:** Firestore stores `liquidity_request`, `accepted_offer`, staking entries, and timestamps so the UI renders immediately.
 
+> New to vaults? Start with [Mint a vault](../guides/create-vault.md), register with the lending token, and keep a small NEAR buffer for follow-up transactions.
+
 ## What you can do today
-- **Create a vault** — `useCreateVault` handles the mint + init flow.
-- **Request liquidity** — `useRequestLiquidity` sends `request_liquidity` with a friendly form (see the [guide](../guides/opening-liquidity-request.md)).
-- **Accept as a lender** — `useAcceptLiquidityRequest` posts the funds and locks the offer.
+- **Create a vault** — `useCreateVault` handles the mint + init flow (see [Mint a vault](../guides/create-vault.md)).
+- **Request liquidity** — `useRequestLiquidity` sends `request_liquidity` with a friendly form (see [Open a liquidity request](../guides/opening-liquidity-request.md)).
+- **Accept as a lender** — `useAcceptLiquidityRequest` posts the funds and locks the offer (see [Fund a liquidity request](../guides/fund-liquidity-request.md)).
 - **Repay the loan** — `useRepayLoan` pays principal + interest back to the lender (see [Repay a loan](../guides/repay-loan.md)).
 - **Manage NEAR balances** — `useDeposit`, `useWithdraw`, `useDelegate`, `useUndelegate`, `useClaimUnstaked`.
 - **Transfer ownership** — `useTransferOwnership` lets you hand the vault to a new controller.
@@ -41,6 +43,6 @@
 
 ## Related paths
 - [Viewer roles](../reference/roles.md) explain who can see or do what.
+- [Mint a vault](../guides/create-vault.md).
 - [Open a liquidity request](../guides/opening-liquidity-request.md).
 - [Repay a loan](../guides/repay-loan.md).
-- **New here?** Make sure your wallet is registered with the lending token, hold a little NEAR for gas, and skim [Open a liquidity request](../guides/opening-liquidity-request.md) before you mint a vault.

@@ -4,6 +4,7 @@
 - Time: 3–5 minutes once your vault holds the repayment token.
 - You need: ownership of the vault, the borrowed token plus interest sitting in the vault balance, and 1 yoctoNEAR for the contract call.
 - Outcome: the lender receives their funds, your vault returns to **Idle**, and the request disappears from lender dashboards.
+- Lenders: skimming this guide helps you anticipate when funds land back in your account.
 
 ## Before you start
 - **Open your vault dashboard** and check the active request card. It shows the token, principal, interest, and the total due.
@@ -46,3 +47,4 @@
 ## After repayment
 - Consider delegating any remaining NEAR or resetting the collateral to prepare for the next request.
 - Keep the repayment hash handy if you plan to reconcile with off-chain accounting tools.
+- Let your lender know the repayment cleared; they’ll see the position drop off their dashboard, but a quick heads-up builds trust.

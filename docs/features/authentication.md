@@ -4,6 +4,7 @@
 - We rely on NEAR Wallet Selector, so the same “Connect Wallet” flow works with Bitte, Meteor, MyNearWallet, Ledger, Nightly, and future wallets that plug into the selector.
 - Once you connect, the top navigation shows your account and unlocks actions like creating a vault or accepting a loan.
 - All RPC calls flow through `/api/rpc`, so switching between testnet and mainnet is safe and consistent.
+- Whether you are a vault owner or lender, connecting is the first step; the UI reveals the right actions after the role check.
 
 ## What happens when you connect
 1. **Wallet Selector boots up** inside `app/providers.tsx` and knows which wallets are available.

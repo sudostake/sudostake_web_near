@@ -4,11 +4,13 @@
 - Time: about 5 minutes once your vault has collateral.
 - You need: a vault, a NEAR wallet with a bit of NEAR for gas, and any stake you want counted as collateral.
 - Outcome: your request appears on Discover so lenders can fund it. If collateral is too low, the request is rejected and nothing leaves your vault.
+- Still exploring? Walk through the steps in read-only mode first; mint a vault only after you’re comfortable with the flow.
 
 ## Before you start
-- **Confirm your vault:** From the dashboard, open the vault you want to fund. If you still need one, mint it from the same page.
+- **Confirm your vault:** From the dashboard, open the vault you want to fund. If you still need one, follow [Mint a vault](./create-vault.md) first.
 - **Check collateral:** Only staked NEAR counts. Delegate more stake first if you want a larger loan limit.
 - **Know your numbers:** Decide the token (USDC by default), amount you want to borrow, interest you’re offering, collateral you’re willing to lock, and how long you need the funds.
+- **New owners:** Make sure your wallet is registered with the token you’ll borrow and keep at least 0.1 NEAR in the vault for safety margins.
 
 ## Step-by-step
 
