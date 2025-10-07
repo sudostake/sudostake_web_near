@@ -54,50 +54,36 @@ export function PendingRequestCard({ item, factoryId }: Props) {
 
   const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
   return (
-    <Link
-      href={href}
-      className="block group"
-      aria-label={`View vault details for ${item.id}`}
-    >
-    <Card className="relative p-3 pr-8 hover:border-foreground/20 hover:bg-surface/60 transition-colors">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3 min-w-0">
-          <VaultIcon id={item.id} size="md" />
-          <div className="min-w-0">
-            <div className="font-medium break-all" title={item.id}>{item.id}</div>
-            <div className="mt-1 flex flex-wrap items-center gap-1">
-              <Badge variant="warn">Request open</Badge>
-              <Badge variant="neutral">{symbol}</Badge>
+    <Link href={href} className="group block focus:outline-none" aria-label={`View vault details for ${item.id}`}>
+      <Card className="relative pr-10 transition-all duration-150 hover:border-primary/30 hover:shadow-md focus-visible:border-primary/40 focus-visible:shadow-lg">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-4">
+            <VaultIcon id={item.id} size="md" />
+            <div className="min-w-0">
+              <div className="font-medium text-lg break-all" title={item.id}>
+                {item.id}
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Badge variant="warn">Request open</Badge>
+                <Badge variant="neutral">{symbol}</Badge>
+              </div>
             </div>
-            {/* Owner hidden on pending request list */}
           </div>
         </div>
-        {/* Right-side space reserved by pr-8; caret rendered absolutely */}
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mt-3">
-        <LabelValue label="Amount" value={`${amountLabel} ${symbol}`} />
-        <LabelValue label="Interest" value={`${interestLabel} ${symbol}`} />
-        <LabelValue label="Repay" value={`${repayLabel} ${symbol}`} />
-        <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
-        <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
-        <LabelValue label="Est. APR" value={aprLabel} />
-      </div>
-      {/* Centered caret indicator (absolute, non-interactive) */}
-      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={3}
-          className="w-6 h-6 text-foreground opacity-0 -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0"
-          aria-hidden
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
-      </div>
-    </Card>
+        <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-secondary-text sm:grid-cols-3 md:grid-cols-6">
+          <LabelValue label="Amount" value={`${amountLabel} ${symbol}`} />
+          <LabelValue label="Interest" value={`${interestLabel} ${symbol}`} />
+          <LabelValue label="Repay" value={`${repayLabel} ${symbol}`} />
+          <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
+          <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
+          <LabelValue label="Est. APR" value={aprLabel} />
+        </div>
+        <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-primary opacity-0 transition-all duration-150 group-hover:translate-x-1 group-hover:opacity-100 group-focus-visible:translate-x-1 group-focus-visible:opacity-100">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="h-5 w-5" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </div>
+      </Card>
     </Link>
   );
 }

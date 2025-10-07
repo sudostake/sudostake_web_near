@@ -41,17 +41,17 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   // No filters for now; only sticky header behavior retained
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Sentinel to detect affixed sticky header */}
-      <div id="discover-header-sentinel" aria-hidden className="h-px" />
+      <div id="discover-header-sentinel" aria-hidden="true" className="h-px" />
       <header
         className={[
-          "sticky z-30 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
-          stuck ? "border-b border-foreground/10 shadow-sm" : "shadow-none",
+          "sticky z-30 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
+          stuck ? "border-b border-foreground/10 shadow-sm" : "",
         ].join(" ")}
         style={{ top: "var(--nav-height, 56px)" }}
       >
-        <div className="py-2 px-3">
+        <div className="px-3 py-3">
           <SectionHeader
             title="Discover Requests"
             caption={<>{items.length} open request{items.length === 1 ? "" : "s"}</>}
@@ -60,48 +60,41 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       </header>
       
       {error && (
-        <div className="mt-3 text-sm text-red-600" role="alert">
+        <div className="rounded-2xl border border-red-200 bg-red-50/80 p-4 text-sm text-red-700" role="alert">
           {error}
-          <button className="ml-2 underline" onClick={refetch}>Retry</button>
+          <button className="ml-3 font-medium text-red-700 underline hover:text-red-800" onClick={refetch}>
+            Retry
+          </button>
         </div>
       )}
       {loading && (
-        <div className="mt-3 animate-pulse space-y-2">
-          <div className="rounded border bg-surface p-3">
-            <div className="h-4 w-3/5 bg-foreground/10 rounded" />
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
+        <div className="space-y-3">
+          {[0, 1].map((idx) => (
+            <div key={idx} className="animate-pulse rounded-2xl border bg-surface p-4">
+              <div className="h-4 w-1/3 rounded bg-foreground/10" />
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-4 rounded bg-foreground/10" />
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="rounded border bg-surface p-3">
-            <div className="h-4 w-2/5 bg-foreground/10 rounded" />
-            <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-              <div className="h-4 bg-foreground/10 rounded" />
-            </div>
-          </div>
+          ))}
         </div>
       )}
       {!loading && items.length === 0 && (
-        <div className="mt-6 rounded border bg-surface p-6 text-sm text-secondary-text">
-          <div>No open requests.</div>
+        <div className="rounded-2xl border bg-surface p-6 text-sm text-secondary-text">
+          No open requests right now. Check back soon or{" "}
+          <button className="font-medium text-primary underline" onClick={refetch}>
+            refresh
+          </button>
+          .
         </div>
       )}
-      <div className="mt-3 grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-4">
         {items.map((it) => (
           <PendingRequestCard key={it.id} item={it} factoryId={factoryId} />
         ))}
       </div>
-      
     </div>
   );
 }

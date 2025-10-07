@@ -8,6 +8,8 @@ import { Summary } from "./Summary";
 import { STRINGS } from "@/utils/strings";
 import { NATIVE_DECIMALS, NATIVE_TOKEN } from "@/utils/constants";
 import { formatMinimalTokenAmount, parseNumber, shortAmount } from "@/utils/format";
+import { Card } from "@/app/components/ui/Card";
+import { Badge } from "@/app/components/ui/Badge";
 
 type Props = {
   loading: boolean;
@@ -91,34 +93,31 @@ export function DelegationsCard({
   }, [summary]);
 
   return (
-    <section className="rounded border border-foreground/20 bg-background/80 text-foreground dark:bg-background/60" aria-labelledby="delegations-summary-heading">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-foreground/10">
-        <h2 id="delegations-summary-heading" className="text-base font-medium">{STRINGS.delegationsSummaryTitle}</h2>
-        <div className="text-xs text-secondary-text" aria-live="polite">
-          {loading || refundsLoading ? "Loading…" : null}
+    <Card aria-labelledby="delegations-summary-heading" className="space-y-4" role="region">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 id="delegations-summary-heading" className="text-lg font-semibold">{STRINGS.delegationsSummaryTitle}</h2>
+          <p className="text-sm text-secondary-text">Monitor validator stakes and claimable balances.</p>
         </div>
-      </header>
+        {(loading || refundsLoading) && <Badge variant="neutral">Loading…</Badge>}
+      </div>
 
       {showClaimDisabledNote && (
-        <div className="px-4 pt-3">
-          <div className="rounded border border-red-300/40 bg-red-50 text-red-900 p-2 text-sm dark:bg-red-900/30 dark:text-red-100 dark:border-red-500/30">
-            {STRINGS.claimDisabledLiquidation}
-          </div>
+        <div className="rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-700">
+          {STRINGS.claimDisabledLiquidation}
         </div>
       )}
 
       {typeof refundsCount === "number" && refundsCount > 0 && (
-        <div className="px-4 pt-3">
-          <div className="rounded border border-amber-300/40 bg-amber-50 text-amber-900 p-2 text-sm dark:bg-amber-900/30 dark:text-amber-100 dark:border-amber-500/30">
-            <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
-          </div>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-700">
+          <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
         </div>
       )}
 
       {error && (
-        <div className="px-4 py-3 text-sm text-red-500" role="alert">
+        <div className="rounded-2xl border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-700" role="alert">
           Failed to load delegations
-          <div className="text-xs opacity-80 mt-1">{error}</div>
+          <div className="mt-1 text-xs opacity-80">{error}</div>
         </div>
       )}
 
@@ -129,27 +128,19 @@ export function DelegationsCard({
         availableLoading={availableLoading}
       />
 
-      {/* Totals footer */}
       {Array.isArray(summary) && summary.length > 0 && (
-        <footer className="border-t border-foreground/10 mt-2">
-          <div className="px-4 py-3">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-secondary-text">
-              <div>
-                {STRINGS.totalStaked}: <span className="font-mono text-foreground">{shortAmount(stats.stakedDisplay, 6)}</span> {NATIVE_TOKEN}
-              </div>
-              <div>
-                {STRINGS.totalUnstaked}: <span className="font-mono text-foreground">{shortAmount(stats.unstakedDisplay, 6)}</span> {NATIVE_TOKEN}
-              </div>
-              {stats.withdrawableCount > 0 && (
-                <div className="rounded bg-emerald-100/70 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-100 px-1.5 py-0.5">
-                  Ready to claim: <span className="font-medium">{stats.withdrawableCount}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </footer>
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-foreground/5 bg-surface-muted/60 px-4 py-3 text-xs text-secondary-text">
+          <span>
+            {STRINGS.totalStaked}: <span className="font-mono text-foreground">{shortAmount(stats.stakedDisplay, 6)}</span> {NATIVE_TOKEN}
+          </span>
+          <span>
+            {STRINGS.totalUnstaked}: <span className="font-mono text-foreground">{shortAmount(stats.unstakedDisplay, 6)}</span> {NATIVE_TOKEN}
+          </span>
+          {stats.withdrawableCount > 0 && (
+            <Badge variant="success">Ready to claim: {stats.withdrawableCount}</Badge>
+          )}
+        </div>
       )}
-
-    </section>
+    </Card>
   );
 }

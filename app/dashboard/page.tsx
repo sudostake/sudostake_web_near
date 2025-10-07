@@ -65,47 +65,51 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
-      <Container>
-        <div className="mt-4 sm:mt-6">{summary}</div>
-        <main id="main" className="w-full mt-8">
-          <div className="mb-3">
-            <SegmentedToggle
-              value={tab}
-              onChange={setTab}
-              options={[
-                { id: "vaults", label: `Vaults (${userVaultIds?.length ?? 0})` },
-                { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
-              ]}
-              ariaLabel="Dashboard sections"
-              variant="neutral"
-            />
+    <div className="min-h-screen bg-background pb-24">
+      <Container className="pt-24 space-y-8">
+        {summary}
+        <section className="space-y-4">
+          <header className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Dashboard</p>
+            <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Your vaults and lending activity</h1>
+            <p className="text-sm text-secondary-text max-w-2xl">
+              Track balances, manage vault collateral, and review active funding positions from a single view.
+            </p>
+          </header>
+          <SegmentedToggle
+            value={tab}
+            onChange={setTab}
+            options={[
+              { id: "vaults", label: `Vaults (${userVaultIds?.length ?? 0})` },
+              { id: "positions", label: `Positions (${lenderPositions?.length ?? 0})` },
+            ]}
+            ariaLabel="Dashboard sections"
+            variant="neutral"
+          />
+          <div className="rounded-3xl border border-foreground/5 bg-surface p-6 shadow-sm">
+            <div
+              id="vaults-panel"
+              role="tabpanel"
+              aria-labelledby="vaults-trigger"
+              hidden={tab !== "vaults"}
+            >
+              <UserVaults
+                owner={signedAccountId}
+                factoryId={factoryId}
+                onCreate={() => setShowCreate(true)}
+                headerMode="toolsOnly"
+              />
+            </div>
+            <div
+              id="positions-panel"
+              role="tabpanel"
+              aria-labelledby="positions-trigger"
+              hidden={tab !== "positions"}
+            >
+              <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
+            </div>
           </div>
-          {/* Tab panels with proper a11y mapping */}
-          <div
-            id="vaults-panel"
-            role="tabpanel"
-            aria-labelledby="vaults-trigger"
-            hidden={tab !== "vaults"}
-            className="mt-4"
-          >
-            <UserVaults
-              owner={signedAccountId}
-              factoryId={factoryId}
-              onCreate={() => setShowCreate(true)}
-              headerMode="toolsOnly"
-            />
-          </div>
-          <div
-            id="positions-panel"
-            role="tabpanel"
-            aria-labelledby="positions-trigger"
-            hidden={tab !== "positions"}
-            className="mt-4"
-          >
-            <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
-          </div>
-        </main>
+        </section>
       </Container>
       <CreateVaultDialog
         open={showCreate}

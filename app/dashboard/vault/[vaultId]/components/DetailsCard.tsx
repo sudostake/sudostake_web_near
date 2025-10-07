@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Card } from "@/app/components/ui/Card";
 
 export interface DetailsCardProps {
   vaultId: string;
@@ -10,24 +11,24 @@ export interface DetailsCardProps {
 
 export function DetailsCard({ vaultId, owner, factoryId }: DetailsCardProps) {
   return (
-    <section className="rounded bg-surface p-4">
-      <h2 className="font-medium">Details</h2>
-      <div className="mt-2 text-sm text-secondary-text space-y-1">
-        <div>
-          <span className="text-foreground/80">Vault ID:</span>{" "}
-          <span className="break-all" title={vaultId}>{vaultId}</span>
-        </div>
-        {owner && (
-          <div>
-            <span className="text-foreground/80">Owner:</span>{" "}
-            <span className="break-all" title={owner}>{owner}</span>
-          </div>
-        )}
-        <div>
-          <span className="text-foreground/80">Factory:</span>{" "}
-          <span className="break-all" title={factoryId}>{factoryId}</span>
-        </div>
-      </div>
-    </section>
+    <Card className="space-y-3" role="region" aria-label="Vault details">
+      <h2 className="text-lg font-semibold">Details</h2>
+      <dl className="grid gap-2 text-sm text-secondary-text">
+        <Detail label="Vault ID" value={vaultId} />
+        {owner && <Detail label="Owner" value={owner} />}
+        <Detail label="Factory" value={factoryId} />
+      </dl>
+    </Card>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="space-y-1">
+      <dt className="text-xs uppercase tracking-wide">{label}</dt>
+      <dd className="break-all text-foreground" title={value}>
+        {value}
+      </dd>
+    </div>
   );
 }

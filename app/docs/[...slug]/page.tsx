@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
 import { renderJsonDoc, renderMarkdownDoc, type RenderedDoc } from "../lib/docRenderer";
+import { Card } from "@/app/components/ui/Card";
 
 type ResolvedDoc = { file: string; type: "md" | "json" };
 
@@ -33,42 +34,41 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     });
 
   return (
-    <div className="py-8">
-      <Container>
-        <div className="flex flex-col lg:flex-row lg:items-start lg:gap-12">
-          <article className="flex-1 max-w-3xl">
-            <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-foreground">
+    <div className="min-h-screen bg-background pb-24">
+      <Container className="pt-20">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
+          <article className="flex-1 space-y-6">
+            <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-primary">
               <span aria-hidden="true">←</span>
               Back to docs
             </Link>
             {hasToc ? (
-              <nav className="mt-6 mb-10 lg:hidden" aria-label="Page sections">
-                <details className="docs-toc overflow-hidden rounded-lg border border-foreground/10 bg-surface/70 text-sm" open>
-                  <summary className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 font-medium text-foreground transition-colors hover:bg-surface/90">
-                    <span>On this page</span>
-                    <svg
-                      aria-hidden="true"
-                      className="docs-toc__icon h-4 w-4 text-secondary-text transition-transform duration-200"
-                      focusable="false"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
-                    </svg>
-                  </summary>
-                  <div className="border-t border-foreground/5 px-4 py-3">
-                    <ul className="space-y-1">{renderTocItems("mobile")}</ul>
-                  </div>
-                </details>
+              <nav className="lg:hidden" aria-label="Page sections">
+                <Card className="space-y-3 text-sm" role="region">
+                  <details className="docs-toc" open>
+                    <summary className="flex cursor-pointer items-center justify-between gap-3">
+                      <span className="font-semibold text-foreground">On this page</span>
+                      <svg aria-hidden="true" className="docs-toc__icon h-4 w-4 text-secondary-text transition-transform duration-200" viewBox="0 0 20 20">
+                        <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
+                      </svg>
+                    </summary>
+                    <div className="mt-2 border-t border-foreground/10 pt-3">
+                      <ul className="space-y-1">{renderTocItems("mobile")}</ul>
+                    </div>
+                  </details>
+                </Card>
               </nav>
             ) : null}
-            <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: rendered.html }} />
+            <Card className="prose max-w-none">
+              <div dangerouslySetInnerHTML={{ __html: rendered.html }} />
+            </Card>
           </article>
           {hasToc ? (
-            <aside className="mt-10 hidden w-64 flex-shrink-0 lg:mt-0 lg:block" aria-label="Page sections">
-              <nav className="sticky top-[calc(var(--nav-height,56px)+24px)]">
-                <div className="mb-2 text-sm font-semibold uppercase tracking-wide text-secondary-text">On this page</div>
-                <ul className="space-y-1 text-sm">{renderTocItems("desktop")}</ul>
-              </nav>
+            <aside className="mt-6 hidden w-64 flex-shrink-0 lg:block" aria-label="Page sections">
+              <Card className="sticky top-[calc(var(--nav-height,56px)+24px)] space-y-3 text-sm">
+                <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">On this page</div>
+                <ul className="space-y-1">{renderTocItems("desktop")}</ul>
+              </Card>
             </aside>
           ) : null}
         </div>

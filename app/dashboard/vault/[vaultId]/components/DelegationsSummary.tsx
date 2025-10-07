@@ -97,7 +97,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
       className="group relative overflow-hidden rounded border border-foreground/10 bg-background/70 shadow-sm hover:bg-background/80 transition-colors p-3 dark:bg-background/60 dark:shadow-none"
       key={entry.validator}
     >
-      <div className={accentBarClass(status)} aria-hidden />
+      <div className={accentBarClass(status)} aria-hidden="true" />
       <div className="min-w-0">
         {/* Validator + status */}
         <div className="flex items-center gap-2 min-w-0">
@@ -174,8 +174,8 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
       )}
       {/* Actions footer: show only when any action handlers are available (e.g., owner view). */}
       {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
-        <div className="mt-3 -mx-3 -mb-3 border-t border-foreground/10 bg-background/60 dark:bg-background/50">
-          <div className="px-3 py-2 flex flex-wrap gap-2 justify-end">
+        <div className="mt-3 border-t border-foreground/10 pt-2">
+          <div className="flex flex-wrap justify-end gap-2">
             {canClaim && (
               <button
                 type="button"

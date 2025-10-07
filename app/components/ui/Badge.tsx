@@ -11,13 +11,13 @@ type Props = React.PropsWithChildren<{
 }>;
 
 export function Badge({ variant = "neutral", className = "", title, children }: Props) {
-  const base = "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
+  const base = "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium";
   const styles: Record<Variant, string> = {
-    neutral: "bg-zinc-100 text-zinc-800 ring-zinc-300/50 dark:bg-zinc-800/60 dark:text-zinc-100 dark:ring-zinc-500/40",
-    info: "bg-blue-100 text-blue-800 ring-blue-300/50 dark:bg-blue-800/50 dark:text-blue-100 dark:ring-blue-500/40",
-    warn: "bg-amber-100 text-amber-800 ring-amber-300/50 dark:bg-amber-800/60 dark:text-amber-100 dark:ring-amber-500/40",
-    danger: "bg-red-100 text-red-800 ring-red-300/50 dark:bg-red-800/60 dark:text-red-100 dark:ring-red-500/40",
-    success: "bg-emerald-100 text-emerald-800 ring-emerald-300/50 dark:bg-emerald-800/50 dark:text-emerald-100 dark:ring-emerald-500/40",
+    neutral: "bg-foreground/5 text-secondary-text",
+    info: "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-100",
+    warn: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-100",
+    danger: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-100",
+    success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-100",
   };
   return (
     <span className={`${base} ${styles[variant]} ${className}`} title={title}>
@@ -25,4 +25,3 @@ export function Badge({ variant = "neutral", className = "", title, children }: 
     </span>
   );
 }
-

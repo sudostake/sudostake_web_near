@@ -35,13 +35,13 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
       <div className="mt-6 text-sm text-secondary-text">You have no active lending positions.</div>
     ) : (
       <div className="mt-6">
-        <SectionHeader title="Your Lending Positions" caption={<>0 positions</>} />
-        <div className="text-sm text-secondary-text mt-3">You have no active lending positions.</div>
+        <SectionHeader title="Your lending positions" caption={<>0 positions</>} />
+        <div className="mt-3 text-sm text-secondary-text">You have no active lending positions.</div>
       </div>
     );
 
   const Controls = (
-    <div className="flex items-center gap-2 w-full sm:w-auto">
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
       <label className="sr-only" htmlFor="lender-search">Search positions</label>
       <Input
         id="lender-search"
@@ -50,7 +50,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
         placeholder="Search positions"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="sm:w-64"
+        containerClassName="flex-1 min-w-0"
       />
     </div>
   );
@@ -60,7 +60,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
       {headerMode === "full" ? (
         <SectionHeader
           className="mt-8"
-          title="Your Lending Positions"
+          title="Your lending positions"
           caption={<>{(data ?? []).length} position{(data ?? []).length === 1 ? "" : "s"}</>}
           right={Controls}
         />
@@ -68,7 +68,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
         <div className="mt-6 flex items-center justify-end">{Controls}</div>
       )}
       {query && filtered.length === 0 ? (
-        <div className="text-sm text-secondary-text mt-3">No positions match “{query}”.</div>
+        <div className="mt-3 text-sm text-secondary-text">No positions match “{query}”.</div>
       ) : null}
       <div className="mt-2">
         <VaultList

@@ -171,7 +171,7 @@ export function DelegateDialog({
           <label className="block text-sm">
             <span className="text-secondary-text">Validator</span>
             <select
-              className="mt-1 w-full rounded border bg-background p-2 outline-none focus:ring-2 focus:ring-primary/50"
+              className="mt-1 w-full rounded border bg-background p-2 appearance-none focus-soft"
               value={validator}
               onChange={(e) => setValidator(e.target.value)}
             >

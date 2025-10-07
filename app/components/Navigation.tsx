@@ -181,7 +181,7 @@ export function Navigation() {
           </div>
         </div>
       </nav>
-      <div aria-hidden style={{ height: "var(--nav-height, 56px)" }} />
+      <div aria-hidden="true" style={{ height: "var(--nav-height, 56px)" }} />
     </>
   );
 }

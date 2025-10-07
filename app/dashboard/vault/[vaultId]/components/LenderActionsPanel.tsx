@@ -6,6 +6,7 @@ import { explorerAccountUrl } from "@/utils/networks";
 import { STRINGS, includesMaturedString, startLiquidationInString } from "@/utils/strings";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Button } from "@/app/components/ui/Button";
+import { Card } from "@/app/components/ui/Card";
 
 type Props = {
   remainingMs: number | null;
@@ -34,78 +35,82 @@ export function LenderActionsPanel({
   maturedYocto,
   onOpenProcess,
 }: Props) {
-  return (
-    <div className="mt-2 text-sm" aria-live="polite">
-      {remainingMs !== null && remainingMs > 0 ? (
+  if (remainingMs !== null && remainingMs > 0) {
+    return (
+      <Card className="space-y-3" role="status" aria-live="polite">
+        <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
+        <p className="text-sm text-secondary-text">{STRINGS.availableAfterExpiry}</p>
         <Button
           type="button"
-          variant="primary"
-          size="lg"
-          className="gap-2 w-full sm:w-auto"
-          title={STRINGS.availableAfterExpiry}
+          className="w-full justify-center gap-2"
           disabled
-          aria-disabled={true}
+          aria-disabled
         >
           {startLiquidationInString(String(formattedCountdown ?? "—"))}
         </Button>
-      ) : (
-        <div className="rounded border border-foreground/10 bg-background p-3">
-          <div className="text-sm font-medium mb-2">{STRINGS.nextPayoutSources}</div>
-          <div className="text-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-secondary-text">{STRINGS.availableNow}</div>
-              <div className="font-medium">{claimableNowLabel} NEAR</div>
-            </div>
-            {!hasClaimableNow && (
-              <div className="text-xs text-secondary-text">
-                {STRINGS.nothingAvailableNow}
-                {expectedNextLabel && (
-                  <>
-                    {" · "}{STRINGS.expectedNext}: {expectedNextLabel} NEAR
-                  </>
-                )}
-              </div>
-            )}
-            {lenderId && (
-              <div className="text-xs text-secondary-text">
-                {STRINGS.payoutsGoTo} <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
-                <a
-                  href={explorerAccountUrl(network, lenderId)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 underline text-primary"
-                  aria-label={`View lender ${lenderId} on explorer`}
-                >
-                  {STRINGS.viewAccountOnExplorer}
-                </a>
-              </div>
-            )}
-            {processError && (
-              <div className="text-xs text-red-600" role="alert">{processError}</div>
-            )}
-            {maturedYocto > BigInt(0) && (
-              <div className="text-xs text-secondary-text">
-                {includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}
-              </div>
-            )}
-            <Button
-              type="button"
-              variant="primary"
-              size="md"
-              className="gap-2 w-full sm:w-auto"
-              onClick={onOpenProcess}
-              disabled={processPending || !hasClaimableNow}
-              title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
-              aria-busy={processPending ? true : undefined}
-            >
-              {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
-            </Button>
-            {processPending && (
-              <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
-            )}
-          </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="space-y-3" aria-live="polite">
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
+        <p className="text-xs text-secondary-text">See what’s available to claim right now and how much is queued.</p>
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-secondary-text">{STRINGS.availableNow}</span>
+        <span className="font-semibold">{claimableNowLabel} NEAR</span>
+      </div>
+      {!hasClaimableNow && (
+        <p className="text-xs text-secondary-text">
+          {STRINGS.nothingAvailableNow}
+          {expectedNextLabel && (
+            <>
+              {" · "}
+              {STRINGS.expectedNext}: {expectedNextLabel} NEAR
+            </>
+          )}
+        </p>
+      )}
+      {lenderId && (
+        <p className="text-xs text-secondary-text">
+          {STRINGS.payoutsGoTo}{" "}
+          <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
+          <a
+            href={explorerAccountUrl(network, lenderId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-2 text-primary underline"
+            aria-label={`View lender ${lenderId} on explorer`}
+          >
+            {STRINGS.viewAccountOnExplorer}
+          </a>
+        </p>
+      )}
+      {processError && (
+        <p className="text-xs text-red-600" role="alert">{processError}</p>
+      )}
+      {maturedYocto > BigInt(0) && (
+        <p className="text-xs text-secondary-text">
+          {includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}
+        </p>
+      )}
+      <Button
+        type="button"
+        onClick={onOpenProcess}
+        disabled={processPending || !hasClaimableNow}
+        className="w-full justify-center gap-2"
+        aria-busy={processPending ? true : undefined}
+        title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+      >
+        {processPending ? STRINGS.processing : STRINGS.processAvailableNow}
+      </Button>
+      {processPending && (
+        <div className="sr-only" role="status" aria-live="polite">
+          {STRINGS.processing}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

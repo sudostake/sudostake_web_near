@@ -78,18 +78,18 @@ export function Modal({
       <div
         className="absolute inset-0 bg-black/50"
         onClick={disableBackdropClose ? undefined : onClose}
-        aria-hidden
+        aria-hidden="true"
       />
-      <div className="relative z-10 w-full max-w-md max-h-modal rounded bg-surface shadow-lg flex flex-col mx-auto">
-        <div className="flex items-center justify-between border-b border-foreground/10 p-4 shrink-0">
-          <h2 id="modal-title" className="text-base font-medium break-all">
+      <div className="relative z-10 mx-auto flex w-full max-w-lg max-h-modal flex-col overflow-hidden rounded-3xl border border-foreground/10 bg-surface shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-4">
+          <h2 id="modal-title" className="text-lg font-semibold break-all">
             {title ?? "Dialog"}
           </h2>
           {showClose && (
             <button
               type="button"
               aria-label="Close"
-              className="h-8 w-8 inline-flex items-center justify-center rounded hover:bg-foreground/10"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-foreground/10"
               onClick={onClose}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
@@ -98,11 +98,11 @@ export function Modal({
             </button>
           )}
         </div>
-        <div className="p-4 overflow-y-auto" tabIndex={0} ref={scrollRef}>
+        <div className="overflow-y-auto px-5 py-4" tabIndex={0} ref={scrollRef}>
           {children}
         </div>
         {footer && (
-          <div className="border-t border-foreground/10 p-3 text-right shrink-0">
+          <div className="shrink-0 border-t border-foreground/10 px-5 py-4 text-right">
             {footer}
           </div>
         )}

@@ -12,14 +12,14 @@ export type EmptyStateProps = {
 
 export function EmptyState({ owner, factoryId, onCreate }: EmptyStateProps) {
   return (
-    <Card className="text-center p-6">
-      <p className="text-secondary-text">
+    <Card className="text-center py-10">
+      <p className="text-sm text-secondary-text">
         No vaults found{owner ? ` for ${owner}` : ""}
         {factoryId ? ` on ${factoryId}` : ""}.
       </p>
-      <p className="mt-2 text-secondary-text">Get started by creating a new vault!</p>
+      <p className="mt-2 text-sm text-secondary-text">Create a vault to lock collateral and request liquidity.</p>
       {onCreate && (
-        <div className="mt-4">
+        <div className="mt-6 flex justify-center">
           <CreateVaultButton onClick={onCreate} />
         </div>
       )}

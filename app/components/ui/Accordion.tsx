@@ -31,7 +31,7 @@ export function Accordion({ items }: Props) {
               onClick={() => setOpenId(isOpen ? null : it.id)}
             >
               <span className="font-medium">{it.question}</span>
-              <span aria-hidden className="text-secondary-text">{isOpen ? "−" : "+"}</span>
+              <span aria-hidden="true" className="text-secondary-text">{isOpen ? "−" : "+"}</span>
             </button>
             <div
               id={panelId}

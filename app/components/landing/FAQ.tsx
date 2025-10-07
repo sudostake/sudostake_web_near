@@ -10,23 +10,23 @@ export function LandingFAQ() {
       id: "custody",
       question: "Is this non‑custodial?",
       answer:
-        "Yes. You approve every transaction in your wallet. The smart contract enforces the terms on‑chain. Your keys, your assets.",
+        "Yes. You approve every transaction in your wallet. The contract enforces terms on-chain, so funds move only when you confirm.",
     },
     {
       id: "wallets",
       question: "Which wallets are supported?",
       answer:
-        "We support Bitte, Meteor, MyNearWallet, Nightly, and Ledger (via Wallet Selector). More can be added over time.",
+        "Bitte, Meteor, MyNearWallet, Nightly, and Ledger via Wallet Selector today. More wallets can be added over time.",
     },
     {
       id: "terms",
       question: "How are loan terms enforced?",
       answer:
-        "Terms live in the contract. Repayments and liquidations follow the contract logic. Every step is traceable on‑chain.",
+        "Terms live in the contract. Repayments and liquidations follow that logic step by step, so you can trace every action on-chain.",
     },
     {
       id: "collateral",
-      question: "What collateral is used?",
+      question: "What collateral do I need?",
       answer: (
         <>
           Vaults lock NEAR as collateral. The amount you must lock depends on the terms you choose and lender appetite.
@@ -35,19 +35,19 @@ export function LandingFAQ() {
     },
     {
       id: "liquidation",
-      question: "What happens if I don’t repay?",
+      question: "What if I miss repayment?",
       answer: (
         <>
-          If a request is funded and you don’t repay within the agreed term, the contract settles according to the rules and may liquidate collateral to cover obligations.
+          If a request is funded and you don’t repay on time, the contract follows the rules and may liquidate collateral to cover the shortfall.
         </>
       ),
     },
     {
       id: "fees",
-      question: "Are there any fees?",
+      question: "Are there protocol fees?",
       answer: (
         <>
-          You pay normal network gas fees, and some interactions (like first‑time FT use) require a small storage registration deposit. Any protocol fees would be shown in the UI when applicable.
+          You pay normal network gas. First-time FT actions may need a small storage deposit. If we add protocol fees, they appear in the UI before you confirm.
         </>
       ),
     },
@@ -72,9 +72,14 @@ export function LandingFAQ() {
   ];
 
   return (
-    <section className="mt-12 md:mt-16">
-      <h2 className="text-[clamp(1.25rem,2.1vw,1.75rem)] font-semibold">FAQ</h2>
-      <div className="mt-4 rounded-xl border bg-surface/50 p-4 sm:p-6">
+    <section className="mt-24 border-t pt-12">
+      <div className="max-w-2xl">
+        <h2 className="text-[clamp(1.45rem,2.2vw,1.9rem)] font-semibold">Frequently asked questions</h2>
+        <p className="mt-3 text-sm text-secondary-text">
+          Start with the essentials before connecting your wallet.
+        </p>
+      </div>
+      <div className="mt-6 rounded-xl border bg-surface p-4 sm:p-6">
         <Accordion items={items} />
       </div>
     </section>

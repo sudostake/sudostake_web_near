@@ -5,6 +5,7 @@ import type { Network } from "@/utils/networks";
 import { explorerAccountUrl } from "@/utils/networks";
 import { Button } from "@/app/components/ui/Button";
 import { STRINGS, storageDepositString } from "@/utils/strings";
+import { Card } from "@/app/components/ui/Card";
 
 type Props = {
   network: Network;
@@ -27,51 +28,45 @@ export function PotentialLenderRegistrationCard({
 }: Props) {
   if (lenderRegistered !== false) return null;
   return (
-    <div className="text-left text-sm text-amber-800 bg-amber-100/60 border border-amber-500/30 rounded p-2">
-      <div>
+    <Card className="space-y-3 border border-amber-400/40 bg-amber-50/70 text-amber-900" role="region" aria-label="Register account">
+      <p className="text-sm">
         {STRINGS.mustRegisterAccountBeforeAccept}
-        {lenderMinDeposit && (
-          <>
-            {" "}{storageDepositString(lenderMinDeposit)}
-          </>
-        )}
-      </div>
-      <div className="mt-2">
+        {lenderMinDeposit && <> {storageDepositString(lenderMinDeposit)}</>}
+      </p>
+      <div className="flex flex-col gap-2 text-sm">
         <Button
           type="button"
           onClick={onRegister}
           disabled={storagePending || !lenderMinDeposit}
           variant="secondary"
-          size="sm"
-          className="gap-2"
+          className="w-full justify-center gap-2 sm:w-auto"
           aria-busy={storagePending ? true : undefined}
         >
           {STRINGS.registerAccountWithToken}
         </Button>
-        {storagePending && (
-          <div className="sr-only" role="status" aria-live="polite">Registering…</div>
-        )}
-        {tokenId && (
-          <a
-            href={explorerAccountUrl(network, tokenId)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ml-3 inline-flex items-center text-primary underline"
-            aria-label={`View token ${tokenId} on explorer`}
-          >
-            {STRINGS.viewTokenOnExplorer}
+        <div className="flex flex-wrap items-center gap-3 text-xs">
+          {tokenId && (
+            <a
+              href={explorerAccountUrl(network, tokenId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+              aria-label={`View token ${tokenId} on explorer`}
+            >
+              {STRINGS.viewTokenOnExplorer}
+            </a>
+          )}
+          <a href="/docs/token-registration" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+            {STRINGS.learnMore}
           </a>
+        </div>
+        {storagePending && (
+          <div className="sr-only" role="status" aria-live="polite">
+            Registering…
+          </div>
         )}
-        <a
-          href="/docs/token-registration"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-3 inline-flex items-center text-primary underline"
-        >
-          {STRINGS.learnMore}
-        </a>
-        {storageError && <div className="mt-1 text-xs text-red-600 dark:text-red-300">{storageError}</div>}
+        {storageError && <div className="text-xs text-red-600">{storageError}</div>}
       </div>
-    </div>
+    </Card>
   );
 }

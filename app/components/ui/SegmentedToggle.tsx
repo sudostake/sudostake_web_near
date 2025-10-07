@@ -42,15 +42,19 @@ export function SegmentedToggle({
   const paddingClass = size === "sm" ? "p-0.5" : "p-1";
   const thumbVert = size === "sm" ? "top-0.5 bottom-0.5" : "top-1 bottom-1";
   const textSize = size === "sm" ? "text-xs" : "text-sm";
-  const btnPad = size === "sm" ? "px-2 py-1" : "px-3 py-1.5";
+  const btnPad = size === "sm" ? "px-3 py-1" : "px-4 py-1.5";
 
   const isPrimary = variant === "primary";
-  const thumbBg = isPrimary ? "bg-primary" : "bg-foreground/10";
+  const thumbClasses = [
+    "absolute rounded-full pointer-events-none transition-all duration-200 ease-out",
+    thumbVert,
+    isPrimary ? "bg-primary shadow-sm" : "bg-surface shadow-sm ring-1 ring-foreground/10",
+  ].join(" ");
   const selectedText = isPrimary ? "text-primary-text" : "text-foreground";
   const unselectedText = isPrimary ? "text-foreground" : "text-secondary-text";
 
   // Horizontal inset so the thumb and segments don't touch edges
-  const padPx = size === "sm" ? 2 : 4; // matches p-0.5 (2px) or p-1 (4px)
+  const padPx = size === "sm" ? 2 : 6;
 
   function moveSelection(delta: number) {
     const dir = Math.sign(delta);
@@ -71,14 +75,16 @@ export function SegmentedToggle({
     }
   }
 
+  const containerClasses = [
+    "relative inline-flex w-full select-none items-center overflow-hidden rounded-full border border-foreground/10 bg-surface-muted/60",
+    paddingClass,
+    disabled ? "opacity-60 cursor-not-allowed" : "",
+    className,
+  ].join(" ");
+
   return (
     <div
-      className={[
-        "relative inline-flex w-full overflow-hidden select-none items-center rounded-md border border-foreground/10 bg-surface",
-        paddingClass,
-        disabled ? "opacity-60 cursor-not-allowed" : "",
-        className,
-      ].join(" ")}
+      className={containerClasses}
       role="tablist"
       aria-label={ariaLabel}
       onKeyDown={(e) => {
@@ -87,12 +93,12 @@ export function SegmentedToggle({
       }}
     >
       <div
-        className={[`absolute rounded-md ${thumbBg} transition-all duration-200 ease-out pointer-events-none`, thumbVert].join(" ")}
+        className={thumbClasses}
         style={{
           width: `calc(${segmentWidthPct}% - ${padPx * 2}px)`,
           left: `calc(${selectedIndex * segmentWidthPct}% + ${padPx}px)`,
         }}
-        aria-hidden={true}
+        aria-hidden="true"
       />
       {opts.map((o, i) => {
         const isSelected = i === selectedIndex;
@@ -108,10 +114,10 @@ export function SegmentedToggle({
             aria-controls={`${o.id}-panel`}
             tabIndex={isSelected ? 0 : -1}
             className={[
-              "relative z-10 flex-1 rounded-md transition-colors",
+              "relative z-10 flex-1 rounded-full transition-colors",
               btnPad,
               textSize,
-              isSelected ? selectedText : unselectedText,
+              isSelected ? `font-semibold ${selectedText}` : `font-medium ${unselectedText}`,
             ].join(" ")}
             onClick={() => isAvailable && onChange(o.id)}
             disabled={!isAvailable}

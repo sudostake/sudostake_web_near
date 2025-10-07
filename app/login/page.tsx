@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
-import { STRINGS } from "@/utils/strings";
 import { WalletBadges } from "@/app/components/landing/WalletBadges";
 import { Container } from "@/app/components/layout/Container";
 
@@ -24,49 +23,45 @@ export default function LoginPage() {
   if (signedAccountId) return null;
 
   return (
-    <div className="min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main id="main">
-        <Container>
-        <div className="rounded-lg border bg-surface p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold">Connect your wallet</h1>
-          <p className="mt-2 text-secondary-text">
-            Sign in with your NEAR wallet to access your dashboard, manage vaults, and track lending positions.
-          </p>
-
-          <div className="mt-6">
-            <Button size="lg" onClick={onConnect} className="w-full md:w-auto">
-              Connect Wallet
-            </Button>
+    <div className="min-h-screen bg-background pb-20">
+      <Container className="pt-24 pb-16">
+        <main id="main" className="mx-auto max-w-3xl">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
+            <section className="rounded-2xl border bg-surface p-8 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary">Welcome back</p>
+              <h1 className="mt-4 text-[clamp(2rem,4vw,2.5rem)] font-semibold leading-tight">
+                Connect your NEAR wallet to continue.
+              </h1>
+              <p className="mt-3 text-sm text-secondary-text max-w-lg">
+                Sign in to manage vaults, monitor lending positions, and request liquidity without giving up custody.
+              </p>
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Button size="lg" onClick={onConnect} className="w-full sm:w-auto">
+                  Connect Wallet
+                </Button>
+                <Link href="/discover" className="text-sm text-secondary-text hover:text-primary">
+                  Browse requests first
+                </Link>
+              </div>
+              <div className="mt-8 rounded-2xl border bg-surface-muted/60 p-5">
+                <h2 className="text-sm font-semibold text-foreground">Why this stays safe</h2>
+                <ul className="mt-3 space-y-2 text-sm text-secondary-text">
+                  <li>Approve every action in your NEAR wallet.</li>
+                  <li>Non-custodial contracts enforce the rules on-chain.</li>
+                  <li>Deposits, draws, and repayments remain auditable.</li>
+                </ul>
+              </div>
+            </section>
+            <aside className="rounded-2xl border bg-surface p-6 shadow-sm">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-secondary-text">Supported wallets</h2>
+              <WalletBadges />
+              <p className="mt-4 text-xs text-secondary-text">
+                Wallet logos are simplified placeholders; we can swap for official icons whenever you’re ready.
+              </p>
+            </aside>
           </div>
-
-          {/* Supported wallets with simple badges */}
-          <div className="mt-8">
-            <h2 className="text-sm font-medium text-secondary-text">Supported wallets</h2>
-            <WalletBadges />
-            <p className="mt-2 text-xs text-secondary-text">
-              Logos are simplified placeholders. We can drop in official icons anytime.
-            </p>
-          </div>
-
-          <div className="mt-8 rounded bg-background/60 p-4 border">
-            <h3 className="text-sm font-medium">Why this is safe</h3>
-            <p className="mt-1 text-sm text-secondary-text">{STRINGS.safetyYourKeys}</p>
-            <ul className="mt-3 text-sm text-secondary-text list-disc pl-5 space-y-1">
-              <li>Review and approve actions in your wallet.</li>
-              <li>No custody of your funds; contracts verify permissions.</li>
-              <li>Everything is recorded on-chain.</li>
-            </ul>
-          </div>
-
-          <div className="mt-6 text-sm text-secondary-text">
-            Not ready to connect? You can {" "}
-            <Link href="/discover" className="underline hover:opacity-80">browse requests</Link>
-            {" "}
-            first.
-          </div>
-        </div>
-        </Container>
-      </main>
+        </main>
+      </Container>
     </div>
   );
 }

@@ -36,7 +36,7 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
     return <EmptyState owner={owner} factoryId={factoryId} onCreate={onCreate} />;
 
   const Controls = (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
       <label className="sr-only" htmlFor="vault-search">Search vaults</label>
       <Input
         id="vault-search"
@@ -46,7 +46,6 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         containerClassName="flex-1 min-w-0"
-        className="h-9 px-3 text-sm"
       />
       <CreateVaultButton className="shrink-0" onClick={onCreate} />
     </div>
@@ -57,7 +56,7 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
       {headerMode === "full" ? (
         <SectionHeader
           className="mt-6"
-          title="Your Vaults"
+          title="Your vaults"
           caption={<>{(data ?? []).length} vault{(data ?? []).length === 1 ? "" : "s"}</>}
           right={Controls}
         />

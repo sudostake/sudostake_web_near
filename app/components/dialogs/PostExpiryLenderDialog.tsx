@@ -79,7 +79,7 @@ export function PostExpiryLenderDialog({
         </p>
         {inProgress && (
           <div className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1 text-xs">
-            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden></span>
+            <span className="h-2 w-2 rounded-full bg-primary" aria-hidden="true"></span>
             <span>{STRINGS.liquidationInProgress}</span>
           </div>
         )}

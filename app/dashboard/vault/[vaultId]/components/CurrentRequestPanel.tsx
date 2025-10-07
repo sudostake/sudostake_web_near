@@ -3,6 +3,7 @@
 import React from "react";
 import { formatDays } from "@/utils/time";
 import { STRINGS } from "@/utils/strings";
+import { Card } from "@/app/components/ui/Card";
 
 export type CurrentRequestContent = {
   token: string;
@@ -21,36 +22,28 @@ export function CurrentRequestPanel({
   active: boolean;
 }) {
   return (
-    <div className="mt-4 rounded border border-foreground/10 p-3 bg-background" role="region" aria-label={STRINGS.currentRequestTitle}>
-      <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.currentRequestTitle}</div>
-      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.tokenLabel}</div>
-          <div className="font-medium break-all" title={content.token}>{content.token}</div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.amountLabel}</div>
-          <div className="font-mono">{content.amount}</div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.interestLabel}</div>
-          <div className="font-mono">{content.interest}</div>
-        </div>
-        {active && (
-          <div>
-            <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.totalDue}</div>
-            <div className="font-mono">{content.totalDue}</div>
-          </div>
-        )}
-        <div>
-          <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.collateralLabel}</div>
-          <div className="font-mono">{content.collateral}</div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.durationLabel}</div>
-          <div className="font-medium">{formatDays(content.durationDays)}</div>
-        </div>
+    <Card className="space-y-4" role="region" aria-label={STRINGS.currentRequestTitle}>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{STRINGS.currentRequestTitle}</p>
+        <p className="text-sm text-secondary-text">Snapshot of the request terms lenders will evaluate.</p>
       </div>
+      <div className="grid gap-3 text-sm sm:grid-cols-2">
+        <Field label={STRINGS.tokenLabel} value={content.token} mono={false} />
+        <Field label={STRINGS.amountLabel} value={content.amount} mono />
+        <Field label={STRINGS.interestLabel} value={content.interest} mono />
+        {active && <Field label={STRINGS.totalDue} value={content.totalDue} mono />}
+        <Field label={STRINGS.collateralLabel} value={content.collateral} mono />
+        <Field label={STRINGS.durationLabel} value={formatDays(content.durationDays)} />
+      </div>
+    </Card>
+  );
+}
+
+function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="space-y-1">
+      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
+      <div className={`${mono ? "font-mono" : "font-medium"} break-all text-foreground`}>{value}</div>
     </div>
   );
 }

@@ -400,7 +400,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   };
 
   return (
-    <section className="rounded border bg-surface p-4" aria-label="Liquidity requests">
+    <Card className="space-y-6" aria-label="Liquidity requests">
       <div className="flex items-center gap-4">
         <SpinningTokenPair pauseOnHover />
         <div className="flex-1 min-w-0">
@@ -453,7 +453,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       </div>
 
       {!hasOpenRequest && isOwner && vaultUsdcRegistered !== null && (
-        <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} className="mt-3" />
+        <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} />
       )}
 
       {content && (
@@ -485,31 +485,30 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
-            <div className="mt-2 rounded border border-amber-300/40 bg-amber-50 text-amber-900 p-2 text-xs dark:bg-amber-900/30 dark:text-amber-100 dark:border-amber-500/30">
+            <Card className="border border-amber-400/40 bg-amber-50/80 p-3 text-xs text-amber-900" role="status">
               {STRINGS.expiredRepayWarning}
-            </div>
+            </Card>
           )}
           {/* Lender appreciation card intentionally removed for a leaner UI */}
           {isOwner && data?.state === "pending" ? (
-            <div className="mt-3 text-right">
+            <div className="flex flex-col items-end gap-2">
               <Button
                 type="button"
                 onClick={onCancel}
                 disabled={cancelPending}
                 variant="secondary"
-                size="md"
-                className="gap-2"
+                className="w-full justify-center gap-2 sm:w-auto"
                 aria-busy={cancelPending ? true : undefined}
               >
                 {cancelPending ? "Cancelling…" : STRINGS.cancelRequest}
               </Button>
-              {cancelError && <div className="mt-2 text-xs text-red-600" role="alert">{cancelError}</div>}
+              {cancelError && <div className="text-xs text-red-600" role="alert">{cancelError}</div>}
               {cancelPending && (
                 <div className="sr-only" role="status" aria-live="polite">Cancelling…</div>
               )}
             </div>
           ) : data?.state === "pending" && role === "potentialLender" ? (
-            <div className="mt-3 text-right space-y-2">
+            <Card className="space-y-3" role="region" aria-label="Lender registration">
               <div className="text-sm text-secondary-text text-left">
                 {STRINGS.yourBalance}: <span className="font-mono">{lenderBalanceLabel} {tokenSymbol}</span>
               </div>
@@ -523,9 +522,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 onRegister={onRegisterLender}
               />
               {vaultRegisteredForToken === false && (
-                <div className="text-left text-sm rounded p-2 border border-red-300/40 bg-red-50 text-red-900 dark:bg-red-900/30 dark:text-red-100 dark:border-red-500/30">
+                <Card className="text-left text-sm border border-red-300/40 bg-red-50/80 text-red-900">
                   {STRINGS.vaultNotRegisteredLendingDisabled}
-                  <div className="mt-1">
+                  <div className="mt-2 space-x-3">
                     <a
                       href={explorerAccountUrl(network, vaultId)}
                       target="_blank"
@@ -540,14 +539,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         href={explorerAccountUrl(network, content.token)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="ml-3 inline-flex items-center text-primary underline"
+                        className="inline-flex items-center text-primary underline"
                         aria-label={`View token ${content.token} on explorer`}
                       >
                         {STRINGS.viewTokenOnExplorer}
                       </a>
                     )}
                   </div>
-                </div>
+                </Card>
               )}
               <AcceptActionsPanel
                 pending={pending}
@@ -562,7 +561,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 acceptError={acceptError}
                 onOpen={() => setAcceptOpen(true)}
               />
-            </div>
+            </Card>
           ) : null}
           {/* Single repay action is shown above in the owner section; avoid duplicating here */}
         </>
@@ -570,7 +569,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
-        <div className="mt-4 rounded border border-zinc-300/40 bg-zinc-50 text-zinc-900 p-3 dark:border-foreground/20 dark:bg-background/70 dark:text-foreground">
+        <Card className="space-y-3 border border-foreground/10 bg-surface-muted/60" role="region" aria-label="Liquidation status">
           <div className="flex items-center justify-between gap-2">
             <div className="text-base font-medium">
               {role === "activeLender" ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
@@ -590,7 +589,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {role === "activeLender" && (
             <div>
-              <Card className="mt-2 p-3">
+              <Card className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
@@ -603,7 +602,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     </div>
                   )}
                 </div>
-                <div className="-mx-3 my-2 h-px bg-foreground/10" />
+                <div className="my-2 h-px bg-foreground/10" />
                 <div className="text-sm">
                   <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
                   <div className="mt-1">
@@ -616,7 +615,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       <li className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <svg
-                            aria-hidden
+                            aria-hidden="true"
                             className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
                             viewBox="0 0 16 16"
                             fill="currentColor"
@@ -628,7 +627,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                           </svg>
                           <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
-                            <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                            <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                           )}
                         </div>
                         <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
@@ -639,7 +638,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         <li className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                             <svg
-                              aria-hidden
+                              aria-hidden="true"
                               className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
                               viewBox="0 0 16 16"
                               fill="none"
@@ -653,7 +652,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             </svg>
                             <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
-                              <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                              <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                             )}
                           </div>
                           <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
@@ -665,19 +664,19 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   </div>
                 </div>
               </Card>
-              <div className="mt-2 text-right">
-                <button
+              <div className="flex flex-col items-end gap-2">
+                <Button
                   type="button"
-                  className="inline-flex items-center justify-center gap-2 px-3 h-9 rounded bg-primary text-primary-text disabled:opacity-60 w-full sm:w-auto"
                   onClick={() => setPostExpiryOpen(true)}
                   disabled={processPending || !hasClaimableNow}
+                  className="w-full justify-center gap-2 sm:w-auto"
                   title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
                   aria-busy={processPending ? true : undefined}
                 >
                   {processPending ? STRINGS.processing : STRINGS.processNow}
-                </button>
+                </Button>
                 {processError && (
-                  <div className="mt-1 text-xs text-red-600 text-left sm:text-right">{processError}</div>
+                  <div className="text-xs text-red-600" role="alert">{processError}</div>
                 )}
                 {processPending && (
                   <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
@@ -712,7 +711,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                     </div>
                   )}
                 </div>
-                <div className="-mx-3 my-2 h-px bg-foreground/10" />
+                <div className="my-2 h-px bg-foreground/10" />
                 <div className="text-sm">
                   <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
                   <div className="mt-1">
@@ -725,7 +724,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       <li className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <svg
-                            aria-hidden
+                            aria-hidden="true"
                             className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
                             viewBox="0 0 16 16"
                             fill="currentColor"
@@ -738,7 +737,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                           <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
                             <span
-                              aria-hidden
+                              aria-hidden="true"
                               className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
                             />
                           )}
@@ -751,7 +750,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         <li className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                             <svg
-                              aria-hidden
+                              aria-hidden="true"
                               className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
                               viewBox="0 0 16 16"
                               fill="none"
@@ -766,7 +765,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
                               <span
-                                aria-hidden
+                                aria-hidden="true"
                                 className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
                               />
                             )}
@@ -796,7 +795,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
             </>
           )}
           {/* Removed redundant owner note; the header and expired+in-progress line already convey this */}
-        </div>
+        </Card>
       )}
 
       {/* Repay dialog consolidated below */}
@@ -897,6 +896,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           }}
         />
       )}
-    </section>
+    </Card>
   );
 }

@@ -3,6 +3,7 @@ import path from "path";
 import Link from "next/link";
 import { Container } from "@/app/components/layout/Container";
 import DocsIndexClient from "./DocsIndexClient";
+import { Card } from "@/app/components/ui/Card";
 
 type DocLink = { title: string; href: string; description?: string };
 type Section = { id: string; title: string; items: DocLink[] };
@@ -103,18 +104,23 @@ export default function DocsIndex() {
   ].filter(Boolean) as Section[];
 
   return (
-    <div className="py-8">
-      <Container>
-        <h1 className="text-2xl font-semibold mb-4">Docs that get you moving</h1>
-        <p className="text-secondary-text mb-4">
-          Choose the path that matches what you want to do—whether you’re preparing a vault or funding a request, each guide walks you through the next step.
-        </p>
-        <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="min-h-screen bg-background pb-24">
+      <Container className="pt-24 space-y-8">
+        <Card className="space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
+          <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Docs that get you moving</h1>
+          <p className="max-w-3xl text-sm text-secondary-text">
+            Choose the path that matches what you want to do—whether you’re preparing a vault or funding a request, each guide walks you through the next step.
+          </p>
+        </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURED_LINKS.map((link) => (
             <DocQuickLink key={link.href} {...link} />
           ))}
         </div>
-        <DocsIndexClient sections={sections} />
+        <Card className="space-y-6">
+          <DocsIndexClient sections={sections} />
+        </Card>
       </Container>
     </div>
   );
@@ -124,7 +130,7 @@ function DocQuickLink({ href, title, description }: { href: string; title: strin
   return (
     <Link
       href={href}
-      className="group block rounded-xl border border-foreground/10 bg-surface/70 px-4 py-4 transition-all hover:border-foreground/20 hover:bg-surface/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+      className="group block rounded-2xl border border-foreground/10 bg-surface px-5 py-4 transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="font-semibold text-foreground">{title}</span>

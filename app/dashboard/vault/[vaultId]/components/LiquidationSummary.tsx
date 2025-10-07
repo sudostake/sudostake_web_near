@@ -3,6 +3,7 @@
 import React from "react";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { STRINGS } from "@/utils/strings";
+import { Card } from "@/app/components/ui/Card";
 
 type Props = {
   paidSoFarYocto: string | number | bigint;
@@ -30,8 +31,8 @@ export function LiquidationSummary({
   showBreakdownHint = true,
 }: Props) {
   return (
-    <div className="mt-2 rounded border border-foreground/20 bg-background/80 p-3 text-foreground dark:bg-background/60 text-sm">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+    <Card className="space-y-3 text-sm">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
           <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
           <div className="font-medium">{safeFormatYoctoNear(paidSoFarYocto, 5)} NEAR</div>
@@ -48,14 +49,14 @@ export function LiquidationSummary({
         </div>
       </div>
       {showBreakdownHint && (maturedTotalLabel || unbondingTotalLabel) && (
-        <div className="mt-1 text-xs text-secondary-text">
+        <div className="text-xs text-secondary-text">
           {maturedTotalLabel ? `Includes ${maturedTotalLabel} NEAR matured` : ""}
           {maturedTotalLabel && unbondingTotalLabel ? " · " : ""}
           {unbondingTotalLabel ? `Unbonding ${unbondingTotalLabel} NEAR` : ""}
         </div>
       )}
       {showPayoutNote && lenderId && (
-        <div className="mt-1 text-xs text-secondary-text">
+        <div className="text-xs text-secondary-text">
           {STRINGS.payoutsGoTo}{" "}
           <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
           {lenderUrl && (
@@ -65,6 +66,6 @@ export function LiquidationSummary({
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
