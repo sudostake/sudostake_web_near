@@ -1,43 +1,33 @@
-# Data model
+# What the app stores
 
 ## TL;DR
-- Every factory gets its own Firestore collection. Each vault becomes a single document keyed by the vault account ID.
-- Documents mirror the contract response from `get_vault_state`, with a few extras for indexing and analytics.
-- Common queries filter by owner, state, or lender—keep those fields indexed to make dashboards instant.
+- SudoStake keeps a simple record for every vault so the dashboard, Discover page, and lender views load instantly.
+- Each record mirrors the important on-chain details (owner, current request, active lender) and adds a few timestamps for traceability.
+- When you change something on-chain, the record refreshes automatically so everyone sees the update.
 
-## Collections
-- `nzaza.testnet`, `sudostake.near`, and any other factory IDs map 1:1 to Firestore collections.
-- Documents are stored as `{ vaultAccountId: VaultDocument }`.
-- Testnet and mainnet live side by side. Switching networks swaps collections automatically.
+## Where your data lives
+- Each network keeps its own list: `nzaza.testnet` for testnet vaults and `sudostake.near` for mainnet vaults.
+- Every vault becomes one document keyed by the vault account ID (for example `vault-23.nzaza.testnet`).
+- Switching the network toggle in the app simply swaps the list you’re viewing—nothing else to configure.
 
-## Document shape
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| `factory_id` | `string` | Factory that minted the vault. |
-| `account_id` | `string` | Vault NEAR account ID (document ID). |
-| `owner` | `string` | Current vault owner. |
-| `state` | enum | One of `idle`, `pending`, or `active`. |
-| `liquidity_request` | object or `null` | Token, amount, interest, collateral, duration, `created_at`. |
-| `accepted_offer` | object or `null` | Lender account, token, amount, interest, `accepted_at`. |
-| `unstake_entries` | array | Outstanding undelegations by validator. |
-| `current_epoch` | number | Latest epoch reported by the contract. |
-| `liquidation` | object or `null` | When liquidation has started. |
-| `tx_hash` | string or `null` | Last transaction hash processed (helps trace re-indexing). |
-| `created_at` | string | ISO timestamp when the document was first written. |
-| `updated_at` | string | ISO timestamp of the most recent successful index. |
+## What we remember for each vault
+| What you’ll see | Why it matters |
+| --------------- | -------------- |
+| Vault owner | Shows who can deposit, delegate, open requests, and repay. |
+| Current state (`idle`, `pending`, `active`) | Lets the UI surface the right actions (fund, repay, etc.). |
+| Active liquidity request | Lists the token, amount, interest, collateral, and duration that lenders review. |
+| Accepted offer | Records which lender funded the request and when repayment is due. |
+| Staking activity | Tracks delegated validators and any pending unstake claims. |
+| Safety notes | Flags liquidation status and timestamps the last update so you know the data is fresh. |
 
-> Need the full TypeScript definitions? See `utils/indexing/types.ts` and `utils/db/vaults.ts`.
+## How it stays up to date
+1. You perform an action (mint, fund, repay, delegate).
+2. The app fetches the latest vault state directly from NEAR.
+3. The document above is rewritten, and the dashboard updates in real time.
 
-## Transform pipeline
-1. Call `get_vault_state` from the contract.
-2. Convert raw values into UI-friendly shapes (`TransformedVaultState`).
-3. Merge metadata (factory ID, timestamps, transaction hash) and save as `VaultDocument`.
+If a refresh ever lags, tap **Retry indexing** on the banner—you’ll force steps 2 and 3 to run again.
 
-Helpers live in `utils/indexing/service.ts`. They keep the transformation logic consistent between on-demand indexing and background jobs.
-
-## Common queries
-- **My vaults:** `where("owner", "==", accountId)` — used on the dashboard.
-- **Discover page:** `where("state", "==", "pending")` with ordering by `liquidity_request.created_at`.
-- **Lender positions:** `where("accepted_offer.lender", "==", accountId)` sorted by `accepted_offer.accepted_at` desc.
-
-Add indexes in Firestore for these combinations to avoid slow queries. The repo contains a `firestore.indexes.json` template when you need to expand coverage.
+## Need help interpreting a field?
+- **Who can act:** Check [Who can do what](./reference/roles.md).
+- **Why data looks delayed:** Read [Indexing and consistency](../operations/indexing.md).
+- **Token balances:** See [Tokens and balances](../features/tokens.md) for how we show wallet and vault amounts.

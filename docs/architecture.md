@@ -1,51 +1,34 @@
-# Architecture overview
+# How SudoStake stays in sync
 
 ## TL;DR
-- SudoStake is a Next.js app that reads on-chain vault data from NEAR and mirrors it in Firestore so the UI feels instant.
-- Wallet Selector manages every wallet connection; all blockchain calls flow through the `/api/rpc` proxy so we can swap networks safely.
-- Each factory contract gets its own Firestore collection—one document per vault—so the UI can stream updates or fall back to REST endpoints.
-- Vault owners and lenders consume the same data; the UI simply gates actions based on viewer role.
+- SudoStake keeps your dashboard fast by caching vault information off-chain while still trusting NEAR as the source of truth.
+- Wallet Selector handles every connection so you can move between testnet and mainnet without reconfiguring anything.
+- Whenever you complete an action (fund, request, repay), the app refreshes the vault directly from chain so everyone sees the same state.
 
 ## Before you dive in
-- **Follow the playbook:** Need the high-level journey for vault owners and lenders? Start with the [SudoStake playbook](./playbook.md).
-- **Pick a network:** Testnet and mainnet are both supported. Factory IDs and RPC hosts live in [networks and RPC](./reference/networks.md).
-- **Skim the data model:** Each Firestore document is a `VaultDocument`. See [data model](./reference/data-model.md) for the exact fields.
-- **Remember the toggle flags:** `NEXT_PUBLIC_PENDING_USE_API` and `NEXT_PUBLIC_LENDING_USE_API` switch pages between realtime Firestore and REST polling.
+- **Follow the flow:** Not sure where to start? The [SudoStake playbook](./playbook.md) walks vault owners and lenders through the full journey.
+- **Pick a network:** Use testnet for rehearsals and mainnet for real funds. Factory IDs and explorer links live in [Network quick facts](./reference/networks.md).
+- **Know what we store:** Curious about what the dashboard tracks for each vault? See [What the app stores](./reference/data-model.md).
 
-## How the pieces fit
+## The moving parts (plain language)
 ### Wallets
-- Wallet Selector handles connect, sign, and transaction sends.
-- The global provider lives in `app/providers.tsx`. It shares the selected account with navigation, dashboards, and hooks.
+- You connect once with Wallet Selector. It remembers your account and signs every transaction you approve.
+- Switching the network toggle reconnects the selector so the right contracts and tokens appear automatically.
 
-### Chain access
-- Every on-chain read or write travels through `/api/rpc`. The route wraps NEAR JSON-RPC calls and swaps network IDs for you, so we stay clear of CORS issues.
-- Server-side routes use `near-api-js`. Client components rely on hooks that call the proxy.
+### Live vault data
+- Think of the dashboard as a snapshot of your vault. Right after a transaction, the app fetches the fresh state from NEAR and updates the snapshot.
+- If something looks out of date, the “Retry indexing” prompt forces a refresh—use it like a manual sync button.
 
-### Firestore mirror
-- A background task (or an explicit “Retry indexing” click) calls `get_vault_state` on NEAR, transforms the response, and writes a `VaultDocument` to Firestore.
-- Collections are named after the factory account (`nzaza.testnet`, `sudostake.near`). Documents are keyed by the vault account ID.
-- Views subscribe in realtime via Firebase SDK or call REST endpoints that read the same documents on demand.
+### Behind-the-scenes safety
+- Each vault action on the UI includes guardrails (for example, lenders can’t see owner-only buttons). Those checks rely on the latest vault snapshot and your connected wallet.
+- If the snapshot says you’re the owner, you’ll see owner tools. If you’re the lender, you’ll see repayment status and reminders.
 
-### When data looks stale
-- After a transaction, Firestore may lag the chain by a few seconds. The UI blocks risky actions and shows a “Retry indexing” button that hits `/api/index_vault`.
-- Operations runbook: [Indexing and consistency](./operations/indexing.md).
+## Why this matters to you
+- **Speed:** Cached data means the Discover page and dashboards load instantly, even before indexing finishes.
+- **Accuracy:** Every meaningful click triggers a fresh read from the chain so balances and statuses stay trustworthy.
+- **Simplicity:** You don’t need to manage RPC URLs or network IDs—SudoStake handles that once you pick a network.
 
-## Supporting services
-### Firebase
-- **Client:** `firebase/app` and `firebase/firestore` stream live updates to dashboards.
-- **Server:** `firebase-admin` powers API routes that read or write Firestore securely.
-
-### RPC proxy
-- `POST /api/rpc` forwards JSON-RPC calls to the active NEAR network.
-- Centralising the proxy gives us a single place to enforce allowlists, add retries, or capture metrics.
-
-## Where to look in the code
-- `utils/indexing/service.ts` — fetch, transform, and store vault state.
-- `utils/db/vaults.ts` — Firestore helpers.
-- `app/api/index_vault/route.ts` — manual indexing endpoint.
-- `app/components` and `hooks/` — feature-level hooks and UI components that consume the mirrored data.
-
-## Related docs
-- [Viewer roles](./reference/roles.md) — who sees what in the UI.
-- [Tokens and balances](./features/tokens.md) — how we cache token metadata and balances.
-- [Vault lifecycle](./features/vaults.md) — the journey from creating a vault to repaying a loan.
+## Need a deeper dive?
+- [Indexing and consistency](./operations/indexing.md) explains what the “Retry indexing” dialog is doing in plain terms.
+- [Tokens and balances](./features/tokens.md) shows how we keep wallet and vault balances tidy.
+- [Who can do what](./reference/roles.md) spells out why certain buttons appear or stay hidden.

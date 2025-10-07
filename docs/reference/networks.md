@@ -1,31 +1,23 @@
-# Networks and RPC
+# Network quick facts
 
 ## TL;DR
-- SudoStake ships with two networks: **testnet** (default) and **mainnet**. Switching networks swaps factory IDs, RPC hosts, and token lists.
-- All blockchain calls go through `/api/rpc`, so the browser never talks to NEAR directly.
-- The selected network is stored locally so the app remembers your choice across sessions.
+- Use **testnet** to practice with play money and **mainnet** when you’re moving real funds.
+- The toggle in the header controls everything—vault lists, token IDs, and which explorer links we show.
+- Whatever network you pick stays saved locally, so you don’t have to choose again next time.
 
-## Factories and endpoints
+## Side-by-side comparison
 
-| Network | Factory contract | RPC endpoint | Explorer |
-| ------- | ---------------- | ------------ | -------- |
-| testnet | `nzaza.testnet` | `https://rpc.testnet.fastnear.com` | [testnet.nearblocks.io](https://testnet.nearblocks.io) |
-| mainnet | `sudostake.near` | `https://rpc.mainnet.fastnear.com` | [nearblocks.io](https://nearblocks.io) |
+| Network | When to use it | Factory account | RPC endpoint | Explorer |
+| ------- | -------------- | --------------- | ------------ | -------- |
+| testnet | Safe space to rehearse flows without risk. | `nzaza.testnet` | `https://rpc.testnet.fastnear.com` | [testnet.nearblocks.io](https://testnet.nearblocks.io) |
+| mainnet | Live environment for real lenders and borrowers. | `sudostake.near` | `https://rpc.mainnet.fastnear.com` | [nearblocks.io](https://nearblocks.io) |
 
-## Active network logic
-- The selector defaults to **testnet**.
-- We store the preference in `localStorage` under `selectedNetwork`.
-- Helpers in `utils/networks.ts` manage read/write so components stay in sync.
+## What changes when you toggle
+- **Vaults & requests:** You’ll see the vaults that belong to the selected network only.
+- **Tokens:** The default token list (for example, USDC) swaps to the right contract ID for that network.
+- **Wallet session:** Wallet Selector reconnects automatically, so you don’t need to log out or re-approve access.
 
-## RPC proxy
-- Route: `POST /api/rpc?network=testnet|mainnet` (query param optional—defaults to `testnet`).
-- Body: standard NEAR JSON-RPC payload `{ "method": "query", "params": … }`.
-- Benefits: avoids browser CORS limits, centralises retries, and lets us log or rate limit by method.
-
-## Wallet selector integration
-- When you change networks, the wallet selector reconnects with the correct `nodeUrl` and `indexerUrl`.
-- Feature pages listen for the network change and swap data sources and token metadata automatically.
-
-## Tips
-- Need to add another network (e.g., a staging factory)? Extend `utils/networks.ts` and add the RPC host, factory ID, and token metadata. Update this page so everyone knows the new IDs.
-- When debugging RPC calls, use the browser devtools network tab—you’ll see `/api/rpc` POSTs with the actual JSON payload.
+## Practical tips
+- Doing a dry run? Start on testnet, mint a vault, and walk through the whole request → repay cycle before switching to mainnet.
+- Sharing a link with someone else? Mention the network in your message (“This is a testnet request…”) so they select the right toggle first.
+- Need to inspect a transaction? Use the explorer link above—the vault and transaction hashes are the same ones shown in the UI toasts.

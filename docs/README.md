@@ -1,9 +1,9 @@
 # SudoStake docs home
 
 ## TL;DR
-- These pages explain the product in everyday language first, with links to deeper technical detail when you need it.
-- Start with the architecture overview if you want the big picture, then choose the path for vault owners or lenders.
-- Every reference doc has a matching guide so you can see both the “why” and the “how”.
+- These pages show you how to get something done right away—just pick whether you’re managing a vault or lending tokens.
+- Every guide is written in everyday language, with callouts for risks, timing, and what to do next.
+- You can always jump between the owner and lender paths; many teams play both roles.
 
 ## Pick your path
 
@@ -20,12 +20,6 @@
 3. Walk through [Fund a liquidity request](./guides/fund-liquidity-request.md) so you know exactly what happens when you lend.
 4. Use [Discover open requests](./features/discover.md) to find opportunities and [Track lender positions](./features/lender-positions.md) to monitor the loans you’ve funded.
 5. Review [Repay a loan](./guides/repay-loan.md) so you know what the owner sees when they return funds.
-
-## How to use these docs
-- **Learn the shape of the product:** Read the [architecture overview](./architecture.md) to see how wallets, Firestore, and the NEAR blockchain work together.
-- **Get something done:** Open a guide such as [requesting liquidity](./guides/opening-liquidity-request.md) or [repaying a loan](./guides/repay-loan.md). Each guide calls out risks and the time it usually takes.
-- **Look up a detail:** Use the reference section for API routes, data models, and network IDs when you are wiring automation or reviewing support tickets.
-- **Stay in plain language:** If you hit jargon, check the [docs voice guide](./meta/style-guide.md) and suggest an edit—these pages are meant to stay friendly.
 
 ## Quick map
 
@@ -47,17 +41,11 @@
 - [Fund a liquidity request](./guides/fund-liquidity-request.md)
 - [Repay an active loan](./guides/repay-loan.md)
 
-### Reference
-- [API reference](./reference/api.md)
-- [Data model](./reference/data-model.md)
-- [Networks and RPC endpoints](./reference/networks.md)
+### Helpful references
+- [What the app stores](./reference/data-model.md)
+- [Network quick facts](./reference/networks.md)
 - [Token registration (NEP-141)](./reference/token-registration.md)
-- [Viewer roles](./reference/roles.md)
-
-### For editors
-- [Docs voice and tone guide](./meta/style-guide.md)
-- [Plain-language rewrite backlog](./meta/rewrite-backlog.md)
-- [Rendering upgrade plan](./meta/rendering-upgrade.md)
+- [Who can do what](./reference/roles.md)
 
 ### Operations
 - [Indexing and consistency](./operations/indexing.md)

@@ -1,20 +1,20 @@
 # Tokens and balances
 
 ## TL;DR
-- We ship with a tiny registry that knows about USDC on both testnet and mainnet.
-- Helper hooks take care of metadata, balances, transfers, and the storage deposits required by NEP-141 tokens.
-- If a token needs a different address, use `NEXT_PUBLIC_USDC_MAINNET_ID` (or extend the registry) and the UI will follow along.
-- Vault owners and lenders rely on the same registry—owners to request liquidity, lenders to fund it—so keeping this list accurate helps everyone.
+- SudoStake recognises the tokens you’ll use most (USDC on both testnet and mainnet) so amounts, icons, and balances just work.
+- The app checks whether your wallet or vault needs a storage deposit before you move tokens and gives you a one-click fix if it does.
+- Vault owners and lenders look at the same token data, keeping both sides aligned on symbols, decimals, and balances.
 
-## Everyday tasks
-- **Show token info:** `useTokenMetadata` returns the symbol, decimals, and icon for the active network.
-- **Read balances:** `useFtBalance` loads the connected wallet’s token balance; `useAccountFtBalance` works for vault accounts.
-- **Send tokens:** `useFtTransfer` wraps `ft_transfer`, handles minimal units, and shows friendly errors.
-- **Register accounts:** `useFtStorage` checks whether the wallet or vault has paid the storage deposit and triggers `storage_deposit` when needed.
+## What you can do in the UI
+- **Check balances:** Wallet balances show up in the header and dashboard; vault balances display on each vault page.
+- **Register for a token:** If you or your vault isn’t registered, you’ll see a banner with a single button to pay the tiny storage deposit.
+- **Send funds to the vault:** The deposit dialog lets you top up NEAR. Token transfers use the same pattern—pick the token, enter the amount, approve in your wallet.
+- **See token details:** Hover tooltips and summary cards reveal the symbol, decimals, and which network the token belongs to.
 
-## Registry in practice
-- `utils/tokens.ts` holds the current network map. It keeps things simple: token ID, symbol, decimals, and optional overrides.
-- To add a token, extend the map with `{ networkId: { tokenId: { ... } } }`, then surface it in the UI selector.
+## Why the registry helps
+- We pre-fill the correct contract IDs so you never have to copy/paste them.
+- Amounts stay human-friendly because we know how many decimals each token uses.
+- When the team adds a new supported token, it automatically appears in the dialogs—no manual setup on your side.
 
 ## Why storage registration matters
 - NEP-141 tokens need a small NEAR deposit before they can store balances for a new account.
@@ -22,5 +22,6 @@
 - Read the plain-language explainer in [Token registration](../reference/token-registration.md) if you want to know what happens under the hood.
 
 ## Pro tips
-- Keep display strings in token units and convert to minimal units with the helpers—no manual `10 ** decimals` math needed.
-- When debugging, open the token contract on NEAR Explorer from the UI so you can confirm balances or events quickly.
+- Keep a little NEAR in your vault so you can pay storage deposits or gas without moving funds around at the last minute.
+- If a balance looks off, press **Retry indexing** to fetch the latest state from the chain.
+- Need to double-check something on-chain? Use the explorer links in the UI—they already point to the right contract for the active network.
