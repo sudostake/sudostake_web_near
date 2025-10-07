@@ -110,7 +110,7 @@ export function DelegationsCard({
 
       {typeof refundsCount === "number" && refundsCount > 0 && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm text-amber-700">
-          <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundCount}. {STRINGS.refundsAffectDelegation}
+          <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
         </div>
       )}
 
