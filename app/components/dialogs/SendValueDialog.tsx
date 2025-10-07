@@ -247,7 +247,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
               value={receiver}
               onChange={(e) => setReceiver(e.target.value.trim())}
               placeholder="alice.near"
-              className="flex-1 rounded border bg-background px-3 h-10 appearance-none focus-soft"
+              className="flex-1 rounded border bg-background px-3 h-10 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
             <Button
               variant="ghost"
@@ -285,7 +285,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
             onChange={(e) => setAmount(e.target.value)}
             placeholder={kind === "NEAR" ? "0.0" : "0"}
             inputMode="decimal"
-            className="w-full rounded border bg-background px-3 h-10 appearance-none focus-soft"
+            className="w-full rounded border bg-background px-3 h-10 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
           {kind === "USDC" && (
             <div className="mt-1 flex items-center justify-between text-xs text-secondary-text">
@@ -320,7 +320,7 @@ export function SendValueDialog({ open, onClose, onSuccess }: Props) {
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
               placeholder="Payment reference"
-              className="w-full rounded border bg-background px-3 h-10 appearance-none focus-soft"
+              className="w-full rounded border bg-background px-3 h-10 appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
         )}
