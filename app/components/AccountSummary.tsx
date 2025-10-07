@@ -104,7 +104,7 @@ function BalanceStat({
       <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
       <div className="mt-2 flex min-w-0 items-baseline gap-1 text-3xl font-semibold">
         {loading ? (
-          <div className="h-8 w-28 animate-pulse rounded-full bg-background" aria-hidden />
+          <div className="h-8 w-28 animate-pulse rounded-full bg-background" aria-hidden="true" />
         ) : (
           <>
             <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>

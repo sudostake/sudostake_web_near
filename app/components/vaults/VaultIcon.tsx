@@ -35,7 +35,7 @@ export function VaultIcon({ id, size = "md", className = "", title }: Props) {
   const baseClass = "shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-medium";
   return (
     <div
-      aria-hidden
+      aria-hidden="true"
       className={`${sizeClass} ${baseClass} ${className}`.trim()}
       title={title ?? id}
     >

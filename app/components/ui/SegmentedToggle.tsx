@@ -98,7 +98,7 @@ export function SegmentedToggle({
           width: `calc(${segmentWidthPct}% - ${padPx * 2}px)`,
           left: `calc(${selectedIndex * segmentWidthPct}% + ${padPx}px)`,
         }}
-        aria-hidden
+        aria-hidden="true"
       />
       {opts.map((o, i) => {
         const isSelected = i === selectedIndex;

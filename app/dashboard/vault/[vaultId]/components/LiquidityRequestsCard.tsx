@@ -615,7 +615,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       <li className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <svg
-                            aria-hidden
+                            aria-hidden="true"
                             className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
                             viewBox="0 0 16 16"
                             fill="currentColor"
@@ -627,7 +627,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                           </svg>
                           <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
-                            <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                            <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                           )}
                         </div>
                         <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
@@ -638,7 +638,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         <li className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                             <svg
-                              aria-hidden
+                              aria-hidden="true"
                               className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
                               viewBox="0 0 16 16"
                               fill="none"
@@ -652,7 +652,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             </svg>
                             <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
-                              <span aria-hidden className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+                              <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                             )}
                           </div>
                           <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
@@ -724,7 +724,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                       <li className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0">
                           <svg
-                            aria-hidden
+                            aria-hidden="true"
                             className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
                             viewBox="0 0 16 16"
                             fill="currentColor"
@@ -737,7 +737,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                           <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
                           {hasVaultBalanceNow && (
                             <span
-                              aria-hidden
+                              aria-hidden="true"
                               className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
                             />
                           )}
@@ -750,7 +750,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                         <li className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                             <svg
-                              aria-hidden
+                              aria-hidden="true"
                               className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
                               viewBox="0 0 16 16"
                               fill="none"
@@ -765,7 +765,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                             <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
                             {hasMaturedNow && (
                               <span
-                                aria-hidden
+                                aria-hidden="true"
                                 className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
                               />
                             )}

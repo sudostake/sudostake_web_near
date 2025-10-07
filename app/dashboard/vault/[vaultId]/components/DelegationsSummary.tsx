@@ -97,7 +97,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
       className="group relative overflow-hidden rounded border border-foreground/10 bg-background/70 shadow-sm hover:bg-background/80 transition-colors p-3 dark:bg-background/60 dark:shadow-none"
       key={entry.validator}
     >
-      <div className={accentBarClass(status)} aria-hidden />
+      <div className={accentBarClass(status)} aria-hidden="true" />
       <div className="min-w-0">
         {/* Validator + status */}
         <div className="flex items-center gap-2 min-w-0">

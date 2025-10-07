@@ -43,7 +43,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   return (
     <div className="space-y-4">
       {/* Sentinel to detect affixed sticky header */}
-      <div id="discover-header-sentinel" aria-hidden className="h-px" />
+      <div id="discover-header-sentinel" aria-hidden="true" className="h-px" />
       <header
         className={[
           "sticky z-30 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",

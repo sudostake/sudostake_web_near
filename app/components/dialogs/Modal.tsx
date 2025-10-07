@@ -78,7 +78,7 @@ export function Modal({
       <div
         className="absolute inset-0 bg-black/50"
         onClick={disableBackdropClose ? undefined : onClose}
-        aria-hidden
+        aria-hidden="true"
       />
       <div className="relative z-10 mx-auto flex w-full max-w-lg max-h-modal flex-col overflow-hidden rounded-3xl border border-foreground/10 bg-surface shadow-2xl">
         <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-4">

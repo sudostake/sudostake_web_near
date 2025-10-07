@@ -18,7 +18,7 @@ export function WalletBadges() {
       {WALLETS.map((w) => (
         <li key={w.name} className="flex items-center gap-3 rounded-full border bg-foreground/5 px-3 py-2">
           <span
-            aria-hidden
+            aria-hidden="true"
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${w.color} text-white font-semibold`}
           >
             {(w.letter ?? w.name[0]).toUpperCase()}

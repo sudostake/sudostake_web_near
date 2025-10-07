@@ -70,7 +70,7 @@ export function SocialStrip() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-full border bg-surface px-3 py-2 text-sm text-secondary-text hover:text-primary transition-colors"
               >
-                <span aria-hidden>{link.icon}</span>
+                <span aria-hidden="true">{link.icon}</span>
                 <span>{link.label}</span>
               </Link>
             </li>

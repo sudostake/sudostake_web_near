@@ -40,7 +40,7 @@ export function Features() {
           <ul className="mt-4 space-y-4 text-sm text-secondary-text">
             {assurances.map((item) => (
               <li key={item} className="flex gap-3">
-                <span aria-hidden className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-primary/80" />
+                <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 flex-none rounded-full bg-primary/80" />
                 <span>{item}</span>
               </li>
             ))}

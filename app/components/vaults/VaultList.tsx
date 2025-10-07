@@ -43,7 +43,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
       </div>
       <div className="flex items-center gap-2 text-sm text-secondary-text">
         <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
-        <span aria-hidden className="hidden sm:inline">Open</span>
+        <span aria-hidden="true" className="hidden sm:inline">Open</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -51,7 +51,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
           stroke="currentColor"
           strokeWidth={2.5}
           className="h-4 w-4"
-          aria-hidden
+          aria-hidden="true"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 5l7 7-7 7" />
         </svg>

@@ -39,7 +39,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
           <article className="flex-1 space-y-6">
             <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-primary">
-              <span aria-hidden>←</span>
+              <span aria-hidden="true">←</span>
               Back to docs
             </Link>
             {hasToc ? (
@@ -48,7 +48,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
                   <details className="docs-toc" open>
                     <summary className="flex cursor-pointer items-center justify-between gap-3">
                       <span className="font-semibold text-foreground">On this page</span>
-                      <svg aria-hidden className="docs-toc__icon h-4 w-4 text-secondary-text transition-transform duration-200" viewBox="0 0 20 20">
+                      <svg aria-hidden="true" className="docs-toc__icon h-4 w-4 text-secondary-text transition-transform duration-200" viewBox="0 0 20 20">
                         <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" />
                       </svg>
                     </summary>
