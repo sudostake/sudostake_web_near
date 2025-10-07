@@ -1,26 +1,31 @@
-Networks and RPC
+# Networks and RPC
 
-Supported networks
+## TL;DR
+- SudoStake ships with two networks: **testnet** (default) and **mainnet**. Switching networks swaps factory IDs, RPC hosts, and token lists.
+- All blockchain calls go through `/api/rpc`, so the browser never talks to NEAR directly.
+- The selected network is stored locally so the app remembers your choice across sessions.
 
-- testnet (default)
-- mainnet
+## Factories and endpoints
 
-Factory contracts
+| Network | Factory contract | RPC endpoint | Explorer |
+| ------- | ---------------- | ------------ | -------- |
+| testnet | `nzaza.testnet` | `https://rpc.testnet.fastnear.com` | https://testnet.nearblocks.io |
+| mainnet | `sudostake.near` | `https://rpc.mainnet.fastnear.com` | https://nearblocks.io |
 
-- testnet: nzaza.testnet
-- mainnet: sudostake.near
+## Active network logic
+- The selector defaults to **testnet**.
+- We store the preference in `localStorage` under `selectedNetwork`.
+- Helpers in `utils/networks.ts` manage read/write so components stay in sync.
 
-RPC endpoints
+## RPC proxy
+- Route: `POST /api/rpc?network=testnet|mainnet` (query param optional—defaults to `testnet`).
+- Body: standard NEAR JSON-RPC payload `{ "method": "query", "params": … }`.
+- Benefits: avoids browser CORS limits, centralises retries, and lets us log or rate limit by method.
 
-- testnet: https://rpc.testnet.fastnear.com
-- mainnet: https://rpc.mainnet.fastnear.com
+## Wallet selector integration
+- When you change networks, the wallet selector reconnects with the correct `nodeUrl` and `indexerUrl`.
+- Feature pages listen for the network change and swap data sources and token metadata automatically.
 
-RPC proxy
-
-- POST /api/rpc forwards JSON-RPC to the selected network (?network=testnet|mainnet)
-- Wallet Selector uses the proxy for nodeUrl and the upstream for indexerUrl
-
-Active network
-
-- Stored in localStorage (selectedNetwork). Defaults to testnet if missing.
-- utils/networks.ts has helpers to get/set it.
+## Tips
+- Need to add another network (e.g., a staging factory)? Extend `utils/networks.ts` and add the RPC host, factory ID, and token metadata. Update this page so everyone knows the new IDs.
+- When debugging RPC calls, use the browser devtools network tab—you’ll see `/api/rpc` POSTs with the actual JSON payload.

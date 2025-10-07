@@ -1,32 +1,38 @@
-Viewer roles and UI gating
+# Viewer roles
 
-This app derives viewer roles from on-chain indexed vault state and the connected wallet.
+## TL;DR
+- The UI tailors actions based on who is looking at a vault: guest, owner, active lender, or curious lender.
+- Roles are derived from the connected wallet and the latest Firestore copy of the vault.
+- Understanding these rules helps you explain why certain buttons appear or stay hidden.
 
-Roles
+## Role definitions
+- **Guest** — No wallet connected. Can browse public data only.
+- **Owner** — Connected wallet matches `vault.owner`. Gets full control over requests, staking, and ownership.
+- **Active lender** — Connected wallet matches `accepted_offer.lender`. Sees repayment status and relevant callouts.
+- **Potential lender** — Wallet connected but not the owner or active lender. Can view details and, if the vault is pending, fund or counter-offer.
 
-- guest: no connected wallet
-- owner: connected wallet matches vault.owner
-- activeLender: connected wallet matches accepted_offer.lender
-- potentialLender: connected wallet, but neither owner nor active lender
+## How we compute the role
+1. `hooks/useWalletSelector` exposes the connected account (if any).
+2. `hooks/useVault` loads the Firestore document for the vault in view.
+3. `hooks/useViewerRole` compares the wallet account with fields inside the document and returns the role string.
 
-How it’s computed
+This all runs client-side so the UI updates instantly when a wallet connects, disconnects, or switches accounts.
 
-- Hook: hooks/useViewerRole.ts uses the wallet selector and the indexed vault document (useVault) to determine the role.
-- Source of truth: VaultDocument mirrors the contract view (get_vault_state), including owner and accepted_offer.lender.
+## UI rules (current)
+- **Liquidity requests**
+  - Only owners see the buttons to open, cancel, or edit a request.
+  - Potential lenders see funding CTAs if the state is `pending`.
+  - Active lenders see repayment status and timeline.
+- **Vault actions**
+  - Deposit, withdraw, delegate, undelegate, and claim dialogs render for the owner only.
+  - Delegations summary and historical activity stay visible to everyone.
+  - Transfer ownership is owner-only and requires the 1 yoctoNEAR confirmation transaction.
+- **Discover and lender dashboards**
+  - Discover hides owner-only actions, but highlights if your wallet could fund the request.
+  - Lender positions only load when you connect a wallet; otherwise we prompt you to connect.
 
-Current UI rules
+## Contract guardrails (for reference)
+- Only the vault owner can call `request_liquidity`, `cancel_liquidity_request`, `repay_loan`, or `transfer_ownership`.
+- Accepted offers store the lender account, which becomes the source of truth for the active lender role.
 
-- Liquidity requests
-  - Only the owner can open or cancel a liquidity request in the UI.
-  - Non-owners see the current request details when present, but no action buttons.
-- Vault actions
-  - Deposit, Withdraw, Delegate, Undelegate, and Claim Unstaked dialogs are only rendered for the owner.
-  - Delegations summary remains visible to all viewers; onboarding CTAs are disabled unless the viewer is the owner.
-  - Transfer ownership is owner-only and requires attaching exactly 1 yoctoNEAR to confirm intent.
-
-Contract reference
-
-- Only the vault owner may call request_liquidity (1 yoctoNEAR required).
-- Only the vault owner may call transfer_ownership(new_owner) (1 yoctoNEAR required).
-- Accepted offer stores the lender account; this determines the activeLender role.
-
+If you adjust the contract permissions, update these notes so support and docs stay aligned with the latest behaviour.

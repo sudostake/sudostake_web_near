@@ -31,46 +31,70 @@ function linkIfFile(rel: string, title: string, description?: string): DocLink |
 
 export default function DocsIndex() {
   const sections = [
-    buildSection("architecture", "Architecture", [linkIfFile("architecture.md", "Architecture overview")!].filter(Boolean) as DocLink[]),
     buildSection(
-      "features",
-      "Features",
+      "start",
+      "Start here",
       [
-        linkIfFile("features/authentication.md", "Authentication"),
-        linkIfFile("features/authentication-signin-flow.md", "Sign-in flow"),
-        linkIfFile("features/discover.md", "Discover: pending requests"),
-        linkIfFile("features/lender-positions.md", "Lender positions"),
-        linkIfFile("features/vaults.md", "Vaults: lifecycle and ops"),
+        linkIfFile("README.md", "Docs home", "Map of every section and how to use it"),
+        linkIfFile("architecture.md", "Architecture overview", "How wallets, Firestore, and NEAR connect"),
+        linkIfFile("reference/networks.md", "Networks & RPC", "Factory IDs, RPC hosts, and explorer links"),
+      ].filter(Boolean) as DocLink[]
+    ),
+    buildSection(
+      "prepare",
+      "Get ready",
+      [
+        linkIfFile("features/authentication.md", "Connect your wallet"),
+        linkIfFile("features/authentication-signin-flow.md", "Wallet sign-in flow"),
+        linkIfFile("reference/token-registration.md", "Token registration", "Why wallets and vaults need storage deposits"),
         linkIfFile("features/tokens.md", "Tokens and balances"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
-      "guides",
-      "Guides",
+      "owners",
+      "Vault owners",
       [
+        linkIfFile("features/vaults.md", "Vault actions overview"),
         linkIfFile("guides/opening-liquidity-request.md", "Open a liquidity request"),
         linkIfFile("guides/repay-loan.md", "Repay a loan"),
+        linkIfFile("operations/indexing.md", "Keep data fresh", "Indexing playbook after transactions"),
+      ].filter(Boolean) as DocLink[]
+    ),
+    buildSection(
+      "lenders",
+      "Lenders",
+      [
+        linkIfFile("features/discover.md", "Discover open requests"),
+        linkIfFile("features/lender-positions.md", "Track lender positions"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
       "reference",
       "Reference",
       [
-        linkIfFile("reference/api.md", "API reference"),
         linkIfFile("reference/data-model.md", "Data model"),
-        linkIfFile("reference/networks.md", "Networks and RPC"),
-        linkIfFile("reference/token-registration.md", "Token registration (NEP-141)"),
+        linkIfFile("reference/api.md", "API reference"),
         linkIfFile("reference/roles.md", "Viewer roles"),
       ].filter(Boolean) as DocLink[]
     ),
-    buildSection("operations", "Operations", [linkIfFile("operations/indexing.md", "Indexing and consistency")!].filter(Boolean) as DocLink[]),
+    buildSection(
+      "meta",
+      "Meta",
+      [
+        linkIfFile("meta/style-guide.md", "Docs voice & tone guide", "Keep `/docs` friendly for everyday users"),
+        linkIfFile("meta/rewrite-backlog.md", "Rewrite backlog", "Prioritized plan for plain-language updates"),
+        linkIfFile("meta/rendering-upgrade.md", "Rendering upgrade plan", "Switch to MDX + remark for rich formatting"),
+      ].filter(Boolean) as DocLink[]
+    ),
   ].filter(Boolean) as Section[];
 
   return (
     <div className="py-8">
       <Container>
         <h1 className="text-2xl font-semibold mb-4">Documentation</h1>
-        <p className="text-secondary-text mb-4">Architecture, features, guides, and reference for the SudoStake web app.</p>
+        <p className="text-secondary-text mb-4">
+          Start with the overview, then follow the path for vault owners or lenders. Each section links the next step so newcomers and power users stay in sync.
+        </p>
         <DocsIndexClient sections={sections} />
       </Container>
     </div>

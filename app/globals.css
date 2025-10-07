@@ -64,3 +64,51 @@ body {
     animation: pulse-soft 2.2s ease-in-out infinite;
   }
 }
+
+/* Docs styling */
+.prose :where(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: clamp(72px, 10vh, 128px);
+}
+
+.prose :where(ul, ol) {
+  padding-inline-start: 1.4rem;
+}
+
+.prose :where(li + li) {
+  margin-top: 0.35rem;
+}
+
+.prose :where(blockquote) {
+  border-color: color-mix(in oklab, var(--foreground) 18%, transparent);
+  background: color-mix(in oklab, var(--surface) 88%, var(--foreground) 12%);
+  padding: 0.75rem 1rem;
+  border-radius: 0.8rem;
+}
+
+.prose :where(code) {
+  font-size: 0.9em;
+}
+
+.prose :where(pre) {
+  background: color-mix(in oklab, var(--foreground) 12%, transparent);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.prose :where(h2#tl-dr + ul),
+.prose :where(h2#tl-dr + p),
+.prose :where(h2#tl-dr + div > ul) {
+  background: color-mix(in oklab, var(--surface) 90%, var(--primary) 10%);
+  border-left: 3px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  border-radius: 0.9rem;
+  padding: 1rem 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.docs-toc summary::-webkit-details-marker {
+  display: none;
+}
+
+.docs-toc[open] .docs-toc__icon {
+  transform: rotate(180deg);
+}
