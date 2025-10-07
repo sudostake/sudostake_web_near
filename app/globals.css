@@ -70,6 +70,23 @@
   max-height: 85vh;
 }
 
+@layer components {
+  .focus-soft {
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .focus-soft:is(:focus, :focus-visible) {
+    outline: none;
+    border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+    background-color: color-mix(in oklab, var(--surface) 96%, var(--primary) 4%);
+    box-shadow: none;
+  }
+}
+
 /* Subtle, accessible pulse for live indicators */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes pulse-soft {

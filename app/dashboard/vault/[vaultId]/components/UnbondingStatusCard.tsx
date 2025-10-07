@@ -59,7 +59,7 @@ export function UnbondingStatusCard({
 
       {open && entries.length > 0 && (
         <>
-          <div className="-mx-3 mt-2 h-px bg-foreground/10" />
+          <div className="h-px bg-foreground/10" />
           <div className="mt-2">
             <UnbondingList entries={entries} bare />
           </div>

@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
+import { Card } from "@/app/components/ui/Card";
 
 export function ActivitySection() {
   return (
-    <section className="rounded bg-surface p-4">
-      <h2 className="font-medium">Activity</h2>
-      <div className="mt-2 text-sm text-secondary-text">No recent activity.</div>
-    </section>
+    <Card className="space-y-2" role="region" aria-label="Recent activity">
+      <h2 className="text-lg font-semibold">Activity</h2>
+      <p className="text-sm text-secondary-text">No recent events yet. Actions you take here will appear in this timeline.</p>
+    </Card>
   );
 }

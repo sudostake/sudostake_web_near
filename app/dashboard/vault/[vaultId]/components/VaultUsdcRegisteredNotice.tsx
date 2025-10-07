@@ -2,18 +2,15 @@
 
 import React from "react";
 import { STRINGS } from "@/utils/strings";
+import { Card } from "@/app/components/ui/Card";
 
 export function VaultUsdcRegisteredNotice({ registered, className = "" }: { registered: boolean; className?: string }) {
   const base = registered
-    ? "border-emerald-500/30 bg-emerald-100/30 text-emerald-900 dark:text-emerald-100"
-    : "border-amber-500/30 bg-amber-100/40 text-amber-900 dark:text-amber-100";
+    ? "border-emerald-400/40 bg-emerald-50/70 text-emerald-900"
+    : "border-amber-400/40 bg-amber-50/70 text-amber-900";
   return (
-    <div className={`rounded border p-3 text-sm ${base} ${className}`}>
-      {registered ? (
-        <div>{STRINGS.vaultRegisteredDefaultToken}</div>
-      ) : (
-        <div>{STRINGS.vaultNotRegisteredDefaultToken}</div>
-      )}
-    </div>
+    <Card className={`text-sm ${base} ${className}`}>
+      {registered ? STRINGS.vaultRegisteredDefaultToken : STRINGS.vaultNotRegisteredDefaultToken}
+    </Card>
   );
 }

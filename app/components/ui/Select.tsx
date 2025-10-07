@@ -37,8 +37,7 @@ export function Select({
   const base = [
     "w-full rounded border bg-background text-foreground",
     "h-9 px-2 pr-8",
-    "appearance-none",
-    "outline-none focus:ring-2 focus:ring-primary/50",
+    "appearance-none focus-soft",
     "disabled:opacity-60 disabled:cursor-not-allowed",
   ].join(" ");
 

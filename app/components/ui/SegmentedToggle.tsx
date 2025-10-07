@@ -45,9 +45,13 @@ export function SegmentedToggle({
   const btnPad = size === "sm" ? "px-3 py-1" : "px-4 py-1.5";
 
   const isPrimary = variant === "primary";
-  const thumbBg = isPrimary ? "bg-primary" : "bg-surface";
+  const thumbClasses = [
+    "absolute rounded-full pointer-events-none transition-all duration-200 ease-out",
+    thumbVert,
+    isPrimary ? "bg-primary shadow-sm" : "bg-surface shadow-sm ring-1 ring-foreground/10",
+  ].join(" ");
   const selectedText = isPrimary ? "text-primary-text" : "text-foreground";
-  const unselectedText = "text-secondary-text";
+  const unselectedText = isPrimary ? "text-foreground" : "text-secondary-text";
 
   // Horizontal inset so the thumb and segments don't touch edges
   const padPx = size === "sm" ? 2 : 6;
@@ -74,7 +78,7 @@ export function SegmentedToggle({
   return (
     <div
       className={[
-        "relative inline-flex w-full select-none items-center rounded-full border border-foreground/10 bg-surface-muted/60",
+        "relative inline-flex w-full select-none items-center overflow-hidden rounded-full border border-foreground/10 bg-surface-muted/60",
         paddingClass,
         disabled ? "opacity-60 cursor-not-allowed" : "",
         className,
@@ -87,7 +91,7 @@ export function SegmentedToggle({
       }}
     >
       <div
-        className={[`absolute rounded-full ${thumbBg} shadow-sm transition-all duration-200 ease-out pointer-events-none`, thumbVert].join(" ")}
+        className={thumbClasses}
         style={{
           width: `calc(${segmentWidthPct}% - ${padPx * 2}px)`,
           left: `calc(${selectedIndex * segmentWidthPct}% + ${padPx}px)`,

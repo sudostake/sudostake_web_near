@@ -21,31 +21,24 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   const { signedAccountId } = useWalletSelector();
   const network = getActiveNetwork();
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
-  // Use shared storage key directly for persisting the last asset kind
   const [kind, setKind] = useState<TokenKind>(usdcId ? "USDC" : "NEAR");
   const [showToken, setShowToken] = useState(false);
 
-  // Load last used kind on open
   useEffect(() => {
     if (!open) return;
     try {
       const saved = typeof window !== "undefined" ? window.localStorage.getItem(STORAGE_KEY_SEND_ASSET_KIND) : null;
       if (saved === "USDC" && usdcId) setKind("USDC");
       else if (saved === "NEAR") setKind("NEAR");
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    catch (_e) {
+    } catch {
       // Ignore errors reading from localStorage (e.g., blocked/unavailable environment)
     }
   }, [open, usdcId]);
 
-  // Persist selection
   useEffect(() => {
     try {
       if (typeof window !== "undefined") window.localStorage.setItem(STORAGE_KEY_SEND_ASSET_KIND, kind);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    catch (_e) {
+    } catch {
       // Ignore errors writing to localStorage (e.g., storage is unavailable)
     }
   }, [kind]);
@@ -59,33 +52,30 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
     >
       <div className="space-y-5">
         <div className="text-xs text-secondary-text">Network: <span className="uppercase font-medium">{network}</span></div>
-
-        {/* Asset toggle */}
         <div>
           <div className="text-sm text-secondary-text mb-1">Asset</div>
           <AssetToggle
             value={kind}
             onChange={setKind}
             size="sm"
+            variant="primary"
             options={[
               { kind: "NEAR", available: true },
               { kind: "USDC", available: Boolean(usdcId) },
             ]}
           />
         </div>
-
-        {/* Focused content per asset */}
         {kind === "NEAR" ? (
           <section>
             <div className="text-sm font-medium mb-1">Receive NEAR (native)</div>
             <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-              <div className="break-all" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
+              <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
               {signedAccountId && <CopyButton value={signedAccountId} title="Copy account" />}
             </div>
             <div className="mt-2 text-xs text-secondary-text">Share your account to receive NEAR.</div>
             <div className="mt-3 text-right">
               <CopyButton
-                value={`Send NEAR to ${signedAccountId ?? 'my account'} on ${network.toUpperCase()}.`}
+                value={`Send NEAR to ${signedAccountId ?? "my account"} on ${network.toUpperCase()}.`}
                 title="Copy instructions"
               />
             </div>
@@ -97,7 +87,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
               <div>
                 <div className="text-xs text-secondary-text mb-1">Receiver (your account)</div>
                 <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-                  <div className="break-all" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
+                  <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
                   {signedAccountId && <CopyButton value={signedAccountId} title="Copy receiver" />}
                 </div>
               </div>
@@ -119,7 +109,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
                 <div>
                   Token contract ID:
                   <div className="mt-1 flex items-center justify-between gap-2 rounded border bg-background px-3 h-8">
-                    <div className="break-all" title={usdcId ?? undefined}>{usdcId ?? "Not configured"}</div>
+                    <div className="truncate" title={usdcId ?? undefined}>{usdcId ?? "Not configured"}</div>
                     {usdcId && <CopyButton value={usdcId} title="Copy token id" />}
                   </div>
                 </div>
@@ -130,7 +120,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
             )}
             <div className="mt-3 text-right">
               <CopyButton
-                value={`In your wallet, select USDC (${usdcId ?? 'token'}), send to ${signedAccountId ?? 'my account'} (receiver_id) on ${network.toUpperCase()}; include 1 yoctoNEAR deposit.`}
+                value={`In your wallet, select USDC (${usdcId ?? "token"}), send to ${signedAccountId ?? "my account"} (receiver_id) on ${network.toUpperCase()}; include 1 yoctoNEAR deposit.`}
                 title="Copy instructions"
               />
             </div>
