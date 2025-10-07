@@ -30,6 +30,24 @@ function linkIfFile(rel: string, title: string, description?: string): DocLink |
   return exists(filePath) ? { title, href: `/docs/${rel.replace(/\.md$/i, "")}`, description } : null;
 }
 
+const FEATURED_LINKS = [
+  {
+    href: "/docs/playbook",
+    title: "Follow the playbook",
+    description: "Understand how vault owners and lenders move through SudoStake from connect → repay.",
+  },
+  {
+    href: "/docs/guides/create-vault",
+    title: "Mint a vault",
+    description: "Mint, index, and secure your first vault so you can request liquidity with confidence.",
+  },
+  {
+    href: "/docs/guides/fund-liquidity-request",
+    title: "Fund a request",
+    description: "Review, fund, and monitor liquidity offers without missing repayment signals.",
+  },
+] satisfies Array<{ href: string; title: string; description: string }>;
+
 export default function DocsIndex() {
   const sections = [
     buildSection(
@@ -100,21 +118,9 @@ export default function DocsIndex() {
           Start with the overview, then follow the path for vault owners or lenders. Each section links the next step so newcomers and power users stay in sync.
         </p>
         <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <DocQuickLink
-            href="/docs/playbook"
-            title="Follow the playbook"
-            description="Understand how vault owners and lenders move through SudoStake from connect → repay."
-          />
-          <DocQuickLink
-            href="/docs/guides/create-vault"
-            title="Mint a vault"
-            description="Mint, index, and secure your first vault so you can request liquidity with confidence."
-          />
-          <DocQuickLink
-            href="/docs/guides/fund-liquidity-request"
-            title="Fund a request"
-            description="Review, fund, and monitor liquidity offers without missing repayment signals."
-          />
+          {FEATURED_LINKS.map((link) => (
+            <DocQuickLink key={link.href} {...link} />
+          ))}
         </div>
         <DocsIndexClient sections={sections} />
       </Container>
