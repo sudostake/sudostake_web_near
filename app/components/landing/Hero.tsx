@@ -55,7 +55,7 @@ export function Hero() {
       setSlowConnect(false);
     }
     return () => {
-      if (t) clearTimeout(t);
+      clearTimeout(t);
     };
   }, [connecting]);
   React.useEffect(() => {

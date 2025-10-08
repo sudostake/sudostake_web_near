@@ -38,9 +38,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     return () => io.disconnect();
   }, []);
 
-  const items = useMemo(() => {
-    return (data ?? []).filter((d): d is WithRequest => Boolean(d.liquidity_request));
-  }, [data]);
+  const items = useMemo(() => (data ?? []).filter((d): d is WithRequest => Boolean(d.liquidity_request)), [data]);
 
   const network = useMemo(() => networkFromFactoryId(factoryId), [factoryId]);
 

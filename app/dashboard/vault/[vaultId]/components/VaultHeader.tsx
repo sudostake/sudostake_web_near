@@ -66,16 +66,15 @@ export function VaultHeader({
   state,
   liquidation,
 }: Props) {
-  const normalizedState = typeof state === "string" ? state.trim() : "";
-  if (state !== undefined && state !== null && normalizedState.length === 0) {
-    console.warn("VaultHeader received a state value that is not a non-empty string.", { state });
+  if (state != null && typeof state !== "string") {
+    console.warn("VaultHeader received a state value that is not a string.", { state });
   }
+  const normalizedState = typeof state === "string" ? state.trim() : "";
 
-  const normalizedLiquidation =
-    typeof liquidation === "boolean" ? liquidation : Boolean(liquidation && String(liquidation).toLowerCase() !== "false");
-  if (liquidation !== undefined && typeof liquidation !== "boolean") {
+  if (liquidation != null && typeof liquidation !== "boolean") {
     console.warn("VaultHeader received a liquidation value that is not a boolean.", { liquidation });
   }
+  const normalizedLiquidation = liquidation === true;
 
   const badges: Array<{ label: string; tone: "primary" | "warn" }> = [];
   if (normalizedState) {
