@@ -58,14 +58,14 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
   return (
     <div>
       {headerMode === "full" ? (
-        <SectionHeader
-          className="mt-8"
-          title="Your lending positions"
-          caption={<>{(data ?? []).length} position{(data ?? []).length === 1 ? "" : "s"}</>}
-          right={Controls}
-        />
+      <SectionHeader
+        className="mt-8"
+        title="Your lending positions"
+        caption={<>{(data ?? []).length} position{(data ?? []).length === 1 ? "" : "s"}</>}
+        right={Controls}
+      />
       ) : (
-        <div className="mt-6 flex items-center justify-end">{Controls}</div>
+        <div className="mt-4 flex items-center justify-end">{Controls}</div>
       )}
       {query && filtered.length === 0 ? (
         <div className="mt-3 text-sm text-secondary-text">No positions match “{query}”.</div>

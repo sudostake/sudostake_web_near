@@ -61,7 +61,7 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
           right={Controls}
         />
       ) : (
-        <div className="mt-6 flex items-center justify-end">{Controls}</div>
+        <div className="mt-4 flex items-center justify-end">{Controls}</div>
       )}
       {query && filtered.length === 0 ? (
         <div className="text-sm text-secondary-text mt-3">No vaults match “{query}”.</div>

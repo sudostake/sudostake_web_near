@@ -43,6 +43,14 @@ type Props = {
   vaultNearLoading: boolean;
   usdcDisplay: string | null | undefined;
   vaultUsdcLoading: boolean;
+  state?: string | null;
+  liquidation?: boolean;
+};
+
+const STATUS_TONE: Record<string, "primary" | "warn"> = {
+  active: "primary",
+  idle: "primary",
+  pending: "warn",
 };
 
 export function VaultHeader({
@@ -55,29 +63,71 @@ export function VaultHeader({
   vaultNearLoading,
   usdcDisplay,
   vaultUsdcLoading,
+  state,
+  liquidation,
 }: Props) {
+  const badges: Array<{ label: string; tone: "primary" | "warn" }> = [];
+  if (state) {
+    const lower = state.toLowerCase();
+    const tone = STATUS_TONE[lower] ?? "primary";
+    badges.push({ label: lower.charAt(0).toUpperCase() + lower.slice(1), tone });
+  }
+  if (liquidation) {
+    badges.push({ label: "Liquidation active", tone: "warn" });
+  }
+
   return (
-    <Card className="flex flex-col gap-6" role="region" aria-label="Vault overview">
-      <div className="flex items-center gap-4">
-        <BackButton onClick={onBack} />
-        <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault overview</p>
-          <h1 className="mt-1 break-all text-[clamp(1.85rem,4vw,2.6rem)] font-semibold" title={vaultId}>
-            {vaultShortName}
-          </h1>
+    <Card
+      className="flex flex-col gap-6 rounded-[32px] border-white/12 bg-surface/95 px-6 py-8 shadow-[0_26px_90px_-55px_rgba(15,23,42,0.68)]"
+      role="region"
+      aria-label="Vault overview"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <BackButton onClick={onBack} />
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Vault overview</p>
+            <h1 className="mt-1 break-all text-[clamp(1.9rem,4.2vw,2.65rem)] font-semibold" title={vaultId}>
+              {vaultShortName}
+            </h1>
+          </div>
         </div>
+        {badges.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {badges.map((badge) => (
+              <span
+                key={badge.label}
+                className={[
+                  "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+                  badge.tone === "warn"
+                    ? "border-orange-300/50 bg-orange-100/25 text-orange-600"
+                    : "border-primary/40 bg-primary/10 text-primary",
+                ].join(" ")}
+              >
+                <span
+                  aria-hidden="true"
+                  className={[
+                    "h-1.5 w-1.5 rounded-full",
+                    badge.tone === "warn" ? "bg-orange-500" : "bg-primary",
+                  ].join(" ")}
+                />
+                {badge.label}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <LabelValue
           label={STRINGS.vaultIdLabel}
           value={
-            <span className="inline-flex items-center gap-2 min-w-0">
+            <span className="inline-flex min-w-0 items-center gap-2">
               <Link
                 href={explorerAccountUrl(network, vaultId)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono underline decoration-dotted break-all"
+                className="break-all font-mono underline decoration-dotted"
                 title={vaultId}
                 aria-label={`View vault ${vaultId} on explorer`}
               >
@@ -91,7 +141,7 @@ export function VaultHeader({
           <LabelValue
             label={STRINGS.ownerLabel}
             value={
-              <span className="inline-flex items-center gap-2 min-w-0 break-all">
+              <span className="inline-flex min-w-0 items-center gap-2 break-all">
                 <Link
                   href={explorerAccountUrl(network, owner)}
                   target="_blank"
@@ -113,11 +163,11 @@ export function VaultHeader({
         <LabelValue
           label={STRINGS.contractBalanceLabel}
           value={
-            <span className="inline-flex items-baseline gap-1 text-lg font-semibold">
+            <span className="inline-flex items-baseline gap-1 text-xl font-semibold text-foreground">
               <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
                 {vaultNearLoading ? "Loading…" : vaultNear}
               </span>
-              <span className="text-sm text-secondary-text">{NATIVE_TOKEN}</span>
+              <span className="text-sm text-secondary-text/80">{NATIVE_TOKEN}</span>
             </span>
           }
         />
@@ -125,11 +175,11 @@ export function VaultHeader({
           <LabelValue
             label={STRINGS.usdcBalanceLabel}
             value={
-              <span className="inline-flex items-baseline gap-1 text-lg font-semibold">
+              <span className="inline-flex items-baseline gap-1 text-xl font-semibold text-foreground">
                 <span className="break-all" title={`${usdcDisplay} USDC`}>
                   {vaultUsdcLoading ? "Loading…" : usdcDisplay}
                 </span>
-                <span className="text-sm text-secondary-text">USDC</span>
+                <span className="text-sm text-secondary-text/80">USDC</span>
               </span>
             }
           />

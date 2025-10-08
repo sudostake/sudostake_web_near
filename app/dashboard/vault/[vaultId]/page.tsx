@@ -173,7 +173,10 @@ export default function VaultPage() {
     Body = (
       <div className="space-y-4" aria-live="polite" aria-busy="true">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="animate-pulse rounded-3xl border border-foreground/5 bg-surface p-6">
+          <div
+            key={i}
+            className="animate-pulse rounded-[28px] border border-white/12 bg-surface/90 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
+          >
             <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
             <div className="mt-4 h-20 rounded-2xl bg-foreground/5" />
           </div>
@@ -189,7 +192,7 @@ export default function VaultPage() {
         />
 
         {isOwner && (
-          <Card className="space-y-4">
+          <Card className="space-y-4 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
             <h2 className="text-lg font-semibold">Manage vault funds</h2>
             <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
           </Card>
@@ -242,9 +245,13 @@ export default function VaultPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <main id="main" className="w-full" aria-busy={loading || undefined}>
-        <Container className="pt-20 space-y-6">
+    <div className="relative min-h-screen overflow-hidden bg-background pb-28">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.22),transparent_65%)]"
+      />
+      <main id="main" className="relative w-full" aria-busy={loading || undefined}>
+        <Container className="pt-20 space-y-8">
           <VaultHeader
             onBack={() => router.back()}
             vaultId={String(vaultId)}
@@ -255,6 +262,8 @@ export default function VaultPage() {
             vaultNearLoading={vaultNearLoading}
             usdcDisplay={vaultUsdc?.toDisplay()}
             vaultUsdcLoading={vaultUsdcLoading}
+            state={data?.state}
+            liquidation={Boolean(data?.liquidation)}
           />
           {Body}
         </Container>

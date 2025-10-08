@@ -20,9 +20,13 @@ export default function Home() {
   if (signedAccountId) return null;
 
   return (
-    <div className="min-h-screen pb-20 font-[family-name:var(--font-geist-sans)]">
-      <main id="main">
-        <Container>
+    <div className="relative min-h-screen overflow-hidden pb-24 font-[family-name:var(--font-geist-sans)]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-[-40vh] h-[70vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.22),transparent_60%)]"
+      />
+      <main id="main" className="relative">
+        <Container className="pt-12 sm:pt-16">
           <Hero />
           <Features />
           <LandingFAQ />
