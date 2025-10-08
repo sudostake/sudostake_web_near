@@ -76,38 +76,47 @@ export default function Dashboard() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[60vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.18),transparent_65%)]"
       />
-      <Container className="relative pt-24 space-y-10">
+      <Container className="relative space-y-8 pt-14 sm:space-y-10 sm:pt-[4.5rem]">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.58fr),minmax(280px,0.42fr)]">
-          <header className="relative overflow-hidden rounded-[32px] border border-white/12 bg-surface/90 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] backdrop-blur-sm sm:px-10">
-            <div
-              aria-hidden="true"
-              className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.2),transparent_70%)] blur-3xl"
-            />
-            <div className="relative flex flex-col gap-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Dashboard</p>
-                <h1 className="text-[clamp(2.1rem,4.2vw,2.8rem)] font-semibold text-foreground">
-                  Operate your NEAR credit line
-                </h1>
-                <p className="max-w-xl text-base leading-relaxed text-secondary-text sm:text-sm">
-                  Monitor balances, collateral health, and active lending positions in one place. Every control stays linked to
-                  the vault you own.
-                </p>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-sm text-secondary-text">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-background/80 px-3 py-1 font-mono text-xs text-secondary-text/90">
+          <header className="rounded-3xl border border-white/10 bg-surface px-6 py-6 shadow-[0_16px_52px_-30px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-primary">
                   <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
-                  {shortAccount}
-                </span>
-                <span className="hidden sm:inline">•</span>
-                <span>Network: {networkLabel}</span>
+                  Dashboard overview
+                </div>
+                <div className="space-y-2">
+                  <h1 className="text-[clamp(1.85rem,3.6vw,2.45rem)] font-semibold leading-[1.15] text-foreground">
+                    Operate your NEAR credit line
+                  </h1>
+                  <p className="max-w-xl text-sm leading-relaxed text-secondary-text">
+                    Keep your vaults funded, track lending activity, and act on liquidation tasks from one streamlined console.
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-wide text-secondary-text/70">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-background/80 px-3 py-1 font-mono text-[11px] text-secondary-text/90">
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
+                    {shortAccount}
+                  </span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Network: {networkLabel}</span>
+                </div>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <HeaderStat label="Vaults you own" value={totalVaults} />
-                <HeaderStat label="Active lending positions" value={totalPositions} />
-              </div>
-              <div>
-                <Button size="sm" onClick={() => setShowCreate(true)}>
+              <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-white/10 bg-surface-muted/70 p-4 sm:p-5">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <HeaderStat label="Vaults you own" value={totalVaults} />
+                  <HeaderStat label="Active lending positions" value={totalPositions} />
+                </div>
+                <p className="text-xs leading-relaxed text-secondary-text/80">
+                  Manage existing vaults or open new ones in the operations hub below.
+                </p>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                  onClick={() => setShowCreate(true)}
+                  disabled={!signedAccountId}
+                >
                   Create new vault
                 </Button>
               </div>
@@ -118,10 +127,9 @@ export default function Dashboard() {
             usdc={balances.usdc}
             loading={balancesLoading}
             onRefreshBalances={refetchBalances}
-            className="sm:p-7"
           />
         </div>
-        <section className="rounded-[32px] border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_28px_90px_-60px_rgba(15,23,42,0.6)] sm:px-10">
+        <section className="rounded-3xl border border-white/10 bg-surface px-6 py-7 shadow-[0_18px_60px_-36px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8">
           <div className="flex flex-col gap-6">
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Operations</p>
@@ -143,7 +151,7 @@ export default function Dashboard() {
                 className="w-full max-w-md"
               />
             </div>
-            <div className="rounded-2xl border border-white/10 bg-background/85 px-3 py-4 sm:px-6 sm:py-6">
+            <div className="space-y-6 border-t border-white/10 pt-6">
               <div
                 id="vaults-panel"
                 role="tabpanel"
@@ -183,9 +191,11 @@ export default function Dashboard() {
 
 function HeaderStat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-white/12 bg-background/80 px-4 py-4">
-      <p className="text-xs uppercase tracking-wide text-secondary-text/80">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-foreground">{value}</p>
+    <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-white/10 bg-surface-muted/70 px-3 py-3 sm:px-4 sm:py-4">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-text/70 leading-[1.35]">
+        {label}
+      </p>
+      <p className="text-[1.75rem] font-semibold leading-none text-foreground">{value}</p>
     </div>
   );
 }

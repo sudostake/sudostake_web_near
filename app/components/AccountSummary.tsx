@@ -9,7 +9,6 @@ import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
-import { SectionHeader } from "@/app/components/ui/SectionHeader";
 // (No asset toggle here; dialogs handle asset selection themselves)
 
 type AccountSummaryProps = {
@@ -34,9 +33,11 @@ export function AccountSummary({
   const [recvOpen, setRecvOpen] = React.useState(false);
 
   return (
-    <Card className={`w-full h-full rounded-[28px] border-white/12 bg-surface/95 p-6 shadow-[0_18px_60px_-45px_rgba(15,23,42,0.65)] ${className}`}>
+    <Card
+      className={`w-full h-full rounded-3xl border-white/10 bg-surface px-6 py-6 shadow-[0_16px_52px_-32px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8 ${className}`}
+    >
       <HeaderWithActions onRefreshBalances={onRefreshBalances} />
-      <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+      <div className="mt-5 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
         <BalanceStat
           label={`${near.symbol} balance`}
           valueDisplay={nearShort}
@@ -52,7 +53,7 @@ export function AccountSummary({
           loading={Boolean(loading)}
         />
       </div>
-      <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end px-4 sm:px-5">
         <div className="flex w-full items-center gap-2 sm:w-auto">
           <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
             Receive
@@ -76,17 +77,17 @@ export function AccountSummary({
 
 function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
   return (
-    <SectionHeader
-      title="Liquid balances"
-      caption="See the NEAR and USDC you can deploy into vaults or lending immediately."
-      right={
-        onRefreshBalances && (
-          <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>
-            Refresh
-          </Button>
-        )
-      }
-    />
+    <div className="flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-foreground">Liquid balances</h2>
+        <p className="text-sm text-secondary-text">Balances ready for deposits, transfers, or lender actions.</p>
+      </div>
+      {onRefreshBalances && (
+        <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>
+          Refresh
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -104,11 +105,11 @@ function BalanceStat({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-foreground/5 bg-surface-muted/60 p-4">
-      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
-      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-3xl font-semibold">
+    <div className="rounded-xl border border-white/10 bg-surface-muted/70 p-4 sm:p-5">
+      <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">{label}</div>
+      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-[2.15rem] font-semibold leading-none">
         {loading ? (
-          <div className="h-8 w-28 animate-pulse rounded-full bg-background" aria-hidden="true" />
+          <div className="h-8 w-24 animate-pulse rounded-full bg-surface" aria-hidden="true" />
         ) : (
           <>
             <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>

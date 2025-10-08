@@ -28,7 +28,7 @@ export default function LoginPage() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-28vh] h-[55vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
       />
-      <Container className="relative pt-24 pb-20">
+      <Container className="relative pt-16 sm:pt-20 pb-20">
         <main id="main" className="mx-auto max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
             <section className="relative overflow-hidden rounded-[32px] border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
