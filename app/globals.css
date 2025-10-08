@@ -70,6 +70,15 @@
   max-height: 85vh;
 }
 
+/* App-wide radius utilities */
+@utility rounded-app {
+  border-radius: var(--radius-md);
+}
+
+@utility rounded-app-lg {
+  border-radius: var(--radius-lg);
+}
+
 @layer components {
   .focus-soft {
     transition:

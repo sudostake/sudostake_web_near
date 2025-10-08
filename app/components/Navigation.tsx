@@ -31,6 +31,14 @@ function DiscoverIcon() {
     </svg>
   );
 }
+function UserIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 20.25a8.25 8.25 0 1 1 15 0" />
+    </svg>
+  );
+}
 import Link from "next/link";
 // import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
@@ -41,7 +49,7 @@ import { getActiveNetwork } from "@/utils/networks";
  * Navigation bar with Login/Logout button.
  */
 export function Navigation() {
-  const { signedAccountId, signIn, signOut } = useWalletSelector();
+  const { signedAccountId, signOut } = useWalletSelector();
   // const router = useRouter();
   const [network, setNetwork] = useState<string>("");
   useEffect(() => {
@@ -105,16 +113,10 @@ export function Navigation() {
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-1.5 sm:flex-nowrap sm:justify-between sm:py-2.5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 sm:px-6 lg:px-8 py-1.5 sm:flex-nowrap sm:justify-between sm:py-2.5">
           <div className="flex flex-1 items-center gap-2 sm:gap-4">
             <Link href="/" className="text-xl font-bold whitespace-nowrap">
               SudoStake
-            </Link>
-            <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
-              Discover
-            </Link>
-            <Link href="/docs" className="hidden md:inline text-sm text-secondary-text hover:underline">
-              Docs
             </Link>
             {network && (
               <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-background/70 px-2 py-1 text-[11px] uppercase tracking-wide text-secondary-text md:hidden">
@@ -133,7 +135,7 @@ export function Navigation() {
             <Link
               href="/discover"
               aria-label="Discover"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <DiscoverIcon />
               <span className="sr-only">Discover</span>
@@ -141,7 +143,7 @@ export function Navigation() {
             <Link
               href="/docs"
               aria-label="Docs"
-              className="inline-flex h-9 w-9 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <span className="sr-only">Docs</span>
               {/* Simple book icon */}
@@ -151,28 +153,55 @@ export function Navigation() {
               </svg>
             </Link>
 
-            {!signedAccountId ? (
-              <Button size="sm" onClick={() => signIn()} className="min-w-[128px] sm:w-auto">
-                Connect Wallet
-              </Button>
-            ) : (
+            {/* Desktop links on the right */}
+            <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
+              Discover
+            </Link>
+            <Link href="/docs" className="hidden md:inline text-sm text-secondary-text hover:underline">
+              Docs
+            </Link>
+
+            {/* Desktop nav items are on the left next to brand */}
+
+            {signedAccountId && (
               <div className="relative" ref={menuRef}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="inline-flex items-center justify-between gap-2 pl-3 pr-2 sm:justify-center"
+                {/* Mobile account icon trigger */}
+                <button
+                  type="button"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen || undefined}
                   onClick={() => setMenuOpen((o) => !o)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
                 >
-                  <span className="font-mono" title={signedAccountId}>{accountShort}</span>
-                  <ChevronDownIcon />
-                </Button>
+                  <UserIcon />
+                  <span className="sr-only">Account</span>
+                </button>
+
+                {/* Desktop account button trigger (wrapped to ensure it's hidden on mobile) */}
+                <div className="hidden md:block">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="inline-flex items-center justify-between gap-2 pl-3 pr-2"
+                    aria-haspopup="menu"
+                    aria-expanded={menuOpen || undefined}
+                    onClick={() => setMenuOpen((o) => !o)}
+                  >
+                    <span className="font-mono" title={signedAccountId}>{accountShort}</span>
+                    <ChevronDownIcon />
+                  </Button>
+                </div>
+
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 mt-2 w-44 rounded border bg-surface shadow-lg py-1 z-50"
+                    className="absolute right-0 mt-2 w-44 rounded-app border bg-surface shadow-lg py-1 z-50"
                   >
+                    {signedAccountId && (
+                      <div className="px-3 py-2 text-xs text-secondary-text/90 border-b border-white/12" role="none">
+                        <span className="font-mono block truncate" title={signedAccountId}>{signedAccountId}</span>
+                      </div>
+                    )}
                     <Button
                       role="menuitem"
                       variant="ghost"
