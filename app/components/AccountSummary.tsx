@@ -12,17 +12,21 @@ import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog"
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
 // (No asset toggle here; dialogs handle asset selection themselves)
 
+type AccountSummaryProps = {
+  near: Balance;
+  usdc: Balance;
+  loading?: boolean;
+  onRefreshBalances?: () => void;
+  className?: string;
+};
+
 export function AccountSummary({
   near,
   usdc,
   loading,
   onRefreshBalances,
-}: {
-  near: Balance;
-  usdc: Balance;
-  loading?: boolean;
-  onRefreshBalances?: () => void;
-}) {
+  className = "",
+}: AccountSummaryProps) {
   const usdcLabel = "USDC Balance";
   const nearShort = shortAmount(near.toDisplay(), 3);
   const usdcShort = shortAmount(usdc.toDisplay(), 3);
@@ -30,7 +34,7 @@ export function AccountSummary({
   const [recvOpen, setRecvOpen] = React.useState(false);
 
   return (
-    <Card className="w-full p-6">
+    <Card className={`w-full h-full rounded-[28px] border-white/12 bg-surface/95 p-6 shadow-[0_18px_60px_-45px_rgba(15,23,42,0.65)] ${className}`}>
       <HeaderWithActions onRefreshBalances={onRefreshBalances} />
       <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
         <BalanceStat
@@ -73,8 +77,8 @@ export function AccountSummary({
 function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
   return (
     <SectionHeader
-      title="Account balances"
-      caption="Track liquid NEAR and USDC ready to deploy."
+      title="Liquid balances"
+      caption="See the NEAR and USDC you can deploy into vaults or lending immediately."
       right={
         onRefreshBalances && (
           <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>

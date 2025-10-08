@@ -1,20 +1,20 @@
 # Discover open liquidity requests
 
 ## TL;DR
-- The Discover page is the public window into vaults that are currently asking for liquidity.
-- By default it streams updates live from Firestore. You can flip an env flag to switch to the REST API if you prefer scheduled polling.
-- Sorting and filtering are lightweight on the client so the page stays fast even on slower devices.
-- New to lending? Register your wallet with the token first and keep [Track lender positions](./lender-positions.md) open in another tab once you fund an offer.
+- Discover is the marketplace view of every vault that’s currently requesting liquidity.
+- Realtime Firestore subscriptions keep the feed live by default; you can fall back to the REST API if you need controlled polling.
+- Token chips and search filters let lenders focus on the requests that match their mandate without reloading the page.
+- Before funding an offer, make sure your wallet is registered with the token and keep [Track lender positions](./lender-positions.md) open to monitor the loan.
 
 ## What you see
-- A card for each pending request: vault name, requested token, amount, interest, collateral, and time remaining.
-- Helpful nudges such as “Requires token registration” when a lender needs to prepare their account.
-- Quick links to learn more about the vault before funding it.
+- A card for each pending request including vault ID, token, amount, estimated APR, collateral health buffer, and remaining time.
+- Status nudges such as “Register storage” or “Funded recently” so lenders know what to do next.
+- A link on every card that opens the vault detail view for deeper diligence before funding.
 
 ## How data loads
-1. The page reads from the `pending_liquidity_requests` view inside Firestore.
-2. When `NEXT_PUBLIC_PENDING_USE_API=false` (default) we subscribe in realtime, so new requests appear immediately.
-3. When `NEXT_PUBLIC_PENDING_USE_API=true` we call `GET /api/view_pending_liquidity_requests` on an interval—use this mode if you want to cache responses or throttle reads.
+1. The page queries the `pending_liquidity_requests` view in Firestore.
+2. When `NEXT_PUBLIC_PENDING_USE_API=false` (default) we subscribe to Firestore in realtime so new requests appear instantly.
+3. When `NEXT_PUBLIC_PENDING_USE_API=true` we poll `GET /api/view_pending_liquidity_requests` on an interval—useful when you need deterministic caching or rate limiting.
 
 ## REST endpoint (optional)
 ```
@@ -24,11 +24,12 @@ GET /api/view_pending_liquidity_requests?factory_id=<factoryId>&limit=<n>
 - `limit` is optional (max 500) and lets you trim the list for embeds or dashboards.
 
 ## Where to look in the code
-- `utils/data/pending.ts` — wrapper that decides between realtime Firestore and REST polling.
-- `app/api/view_pending_liquidity_requests/route.ts` — the REST handler with basic guards.
-- `utils/db/vaults.ts` — helpers that query Firestore collections by factory.
+- `utils/data/pending.ts` — chooses between realtime Firestore and REST polling.
+- `app/api/view_pending_liquidity_requests/route.ts` — REST handler with basic guards and parameter validation.
+- `utils/db/vaults.ts` — Firestore helpers keyed by factory ID.
 
 ## Tips for everyday use
-- Use Discover to compare offers quickly: we highlight annualised interest so you can skim.
-- Ready to lend? Follow [Fund a liquidity request](../guides/fund-liquidity-request.md) from the vault page linked on each card.
-- If a request disappears after funding, it either filled or expired; refresh to confirm and check your lender dashboard for the new position.
+- Use the token chips to focus on assets you actively lend; the count badge shows how many requests remain after filtering.
+- When you’re ready to lend, open the vault link and follow [Fund a liquidity request](../guides/fund-liquidity-request.md) to complete the transfer safely.
+- If a card disappears, it filled or expired—refresh to confirm and check your lender dashboard for the resulting position.
+

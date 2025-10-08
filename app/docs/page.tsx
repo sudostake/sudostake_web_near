@@ -35,17 +35,17 @@ const FEATURED_LINKS = [
   {
     href: "/docs/playbook",
     title: "Start with the playbook",
-    description: "See the full journey for vault owners and lenders in under five minutes.",
+    description: "Understand how vault owners and lenders collaborate, from setup to repayment.",
   },
   {
     href: "/docs/guides/create-vault",
     title: "Create your vault",
-    description: "Mint and prepare your vault so you’re ready to request liquidity.",
+    description: "Mint, configure, and collateralise a vault so you can publish your first request.",
   },
   {
     href: "/docs/guides/fund-liquidity-request",
     title: "Fund a request",
-    description: "Learn how to review offers, lend safely, and track repayments.",
+    description: "Review key signals, lend safely, and monitor repayments with confidence.",
   },
 ] satisfies Array<{ href: string; title: string; description: string }>;
 
@@ -104,13 +104,18 @@ export default function DocsIndex() {
   ].filter(Boolean) as Section[];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <Container className="pt-24 space-y-8">
-        <Card className="space-y-4">
+    <div className="relative min-h-screen overflow-hidden bg-background pb-28">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
+      />
+      <Container className="relative pt-24 space-y-8">
+        <Card className="space-y-4 rounded-[32px] border-white/12 bg-surface/95 px-8 py-10 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)]">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
-          <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Docs that get you moving</h1>
+          <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Documentation built for operators</h1>
           <p className="max-w-3xl text-sm text-secondary-text">
-            Choose the path that matches what you want to do—whether you’re preparing a vault or funding a request, each guide walks you through the next step.
+            Pick the path that matches your role. Every article pairs concise explanations with checklists so teams can move
+            from wallet connection to active lending without guesswork.
           </p>
         </Card>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -118,7 +123,7 @@ export default function DocsIndex() {
             <DocQuickLink key={link.href} {...link} />
           ))}
         </div>
-        <Card className="space-y-6">
+        <Card className="space-y-6 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
           <DocsIndexClient sections={sections} />
         </Card>
       </Container>
@@ -130,7 +135,7 @@ function DocQuickLink({ href, title, description }: { href: string; title: strin
   return (
     <Link
       href={href}
-      className="group block rounded-2xl border border-foreground/10 bg-surface px-5 py-4 transition-all hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+      className="group block rounded-[24px] border border-white/12 bg-background/85 px-5 py-4 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="font-semibold text-foreground">{title}</span>

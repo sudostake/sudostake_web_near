@@ -1,25 +1,27 @@
 # SudoStake docs home
 
-## TL;DR
-- These pages show you how to get something done right away—just pick whether you’re managing a vault or lending tokens.
-- Every guide is written in everyday language, with callouts for risks, timing, and what to do next.
-- You can always jump between the owner and lender paths; many teams play both roles.
+## What you’ll find here
+- Operator-focused guides that mirror the product: connect a wallet, prepare a vault, publish a request, fund it, and repay.
+- Checklists and callouts written in clear language so teams can move quickly without cross-referencing multiple tabs.
+- References for developers and analysts who need to understand contract architecture, indexing, and data models.
 
-## Pick your path
+You can jump between roles at any time. Many organisations both borrow and lend, so every section aims to keep the full loop visible.
 
-### If you run (or want to run) a vault
-1. Read the [architecture overview](./architecture.md) so you know how your vault talks to NEAR and Firestore.
-2. Connect a wallet with the [sign-in flow](./features/authentication-signin-flow.md) and make sure you’re [registered with each token](./reference/token-registration.md).
-3. [Mint a vault](./guides/create-vault.md) on the network you care about, then follow the [vault actions overview](./features/vaults.md).
-4. Open your first request with [Open a liquidity request](./guides/opening-liquidity-request.md).
-5. Keep [Repay a loan](./guides/repay-loan.md) and the [indexing playbook](./operations/indexing.md) handy for day-to-day operations.
+## Pick your starting point
 
-### If you lend liquidity (or you’re considering it)
-1. Skim the [architecture overview](./architecture.md) for context, then connect your wallet with the [sign-in flow](./features/authentication-signin-flow.md).
-2. Make sure you’re [registered with the token](./reference/token-registration.md) you plan to lend.
-3. Walk through [Fund a liquidity request](./guides/fund-liquidity-request.md) so you know exactly what happens when you lend.
-4. Use [Discover open requests](./features/discover.md) to find opportunities and [Track lender positions](./features/lender-positions.md) to monitor the loans you’ve funded.
-5. Review [Repay a loan](./guides/repay-loan.md) so you know what the owner sees when they return funds.
+### If you operate a vault
+1. Start with the [architecture overview](./architecture.md) to understand how the vault contract, Firestore, and the app communicate.
+2. Connect your wallet via the [sign-in flow](./features/authentication-signin-flow.md) and [register each token](./reference/token-registration.md) you plan to move.
+3. Follow [Mint a vault](./guides/create-vault.md) to spin up your contract, then review [Vault actions](./features/vaults.md) to learn every control on the dashboard.
+4. Launch your first borrower offer with [Open a liquidity request](./guides/opening-liquidity-request.md) and keep [Repay a loan](./guides/repay-loan.md) close for closing the loop.
+5. Keep operations healthy with the [Indexing playbook](./operations/indexing.md) so data stays fresh for lenders.
+
+### If you provide liquidity
+1. Skim the [architecture overview](./architecture.md) so you know what the vault contract guarantees.
+2. Confirm your wallet is registered with the lending token using [Token registration](./reference/token-registration.md).
+3. Use [Discover open requests](./features/discover.md) to evaluate opportunities and [Fund a liquidity request](./guides/fund-liquidity-request.md) for the full funding flow.
+4. Keep [Lender positions](./features/lender-positions.md) handy to monitor repayments, liquidation progress, and yields.
+5. Review [Repay a loan](./guides/repay-loan.md) to understand what the borrower sees when principal and interest come back.
 
 ## Quick map
 
@@ -51,4 +53,5 @@
 - [Indexing and consistency](./operations/indexing.md)
 
 ## Need help?
-Reach out in the support Slack channel or file a GitHub issue with the page link. We’ll keep iterating until every lender and requester can follow these docs without a dictionary.
+Reach out in the Telegram channel or open an issue on GitHub with the page link and any transaction hashes. We update these docs quickly when something is unclear.
+
