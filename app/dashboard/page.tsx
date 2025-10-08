@@ -76,7 +76,7 @@ export default function Dashboard() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[60vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.18),transparent_65%)]"
       />
-      <Container className="relative space-y-8 pt-14 sm:space-y-10 sm:pt-18">
+      <Container className="relative space-y-8 pt-14 sm:space-y-10 sm:pt-[4.5rem]">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,0.58fr),minmax(280px,0.42fr)]">
           <header className="rounded-3xl border border-white/10 bg-surface px-6 py-6 shadow-[0_16px_52px_-30px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -110,7 +110,13 @@ export default function Dashboard() {
                 <p className="text-xs leading-relaxed text-secondary-text/80">
                   Manage existing vaults or open new ones in the operations hub below.
                 </p>
-                <Button size="sm" className="w-full" onClick={() => setShowCreate(true)}>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                  onClick={() => setShowCreate(true)}
+                  disabled={!signedAccountId}
+                >
                   Create new vault
                 </Button>
               </div>
