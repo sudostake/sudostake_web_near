@@ -8,6 +8,7 @@ import type { PendingRequest } from "@/utils/data/pending";
 import { Button } from "@/app/components/ui/Button";
 import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
+import { SearchIcon } from "@/app/components/icons/SearchIcon";
 
 type WithRequest = PendingRequest & { liquidity_request: NonNullable<PendingRequest["liquidity_request"]> };
 
@@ -150,13 +151,8 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
             </div>
             <label className="relative flex w-full items-center sm:w-auto">
               <span className="sr-only">Search vaults</span>
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute left-4 text-secondary-text/70"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
-                </svg>
+              <span aria-hidden="true" className="pointer-events-none absolute left-4 text-secondary-text/70">
+                <SearchIcon />
               </span>
               <input
                 type="search"

@@ -66,13 +66,24 @@ export function VaultHeader({
   state,
   liquidation,
 }: Props) {
+  const normalizedState = typeof state === "string" ? state.trim() : "";
+  if (state !== undefined && state !== null && normalizedState.length === 0) {
+    console.warn("VaultHeader received a state value that is not a non-empty string.", { state });
+  }
+
+  const normalizedLiquidation =
+    typeof liquidation === "boolean" ? liquidation : Boolean(liquidation && String(liquidation).toLowerCase() !== "false");
+  if (liquidation !== undefined && typeof liquidation !== "boolean") {
+    console.warn("VaultHeader received a liquidation value that is not a boolean.", { liquidation });
+  }
+
   const badges: Array<{ label: string; tone: "primary" | "warn" }> = [];
-  if (state) {
-    const lower = state.toLowerCase();
+  if (normalizedState) {
+    const lower = normalizedState.toLowerCase();
     const tone = STATUS_TONE[lower] ?? "primary";
     badges.push({ label: lower.charAt(0).toUpperCase() + lower.slice(1), tone });
   }
-  if (liquidation) {
+  if (normalizedLiquidation) {
     badges.push({ label: "Liquidation active", tone: "warn" });
   }
 

@@ -26,7 +26,6 @@
 - `utils/db/vaults.ts` — Firestore query helpers shared across dashboards.
 
 ## Helpful habits
-- Refresh or trigger indexing if a repayment just landed and the status still reads **Active**—indexing finalises the position automatically.
+- Refresh or trigger indexing if a repayment just landed and the status still reads **Active**—indexing finalizes the position automatically.
 - Reviewing another team’s account? Use the search input to paste their lender ID and preview public positions.
 - New lender? Keep [Fund a liquidity request](../guides/fund-liquidity-request.md) handy so you remember the repayment flow and claim logic.
-

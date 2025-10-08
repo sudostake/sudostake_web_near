@@ -63,7 +63,7 @@ export default function LoginPage() {
                     <li>Event history stays auditable for lenders and vault owners alike.</li>
                   </ul>
                   <Link
-                    href="/docs/features/authentication"
+                    href="/docs/features/authentication-signin-flow"
                     className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:text-primary/80"
                   >
                     Read how authentication works
