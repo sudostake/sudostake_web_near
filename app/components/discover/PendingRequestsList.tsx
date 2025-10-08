@@ -94,7 +94,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div id="discover-header-sentinel" aria-hidden="true" className="h-px" />
       <header
         className={[
@@ -103,7 +103,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
         ].join(" ")}
         style={{ top: "var(--nav-height, 56px)" }}
       >
-        <div className="px-3 py-4 space-y-4">
+        <div className="space-y-4 px-4 py-4 sm:px-6">
           <SectionHeader
             title="Discover Requests"
             caption={
@@ -178,7 +178,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
           {[0, 1].map((idx) => (
             <div key={idx} className="animate-pulse rounded-2xl border border-white/10 bg-surface/80 p-4 shadow-sm">
               <div className="h-4 w-1/3 rounded bg-foreground/10" />
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+              <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <div key={i} className="h-4 rounded bg-foreground/10" />
                 ))}
@@ -232,7 +232,7 @@ function FilterChip({ label, active, onClick }: FilterChipProps) {
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
+        "rounded-full border px-3.5 py-1.5 text-sm font-semibold transition",
         active
           ? "border-primary/40 bg-primary/15 text-primary shadow-sm"
           : "border-white/14 bg-background/80 text-secondary-text hover:border-primary/30 hover:text-primary",

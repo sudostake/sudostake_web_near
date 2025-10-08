@@ -54,23 +54,23 @@ const LINKS: SocialLink[] = [
 export function SocialStrip() {
   return (
     <section className="mt-28">
-      <div className="rounded-[28px] border border-white/12 bg-surface/85 px-6 py-6 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.55)] sm:px-10 sm:py-8">
+      <div className="rounded-[28px] border border-white/12 bg-surface/85 px-5 py-6 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.55)] sm:px-10 sm:py-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">Community</p>
             <h2 className="text-lg font-semibold text-foreground">Join the conversation</h2>
-            <p className="text-sm leading-relaxed text-secondary-text">
+            <p className="text-base leading-relaxed text-secondary-text sm:text-sm">
               Ship with us in real time—roadmap previews, audit notes, and governance calls are posted here first.
             </p>
           </div>
-          <ul className="flex flex-wrap gap-3">
+          <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {LINKS.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
                   target="_blank"
                   rel="noreferrer"
-                  className="group inline-flex items-center gap-2 rounded-full border border-white/14 bg-background/80 px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary"
+                  className="group inline-flex w-full items-center gap-2 rounded-full border border-white/14 bg-background/80 px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
                 >
                   <span
                     aria-hidden="true"

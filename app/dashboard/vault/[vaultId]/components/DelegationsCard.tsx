@@ -95,31 +95,35 @@ export function DelegationsCard({
   return (
     <Card
       aria-labelledby="delegations-summary-heading"
-      className="space-y-4 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
+      className="space-y-5 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
       role="region"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="delegations-summary-heading" className="text-lg font-semibold">{STRINGS.delegationsSummaryTitle}</h2>
           <p className="text-sm text-secondary-text">Monitor validator stakes and claimable balances.</p>
         </div>
-        {(loading || refundsLoading) && <Badge variant="neutral">Loading…</Badge>}
+        {(loading || refundsLoading) && (
+          <span className="rounded-full border border-white/10 bg-background/80 px-3 py-1 text-xs text-secondary-text">
+            Loading…
+          </span>
+        )}
       </div>
 
       {showClaimDisabledNote && (
-        <div className="rounded-2xl border border-red-300/60 bg-red-100/40 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200/60 bg-red-50/80 px-4 py-3 text-sm text-red-700">
           {STRINGS.claimDisabledLiquidation}
         </div>
       )}
 
       {typeof refundsCount === "number" && refundsCount > 0 && (
-        <div className="rounded-2xl border border-amber-300/60 bg-amber-100/40 px-4 py-3 text-sm text-amber-700">
+        <div className="rounded-xl border border-amber-200/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-700">
           <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
         </div>
       )}
 
       {error && (
-        <div className="rounded-2xl border border-red-300/60 bg-red-100/40 px-4 py-3 text-sm text-red-700" role="alert">
+        <div className="rounded-xl border border-red-200/60 bg-red-50/90 px-4 py-3 text-sm text-red-700" role="alert">
           Failed to load delegations
           <div className="mt-1 text-xs opacity-80">{error}</div>
         </div>
@@ -133,7 +137,7 @@ export function DelegationsCard({
       />
 
       {Array.isArray(summary) && summary.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-background/85 px-4 py-3 text-xs text-secondary-text">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl bg-background/70 px-4 py-3 text-xs text-secondary-text">
           <span>
             {STRINGS.totalStaked}: <span className="font-mono text-foreground">{shortAmount(stats.stakedDisplay, 6)}</span> {NATIVE_TOKEN}
           </span>

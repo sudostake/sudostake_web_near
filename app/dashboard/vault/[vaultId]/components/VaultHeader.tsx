@@ -16,7 +16,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={STRINGS.back}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-foreground/10 bg-surface hover:border-primary/30 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-foreground/10 bg-surface hover:border-primary/30 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -51,6 +51,11 @@ const STATUS_TONE: Record<string, "primary" | "warn"> = {
   active: "primary",
   idle: "primary",
   pending: "warn",
+};
+
+const BADGE_STYLES: Record<"primary" | "warn", string> = {
+  primary: "border-primary/30 bg-primary/10 text-primary",
+  warn: "border-amber-200/60 bg-amber-50/70 text-amber-700",
 };
 
 export function VaultHeader({
@@ -88,16 +93,16 @@ export function VaultHeader({
 
   return (
     <Card
-      className="flex flex-col gap-6 rounded-[32px] border-white/12 bg-surface/95 px-6 py-8 shadow-[0_26px_90px_-55px_rgba(15,23,42,0.68)]"
+      className="space-y-6 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
       role="region"
       aria-label="Vault overview"
     >
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 sm:justify-between">
+        <div className="flex items-center gap-3">
           <BackButton onClick={onBack} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Vault overview</p>
-            <h1 className="mt-1 break-all text-[clamp(1.9rem,4.2vw,2.65rem)] font-semibold" title={vaultId}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Vault overview</p>
+            <h1 className="mt-1 break-all text-[clamp(1.8rem,3.8vw,2.4rem)] font-semibold" title={vaultId}>
               {vaultShortName}
             </h1>
           </div>
@@ -108,17 +113,15 @@ export function VaultHeader({
               <span
                 key={badge.label}
                 className={[
-                  "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-                  badge.tone === "warn"
-                    ? "border-orange-300/50 bg-orange-100/25 text-orange-600"
-                    : "border-primary/40 bg-primary/10 text-primary",
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                  BADGE_STYLES[badge.tone],
                 ].join(" ")}
               >
                 <span
                   aria-hidden="true"
                   className={[
                     "h-1.5 w-1.5 rounded-full",
-                    badge.tone === "warn" ? "bg-orange-500" : "bg-primary",
+                    badge.tone === "warn" ? "bg-amber-500" : "bg-primary",
                   ].join(" ")}
                 />
                 {badge.label}

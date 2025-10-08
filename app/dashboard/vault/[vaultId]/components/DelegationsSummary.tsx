@@ -60,7 +60,7 @@ function statusLabel(status: DelegationStatus | null): string {
 // shortAmount moved to utils/format
 
 function accentBarClass(status: DelegationStatus | null): string {
-  const base = "absolute left-0 top-0 bottom-0 w-1.5 group-hover:w-2 transition-all duration-200 rounded-l"; // ~6–8px
+  const base = "absolute left-0 top-0 bottom-0 w-1 group-hover:w-1.5 transition-all duration-200 rounded-l"; // subtle accent
   switch (status) {
     case DelegationStatus.Withdrawable:
       return `${base} bg-emerald-300/80 dark:bg-emerald-300/50`;
@@ -94,13 +94,13 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
   return (
     <li
-      className="group relative overflow-hidden rounded border border-foreground/10 bg-background/70 shadow-sm hover:bg-background/80 transition-colors p-3 dark:bg-background/60 dark:shadow-none"
+      className="group relative overflow-hidden rounded border border-foreground/10 bg-background/60 hover:bg-background/75 transition-colors p-3 dark:bg-background/60"
       key={entry.validator}
     >
       <div className={accentBarClass(status)} aria-hidden="true" />
       <div className="min-w-0">
         {/* Validator + status */}
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <a
             href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
             target="_blank"
@@ -135,7 +135,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
         )}
 
         {/* Balances */}
-        <div className="mt-2 grid grid-cols-2 gap-3">
+        <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.stakedLabelUI}</div>
             <div className="font-mono text-sm break-all" title={entry.staked_balance.toDisplay()}>
@@ -175,7 +175,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
       {/* Actions footer: show only when any action handlers are available (e.g., owner view). */}
       {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
         <div className="mt-3 border-t border-foreground/10 pt-2">
-          <div className="flex flex-wrap justify-end gap-2">
+          <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
             {canClaim && (
               <button
                 type="button"

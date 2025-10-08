@@ -98,14 +98,15 @@ export function Navigation() {
   return (
     <>
       {/* Ensure the account dropdown overlays sticky page headers (vault view uses z-30). */}
-      <nav ref={navRef}
+      <nav
+        ref={navRef}
         className={[
-          "fixed top-0 left-0 right-0 border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
+          "fixed left-0 right-0 top-0 border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="flex items-center justify-between px-4 py-3 mx-auto max-w-6xl">
-          <div className="flex items-center gap-4">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-2 sm:flex-nowrap sm:justify-between sm:py-3">
+          <div className="flex flex-1 items-center gap-2 sm:gap-4">
             <Link href="/" className="text-xl font-bold">
               SudoStake
             </Link>
@@ -116,17 +117,23 @@ export function Navigation() {
               Docs
             </Link>
             {network && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-background/70 px-2 py-1 text-[11px] uppercase tracking-wide text-secondary-text md:hidden">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" aria-hidden="true" />
+                {network}
+              </span>
+            )}
+            {network && (
               <span className="hidden md:inline text-xs rounded border bg-surface px-2 py-0.5 text-secondary-text" title="Active network">
                 {network}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 sm:justify-end">
             {/* Mobile shortcuts */}
             <Link
               href="/discover"
               aria-label="Discover"
-              className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <DiscoverIcon />
               <span className="sr-only">Discover</span>
@@ -134,7 +141,7 @@ export function Navigation() {
             <Link
               href="/docs"
               aria-label="Docs"
-              className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <span className="sr-only">Docs</span>
               {/* Simple book icon */}
@@ -145,13 +152,15 @@ export function Navigation() {
             </Link>
 
             {!signedAccountId ? (
-              <Button size="sm" onClick={() => signIn()}>Connect Wallet</Button>
+              <Button size="sm" onClick={() => signIn()} className="min-w-[128px] sm:w-auto">
+                Connect Wallet
+              </Button>
             ) : (
               <div className="relative" ref={menuRef}>
                 <Button
                   variant="secondary"
                   size="sm"
-                  className="inline-flex items-center gap-2 pl-3 pr-2"
+                  className="inline-flex items-center justify-between gap-2 pl-3 pr-2 sm:justify-center"
                   aria-haspopup="menu"
                   aria-expanded={menuOpen || undefined}
                   onClick={() => setMenuOpen((o) => !o)}

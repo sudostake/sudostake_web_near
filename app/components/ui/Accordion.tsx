@@ -21,7 +21,7 @@ export function Accordion({ items }: Props) {
         const panelId = `${it.id}-panel`;
         const triggerId = `${it.id}-trigger`;
         return (
-          <div key={it.id} className="p-3">
+          <div key={it.id} className="px-4 py-3 sm:px-5 sm:py-4">
             <button
               type="button"
               className="w-full text-left flex items-center justify-between gap-3"
@@ -38,7 +38,7 @@ export function Accordion({ items }: Props) {
               role="region"
               aria-labelledby={triggerId}
               hidden={!isOpen}
-              className="mt-2 text-sm text-secondary-text leading-relaxed max-w-[70ch]"
+              className="mt-3 max-w-[70ch] text-sm leading-relaxed text-secondary-text"
             >
               {it.answer}
             </div>

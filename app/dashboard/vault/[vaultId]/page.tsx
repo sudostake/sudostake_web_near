@@ -192,7 +192,7 @@ export default function VaultPage() {
         />
 
         {isOwner && (
-          <Card className="space-y-4 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
+          <Card className="space-y-4">
             <h2 className="text-lg font-semibold">Manage vault funds</h2>
             <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
           </Card>
@@ -248,7 +248,7 @@ export default function VaultPage() {
     <div className="relative min-h-screen overflow-hidden bg-background pb-28">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.22),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_65%)]"
       />
       <main id="main" className="relative w-full" aria-busy={loading || undefined}>
         <Container className="pt-20 space-y-8">
