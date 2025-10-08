@@ -251,7 +251,7 @@ export default function VaultPage() {
         className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_65%)]"
       />
       <main id="main" className="relative w-full" aria-busy={loading || undefined}>
-        <Container className="pt-20 space-y-8">
+        <Container className="pt-12 sm:pt-16 space-y-8">
           <VaultHeader
             onBack={() => router.back()}
             vaultId={String(vaultId)}

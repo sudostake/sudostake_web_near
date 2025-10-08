@@ -31,7 +31,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   };
 
   const ItemInner = ({ id }: { id: string }) => (
-    <Card className="flex flex-col gap-4 p-4 transition-all duration-150 hover:border-primary/30 hover:bg-surface/80 hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-5">
+    <Card className="flex flex-col gap-4 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)] group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)] group-focus-visible:-translate-y-0.5 group-focus-visible:border-primary/50 group-focus-visible:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
       <div className="flex min-w-0 items-center gap-3">
         <VaultIcon id={id} size="sm" />
         <div className="min-w-0">
@@ -41,9 +41,9 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
           </div>
         </div>
       </div>
-      <div className="flex w-full flex-wrap items-center gap-2 text-sm text-secondary-text sm:w-auto sm:justify-end">
+      <div className="flex w-full flex-wrap items-center gap-3 text-sm text-secondary-text sm:w-auto sm:justify-end">
         <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
-        <span aria-hidden="true" className="hidden sm:inline">
+        <span aria-hidden="true" className="hidden text-xs font-medium uppercase tracking-wide text-secondary-text/70 sm:inline">
           Open
         </span>
         <svg
@@ -62,13 +62,13 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   );
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-2.5">
       {vaultIds.map((id) => (
         <li key={id}>
           {onVaultClick ? (
             <button
               type="button"
-              className="group w-full text-left focus:outline-none"
+              className="group w-full text-left focus:outline-none focus-visible:outline-none"
               onClick={() => onVaultClick?.(id)}
             >
               <ItemInner id={id} />
@@ -76,7 +76,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
           ) : (
             <Link
               href={`/dashboard/vault/${encodeURIComponent(id)}`}
-              className="group block focus:outline-none"
+              className="group block focus:outline-none focus-visible:outline-none"
               title={id}
               prefetch
             >

@@ -55,18 +55,18 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
     <div>
       {headerMode === "full" ? (
         <SectionHeader
-          className="mt-6"
+          className="mt-4 sm:mt-5"
           title="Your vaults"
           caption={<>{(data ?? []).length} vault{(data ?? []).length === 1 ? "" : "s"}</>}
           right={Controls}
         />
       ) : (
-        <div className="mt-4 flex items-center justify-end">{Controls}</div>
+        <div className="mt-3 flex justify-end sm:mt-2">{Controls}</div>
       )}
       {query && filtered.length === 0 ? (
-        <div className="text-sm text-secondary-text mt-3">No vaults match “{query}”.</div>
+        <div className="mt-3 text-sm text-secondary-text">No vaults match “{query}”.</div>
       ) : null}
-      <div className="mt-2">
+      <div className="mt-3 sm:mt-4">
         <VaultList
           vaultIds={filtered}
           onVaultClick={onVaultClick}

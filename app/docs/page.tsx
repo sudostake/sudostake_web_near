@@ -109,7 +109,7 @@ export default function DocsIndex() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
       />
-      <Container className="relative pt-24 space-y-8">
+      <Container className="relative pt-16 sm:pt-20 space-y-8">
         <Card className="space-y-4 rounded-[32px] border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
           <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Documentation built for operators</h1>

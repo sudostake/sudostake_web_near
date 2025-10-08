@@ -29,7 +29,7 @@ export default function DiscoverPage() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-26vh] h-[55vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_60%)]"
       />
-      <Container className="relative pt-24 space-y-10">
+      <Container className="relative pt-16 sm:pt-20 space-y-10">
         <header className="relative overflow-hidden rounded-[32px] border border-white/14 bg-surface/90 px-6 py-9 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.65)] backdrop-blur-sm sm:px-12 sm:py-10">
           <div
             aria-hidden="true"

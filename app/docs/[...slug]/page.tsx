@@ -35,7 +35,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <Container className="pt-20">
+      <Container className="pt-12 sm:pt-16">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
           <article className="flex-1 space-y-6">
             <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-primary">

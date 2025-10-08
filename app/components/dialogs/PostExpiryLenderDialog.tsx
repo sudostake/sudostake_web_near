@@ -159,17 +159,21 @@ export function PostExpiryLenderDialog({
         </div>
         {(totalDueLabel || collateralNearLabel) && (
           <div className="rounded border bg-background p-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               {totalDueLabel && (
                 <>
                   <div className="text-secondary-text">{STRINGS.totalDue}</div>
-                  <div className="font-medium">{totalDueLabel}{tokenSymbol ? ` ${tokenSymbol}` : ""}</div>
+                  <div className="font-medium break-all sm:break-normal sm:text-right">
+                    {totalDueLabel}{tokenSymbol ? ` ${tokenSymbol}` : ""}
+                  </div>
                 </>
               )}
               {collateralNearLabel && (
                 <>
                   <div className="text-secondary-text">{STRINGS.vaultCollateral}</div>
-                  <div className="font-medium">{collateralNearLabel} NEAR</div>
+                  <div className="font-medium break-all sm:break-normal sm:text-right">
+                    {collateralNearLabel} NEAR
+                  </div>
                 </>
               )}
             </div>

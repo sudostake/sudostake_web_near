@@ -105,9 +105,9 @@ export function Navigation() {
         ].join(" ")}
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-2 sm:flex-nowrap sm:justify-between sm:py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-1.5 sm:flex-nowrap sm:justify-between sm:py-2.5">
           <div className="flex flex-1 items-center gap-2 sm:gap-4">
-            <Link href="/" className="text-xl font-bold">
+            <Link href="/" className="text-xl font-bold whitespace-nowrap">
               SudoStake
             </Link>
             <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
