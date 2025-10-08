@@ -23,14 +23,23 @@ export function AvailableBalanceCard({
       role="region"
       aria-label={STRINGS.availableBalanceTitle}
       aria-busy={loading || undefined}
-      className="rounded-[28px] border-white/12 bg-gradient-to-br from-surface/95 to-surface/85 px-6 py-6 shadow-[0_20px_70px_-50px_rgba(15,23,42,0.65)]"
+      className="space-y-3 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
     >
-      <div className="text-xs font-semibold uppercase tracking-wide text-primary/80">{STRINGS.availableBalanceTitle}</div>
-      <div className="mt-4 flex items-baseline gap-2 text-[clamp(2.2rem,3vw,2.6rem)] font-semibold text-foreground">
-        <span className="break-all font-mono tabular-nums" title={`${display} ${symbol}`}>
-          {display}
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">
+          {STRINGS.availableBalanceTitle}
         </span>
-        <span className="text-sm text-secondary-text/90">{symbol}</span>
+        {loading && <span className="text-[11px] text-secondary-text/70">Updating…</span>}
+      </div>
+      <div className="flex items-baseline gap-2 text-[clamp(2rem,4vw,2.3rem)] font-semibold text-foreground">
+        {loading ? (
+          <span className="inline-flex h-7 w-24 animate-pulse rounded-full bg-foreground/10" aria-hidden="true" />
+        ) : (
+          <span className="break-all font-mono tabular-nums" title={`${display} ${symbol}`}>
+            {display}
+          </span>
+        )}
+        <span className="text-sm text-secondary-text/80">{symbol}</span>
       </div>
     </Card>
   );

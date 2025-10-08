@@ -110,7 +110,7 @@ export function LandingFAQ() {
         <div className="space-y-8">
           <div className="max-w-2xl space-y-3">
             <h2 className="text-[clamp(1.6rem,2.4vw,2.1rem)] font-semibold text-foreground">Frequently asked questions</h2>
-            <p className="text-sm leading-relaxed text-secondary-text">
+            <p className="text-base leading-relaxed text-secondary-text sm:text-sm">
               Skim the essentials before connecting your wallet. Each answer links to deeper documentation when you want
               more depth.
             </p>
@@ -122,10 +122,10 @@ export function LandingFAQ() {
                 href={link.href}
                 target={link.external ? "_blank" : undefined}
                 rel={link.external ? "noreferrer" : undefined}
-                className="group rounded-2xl border border-white/12 bg-surface/85 px-5 py-4 text-sm shadow-sm transition hover:border-primary/30 hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                className="group rounded-2xl border border-white/12 bg-surface/85 px-5 py-5 text-sm shadow-sm transition hover:border-primary/30 hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
               >
                 <span className="flex items-start justify-between gap-3">
-                  <span className="font-semibold text-foreground">{link.title}</span>
+                  <span className="text-base font-semibold text-foreground">{link.title}</span>
                   <span
                     aria-hidden="true"
                     className="text-base text-secondary-text transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1"
@@ -133,11 +133,11 @@ export function LandingFAQ() {
                     →
                   </span>
                 </span>
-                <span className="mt-2 block text-xs leading-relaxed text-secondary-text">{link.description}</span>
+                <span className="mt-2 block text-sm leading-relaxed text-secondary-text">{link.description}</span>
               </Link>
             ))}
           </div>
-          <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-xs leading-relaxed text-secondary-text">
+          <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-sm leading-relaxed text-secondary-text">
             Prefer a live walkthrough? We host onboarding calls every other week—join Telegram to grab a slot.
           </div>
         </div>

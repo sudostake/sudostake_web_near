@@ -31,19 +31,21 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   };
 
   const ItemInner = ({ id }: { id: string }) => (
-    <Card className="flex items-center justify-between gap-4 px-5 py-4 transition-all duration-150 hover:border-primary/30 hover:bg-surface/80 hover:shadow-md">
-      <div className="flex items-center gap-3 min-w-0">
+    <Card className="flex flex-col gap-4 p-4 transition-all duration-150 hover:border-primary/30 hover:bg-surface/80 hover:shadow-md sm:flex-row sm:items-center sm:justify-between sm:p-5">
+      <div className="flex min-w-0 items-center gap-3">
         <VaultIcon id={id} size="sm" />
         <div className="min-w-0">
-          <div className="flex items-center gap-2 font-medium text-foreground break-all" title={id}>
+          <div className="flex flex-wrap items-center gap-2 break-all font-medium text-foreground" title={id}>
             <span>{id}</span>
             {badge(stateFor(id))}
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-2 text-sm text-secondary-text">
+      <div className="flex w-full flex-wrap items-center gap-2 text-sm text-secondary-text sm:w-auto sm:justify-end">
         <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
-        <span aria-hidden="true" className="hidden sm:inline">Open</span>
+        <span aria-hidden="true" className="hidden sm:inline">
+          Open
+        </span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"

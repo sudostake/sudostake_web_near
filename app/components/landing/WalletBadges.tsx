@@ -14,16 +14,16 @@ const WALLETS: Wallet[] = [
 
 export function WalletBadges() {
   return (
-    <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {WALLETS.map((w) => (
-        <li key={w.name} className="flex items-center gap-3 rounded-full border bg-foreground/5 px-3 py-2">
+        <li key={w.name} className="flex items-center gap-3 rounded-full border bg-foreground/5 px-4 py-2.5">
           <span
             aria-hidden="true"
             className={`inline-flex h-8 w-8 items-center justify-center rounded-full ${w.color} text-white font-semibold`}
           >
             {(w.letter ?? w.name[0]).toUpperCase()}
           </span>
-          <span className="text-sm">{w.name}</span>
+          <span className="text-sm font-medium">{w.name}</span>
         </li>
       ))}
     </ul>

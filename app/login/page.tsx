@@ -31,7 +31,7 @@ export default function LoginPage() {
       <Container className="relative pt-24 pb-20">
         <main id="main" className="mx-auto max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
-            <section className="relative overflow-hidden rounded-[32px] border border-white/12 bg-surface/95 px-8 py-10 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)]">
+            <section className="relative overflow-hidden rounded-[32px] border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
               <div
                 aria-hidden="true"
                 className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.22),transparent_70%)] blur-2xl"
@@ -42,7 +42,7 @@ export default function LoginPage() {
                   <h1 className="text-[clamp(2.15rem,4.2vw,2.7rem)] font-semibold leading-tight text-foreground">
                     Connect your NEAR wallet to continue.
                   </h1>
-                  <p className="max-w-lg text-sm leading-relaxed text-secondary-text">
+                  <p className="max-w-lg text-base leading-relaxed text-secondary-text sm:text-sm">
                     Manage vaults, monitor lending positions, and request liquidity without giving up custody. Your wallet
                     stays in control for every action.
                   </p>
@@ -57,7 +57,7 @@ export default function LoginPage() {
                 </div>
                 <div className="grid gap-4 rounded-2xl border border-white/12 bg-background/85 px-5 py-5">
                   <h2 className="text-sm font-semibold text-foreground">Why your account stays secure</h2>
-                  <ul className="space-y-2 text-sm leading-relaxed text-secondary-text">
+                  <ul className="space-y-2 text-sm leading-relaxed text-secondary-text sm:text-sm">
                     <li>Approve every transaction from your NEAR wallet—no custodial intermediaries.</li>
                     <li>Smart contracts enforce terms on-chain, so draws and repayments follow the rules.</li>
                     <li>Event history stays auditable for lenders and vault owners alike.</li>
@@ -74,7 +74,7 @@ export default function LoginPage() {
                 </div>
               </div>
             </section>
-            <aside className="rounded-[28px] border border-white/12 bg-surface/95 px-6 py-7 shadow-[0_24px_80px_-55px_rgba(15,23,42,0.6)]">
+            <aside className="rounded-[28px] border border-white/12 bg-surface/95 px-5 py-7 shadow-[0_24px_80px_-55px_rgba(15,23,42,0.6)] sm:px-6">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text/90">Supported wallets</h2>
               <div className="mt-4">
                 <WalletBadges />

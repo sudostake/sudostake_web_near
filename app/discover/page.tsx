@@ -30,7 +30,7 @@ export default function DiscoverPage() {
         className="pointer-events-none absolute inset-x-0 top-[-26vh] h-[55vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_60%)]"
       />
       <Container className="relative pt-24 space-y-10">
-        <header className="relative overflow-hidden rounded-[32px] border border-white/14 bg-surface/90 px-6 py-10 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.65)] backdrop-blur-sm sm:px-12">
+        <header className="relative overflow-hidden rounded-[32px] border border-white/14 bg-surface/90 px-6 py-9 shadow-[0_24px_80px_-50px_rgba(15,23,42,0.65)] backdrop-blur-sm sm:px-12 sm:py-10">
           <div
             aria-hidden="true"
             className="absolute -right-32 top-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.22),transparent_70%)] blur-2xl"
@@ -46,7 +46,7 @@ export default function DiscoverPage() {
                 <h1 className="text-[clamp(2.1rem,4.2vw,2.8rem)] font-semibold text-foreground">
                   Discover active liquidity requests
                 </h1>
-                <p className="text-sm leading-relaxed text-secondary-text">
+                <p className="text-base leading-relaxed text-secondary-text sm:text-sm">
                   Compare live borrow requests at a glance. Each card surfaces collateral, APR, and runway—and links straight
                   to the vault so you can review on-chain history before committing capital.
                 </p>
@@ -64,7 +64,7 @@ export default function DiscoverPage() {
                 </span>
               </Link>
             </div>
-            <aside className="relative max-w-sm rounded-3xl border border-white/12 bg-background/85 p-6 text-sm text-secondary-text shadow-sm">
+            <aside className="relative max-w-sm rounded-3xl border border-white/12 bg-background/85 p-6 text-sm text-secondary-text shadow-sm sm:p-7">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text/90">
                 Quick checklist
               </h2>

@@ -98,7 +98,7 @@ export function Hero() {
   const networkLabel = formatNetworkLabel(network);
   return (
     <section className="relative mt-20 md:mt-28">
-      <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-surface/85 px-6 py-12 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10">
+      <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-surface/85 px-5 py-10 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10 sm:py-12">
         <div
           aria-hidden="true"
           className="absolute -right-24 -top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.22),transparent_70%)] blur-2xl"
@@ -107,7 +107,7 @@ export function Hero() {
           aria-hidden="true"
           className="absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.18),transparent_70%)] blur-2xl"
         />
-        <div className="relative grid items-start gap-y-12 gap-x-16 lg:grid-cols-[minmax(0,1.08fr),minmax(280px,1fr)]">
+        <div className="relative grid items-start gap-y-14 gap-x-12 lg:grid-cols-[minmax(0,1.08fr),minmax(280px,1fr)]">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wide text-primary">
               <span className="h-2 w-2 rounded-full bg-primary animate-pulse-soft" aria-hidden="true" />
@@ -149,19 +149,19 @@ export function Hero() {
                 {network.charAt(0).toUpperCase() + network.slice(1)} • demo balances only
               </span>
             )}
-            <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {HIGHLIGHTS.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-2xl border border-white/10 bg-background/80 px-4 py-4 shadow-sm transition hover:border-primary/40 hover:shadow-[0_18px_36px_-28px_rgba(37,99,235,0.6)]"
+                  className="rounded-2xl border border-white/10 bg-background/80 px-5 py-5 shadow-sm transition hover:border-primary/40 hover:shadow-[0_18px_36px_-28px_rgba(37,99,235,0.6)] sm:py-6"
                 >
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <p className="mt-2 text-xs leading-relaxed text-secondary-text">{item.description}</p>
+                  <p className="text-base font-semibold text-foreground">{item.title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-secondary-text">{item.description}</p>
                 </div>
               ))}
             </div>
           </div>
-          <aside className="relative overflow-hidden rounded-[28px] border border-white/12 bg-background/85 p-6 shadow-[0_24px_50px_-36px_rgba(15,23,42,0.55)] backdrop-blur">
+          <aside className="relative overflow-hidden rounded-[28px] border border-white/12 bg-background/85 p-6 shadow-[0_24px_50px_-36px_rgba(15,23,42,0.55)] backdrop-blur sm:p-7">
             <div
               aria-hidden="true"
               className="absolute inset-x-6 top-0 h-32 rounded-b-[48px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.24),transparent_75%)]"
@@ -172,15 +172,15 @@ export function Hero() {
                 Preview
               </span>
             </div>
-            <dl className="relative mt-6 space-y-5">
+            <dl className="relative mt-6 space-y-4">
               {SAMPLE_REQUEST.map((item) => (
-                <div key={item.label} className="flex items-baseline justify-between gap-4">
+                <div key={item.label} className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                   <dt className="text-xs uppercase tracking-wide text-secondary-text/80">{item.label}</dt>
-                  <dd className="text-sm font-semibold text-foreground">{item.value}</dd>
+                  <dd className="text-base font-semibold text-foreground sm:text-sm">{item.value}</dd>
                 </div>
               ))}
             </dl>
-            <div className="relative mt-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-xs leading-relaxed text-secondary-text">
+            <div className="relative mt-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-secondary-text">
               Figures illustrate how a funded request appears in the dashboard. Publish your own terms before inviting lenders.
             </div>
             <Link

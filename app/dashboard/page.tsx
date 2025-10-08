@@ -89,7 +89,7 @@ export default function Dashboard() {
                 <h1 className="text-[clamp(2.1rem,4.2vw,2.8rem)] font-semibold text-foreground">
                   Operate your NEAR credit line
                 </h1>
-                <p className="max-w-xl text-sm leading-relaxed text-secondary-text">
+                <p className="max-w-xl text-base leading-relaxed text-secondary-text sm:text-sm">
                   Monitor balances, collateral health, and active lending positions in one place. Every control stays linked to
                   the vault you own.
                 </p>
@@ -128,7 +128,7 @@ export default function Dashboard() {
               <h2 className="text-[clamp(1.7rem,2.8vw,2.1rem)] font-semibold text-foreground">
                 Manage your positions
               </h2>
-              <p className="max-w-2xl text-sm leading-relaxed text-secondary-text">{tabCopy}</p>
+              <p className="max-w-2xl text-base leading-relaxed text-secondary-text sm:text-sm">{tabCopy}</p>
             </div>
             <div className="flex flex-wrap gap-4">
               <SegmentedToggle
@@ -143,7 +143,7 @@ export default function Dashboard() {
                 className="w-full max-w-md"
               />
             </div>
-            <div className="rounded-2xl border border-white/10 bg-background/85 p-4 sm:p-6">
+            <div className="rounded-2xl border border-white/10 bg-background/85 px-3 py-4 sm:px-6 sm:py-6">
               <div
                 id="vaults-panel"
                 role="tabpanel"

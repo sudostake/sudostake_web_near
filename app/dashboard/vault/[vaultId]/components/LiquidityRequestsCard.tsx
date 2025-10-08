@@ -401,7 +401,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
   return (
     <Card
-      className="space-y-6 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
+      className="space-y-6 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
       aria-label="Liquidity requests"
     >
       <div className="flex items-center gap-4">
@@ -488,9 +488,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {/* Accepted timestamp removed for a leaner UI */}
           {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
-            <Card className="border border-amber-400/40 bg-amber-50/80 p-3 text-xs text-amber-900" role="status">
+            <div className="rounded-lg border border-amber-200/60 bg-amber-50/80 px-3 py-2 text-xs text-amber-800" role="status">
               {STRINGS.expiredRepayWarning}
-            </Card>
+            </div>
           )}
           {/* Lender appreciation card intentionally removed for a leaner UI */}
           {isOwner && data?.state === "pending" ? (
@@ -511,7 +511,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               )}
             </div>
           ) : data?.state === "pending" && role === "potentialLender" ? (
-            <Card className="space-y-3 rounded-2xl border border-white/12 bg-background/85 px-4 py-4" role="region" aria-label="Lender registration">
+            <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Lender registration">
               <div className="text-sm text-secondary-text text-left">
                 {STRINGS.yourBalance}: <span className="font-mono">{lenderBalanceLabel} {tokenSymbol}</span>
               </div>
@@ -525,7 +525,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                 onRegister={onRegisterLender}
               />
               {vaultRegisteredForToken === false && (
-                <Card className="text-left text-sm rounded-2xl border border-red-300/60 bg-red-100/35 px-4 py-3 text-red-900">
+                <Card className="text-left text-sm rounded-xl border border-red-200/60 bg-red-50/80 px-4 py-3 text-red-800">
                   {STRINGS.vaultNotRegisteredLendingDisabled}
                   <div className="mt-2 space-x-3">
                     <a
@@ -572,7 +572,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
-        <Card className="space-y-3 rounded-2xl border border-white/12 bg-background/85 px-4 py-4" role="region" aria-label="Liquidation status">
+        <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Liquidation status">
           <div className="flex items-center justify-between gap-2">
             <div className="text-base font-medium">
               {role === "activeLender" ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
@@ -592,7 +592,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {role === "activeLender" && (
             <div>
-              <Card className="space-y-3 rounded-2xl border border-white/10 bg-background/80 px-4 py-4">
+              <Card className="space-y-3 rounded-lg border border-white/10 bg-background/70 px-4 py-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
@@ -701,7 +701,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           )}
           {role !== "activeLender" && (
             <>
-              <Card className="mt-2 rounded-2xl border border-white/10 bg-background/80 px-4 py-3">
+              <Card className="mt-2 rounded-lg border border-white/10 bg-background/70 px-4 py-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                   <div>
                     <div className="text-secondary-text">{STRINGS.paidSoFar}</div>

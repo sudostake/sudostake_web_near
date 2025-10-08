@@ -12,11 +12,10 @@ type Props = {
 export function LabelValue({ label, value, mono, className = "" }: Props) {
   return (
     <div className={className}>
-      <div className="text-secondary-text text-[11px] uppercase tracking-wide">{label}</div>
+      <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">{label}</div>
       {value !== undefined && (
-        <div className={`${mono ? "font-mono" : "font-medium"} text-sm text-foreground`}>{value}</div>
+        <div className={`${mono ? "font-mono" : "font-medium"} text-sm leading-relaxed text-foreground`}>{value}</div>
       )}
     </div>
   );
 }
-
