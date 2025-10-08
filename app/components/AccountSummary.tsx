@@ -9,7 +9,6 @@ import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
-import { SectionHeader } from "@/app/components/ui/SectionHeader";
 // (No asset toggle here; dialogs handle asset selection themselves)
 
 type AccountSummaryProps = {

@@ -110,6 +110,9 @@ export default function Dashboard() {
                 <p className="text-xs leading-relaxed text-secondary-text/80">
                   Manage existing vaults or open new ones in the operations hub below.
                 </p>
+                <Button size="sm" className="w-full" onClick={() => setShowCreate(true)}>
+                  Create new vault
+                </Button>
               </div>
             </div>
           </header>
