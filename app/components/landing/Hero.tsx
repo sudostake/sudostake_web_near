@@ -10,29 +10,35 @@ import { showToast } from "@/utils/toast";
 
 const HIGHLIGHTS = [
   {
-    title: "Self-custodial vaults",
-    description: "Lock, draw, and repay without relinquishing your keys. Every action routes back through your wallet.",
+    title: "Your vault, your keys",
+    description: "Deposits, draws, and repayments stay under your wallet’s approval so collateral never leaves your custody.",
   },
   {
-    title: "Immutable terms",
-    description: "Publish collateral ratios, amounts, and repayment windows that lenders evaluate before committing capital.",
+    title: "Terms lenders can trust",
+    description: "Share the amount, interest, collateral ratio, and deadline up front—no hidden clauses or mid-loan surprises.",
   },
   {
-    title: "On-chain audit trail",
-    description: "Trace deposits, borrows, and repayments directly on NEAR for lender confidence and borrower clarity.",
+    title: "Every action stays auditable",
+    description: "SudoStake records an immutable history on NEAR so compliance, treasury, and contributors can reconcile quickly.",
   },
 ];
 
 const SAMPLE_REQUEST = [
-  { label: "Collateral locked", value: "1,200 NEAR" },
+  { label: "Collateral locked", value: "1,250 NEAR" },
   { label: "USDC requested", value: "5,000 USDC" },
-  { label: "Collateral ratio", value: "165%" },
+  { label: "Health buffer", value: "165% collateral" },
   { label: "Repay within", value: "30 days" },
 ];
 
 function formatNetworkLabel(network: string) {
-  if (!network) return "Live beta on NEAR";
-  return `${network.charAt(0).toUpperCase()}${network.slice(1)} network`;
+  if (!network) return "Ready on NEAR networks";
+  const normalised =
+    network === "mainnet"
+      ? "NEAR Mainnet"
+      : network === "testnet"
+        ? "NEAR Testnet"
+        : network.charAt(0).toUpperCase() + network.slice(1);
+  return `Live on ${normalised}`;
 }
 
 export function Hero() {
@@ -108,11 +114,11 @@ export function Hero() {
               <span>{networkLabel}</span>
             </div>
             <h1 className="mt-5 text-[clamp(2.35rem,5vw,3.2rem)] font-semibold leading-tight text-foreground">
-              Keep NEAR staked. Borrow USDC without leaving your vault.
+              Stay staked on NEAR. Unlock USDC liquidity in minutes.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-secondary-text">
-              SudoStake lets you stay liquid while your stake keeps working. Publish on-chain terms that lenders can trust,
-              approve actions from your wallet, and keep repayment guardrails crystal clear.
+              SudoStake gives teams a non-custodial credit line backed by the vault they already run. Publish transparent
+              terms, approve every move from your wallet, and keep repayment guardrails predictable for lenders.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
@@ -140,7 +146,7 @@ export function Hero() {
                 className="mt-5 inline-flex items-center gap-2 rounded-full border border-dashed bg-background/70 px-3 py-1 text-xs text-secondary-text"
                 role="note"
               >
-                {network.charAt(0).toUpperCase() + network.slice(1)} • funds are for testing only
+                {network.charAt(0).toUpperCase() + network.slice(1)} • demo balances only
               </span>
             )}
             <div className="mt-10 grid gap-3 sm:grid-cols-3">

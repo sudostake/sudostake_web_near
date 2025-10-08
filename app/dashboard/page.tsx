@@ -63,8 +63,8 @@ export default function Dashboard() {
 
   const tabCopy =
     tab === "positions"
-      ? "See the vaults you funded, track repayments, and monitor collateral health in one place."
-      : "Create, configure, and track the vaults you own. Publish liquidity requests when your collateral is ready.";
+      ? "Monitor every position you’ve funded, from repayment progress to liquidation status, without leaving the dashboard."
+      : "Publish requests, manage collateral actions, and track health for each vault you operate.";
 
   if (!signedAccountId) {
     return null;
@@ -87,10 +87,11 @@ export default function Dashboard() {
               <div className="flex flex-col gap-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Dashboard</p>
                 <h1 className="text-[clamp(2.1rem,4.2vw,2.8rem)] font-semibold text-foreground">
-                  Your vaults and lending activity
+                  Operate your NEAR credit line
                 </h1>
                 <p className="max-w-xl text-sm leading-relaxed text-secondary-text">
-                  Track balances, manage vault collateral, and keep tabs on lending positions without leaving this view.
+                  Monitor balances, collateral health, and active lending positions in one place. Every control stays linked to
+                  the vault you own.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm text-secondary-text">
@@ -102,7 +103,7 @@ export default function Dashboard() {
                 <span>Network: {networkLabel}</span>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <HeaderStat label="Vaults owned" value={totalVaults} />
+                <HeaderStat label="Vaults you own" value={totalVaults} />
                 <HeaderStat label="Active lending positions" value={totalPositions} />
               </div>
               <div>

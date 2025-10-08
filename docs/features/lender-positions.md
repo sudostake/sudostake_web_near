@@ -1,10 +1,10 @@
 # Lender positions
 
 ## TL;DR
-- This view shows every vault you’ve funded and keeps it current in real time.
-- You can switch between realtime Firestore updates and a REST API depending on how you prefer to host the app.
-- Positions are sorted with the newest accepted offer first so the most recent activity stays at the top.
-- Still deciding whether to lend? Browse with a read-only wallet, then connect once you’re ready so the dashboard starts tracking your loans automatically.
+- The Positions tab tracks every vault you’ve funded and updates in real time.
+- You can choose between a realtime Firestore subscription or a REST polling mode depending on deployment constraints.
+- Positions are sorted by most recent activity so the loans that need attention stay near the top.
+- Not lending yet? Browse in read-only mode, then connect once you’re ready so the dashboard starts tracking your loans automatically.
 
 ## What appears on the page
 - Vault name, funded amount, token, interest rate, and payoff date.
@@ -26,6 +26,7 @@
 - `utils/db/vaults.ts` — Firestore query helpers shared across dashboards.
 
 ## Helpful habits
-- Refresh or trigger indexing if a repayment just landed and the status still reads **Active**—indexing clears the position automatically.
-- Watching someone else’s account? Use the search input at the top to paste a lender account ID and preview their public positions.
-- New lender? Keep [Fund a liquidity request](../guides/fund-liquidity-request.md) nearby so you remember the repayment expectations and indexer behaviour.
+- Refresh or trigger indexing if a repayment just landed and the status still reads **Active**—indexing finalises the position automatically.
+- Reviewing another team’s account? Use the search input to paste their lender ID and preview public positions.
+- New lender? Keep [Fund a liquidity request](../guides/fund-liquidity-request.md) handy so you remember the repayment flow and claim logic.
+

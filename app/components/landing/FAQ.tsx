@@ -14,17 +14,17 @@ type QuickLink = {
 const QUICK_LINKS: QuickLink[] = [
   {
     title: "Borrower playbook",
-    description: "See the full journey from creating a vault to completing repayment.",
+    description: "Follow the complete vault workflow with checklists for each milestone.",
     href: "/docs/playbook",
   },
   {
     title: "Register a token",
-    description: "Understand storage deposits and how assets become available inside SudoStake.",
+    description: "Make sure wallets and vaults are storage-registered before moving USDC.",
     href: "/docs/token-registration",
   },
   {
-    title: "Talk with the core team",
-    description: "Join the Telegram channel to get help, roadmaps, and release notes.",
+    title: "Chat with the team",
+    description: "Drop into Telegram for roadmap notes, troubleshooting, and office hours.",
     href: "https://t.me/sudostake",
     external: true,
   },
@@ -33,28 +33,28 @@ const QUICK_LINKS: QuickLink[] = [
 const FAQ_ITEMS: AccordionItem[] = [
   {
     id: "custody",
-    question: "Is this non‑custodial?",
+    question: "Is SudoStake fully non‑custodial?",
     answer:
-      "Yes. You approve every transaction in your wallet. The contract enforces terms on-chain, so funds move only when you confirm.",
+      "Yes. Every action—even automated ones—pauses until your wallet approves it. The contracts only execute instructions you sign on-chain.",
   },
   {
     id: "wallets",
     question: "Which wallets are supported?",
     answer:
-      "Bitte, Meteor, MyNearWallet, Nightly, and Ledger via Wallet Selector today. More wallets can be added over time.",
+      "Bitte, Meteor, MyNearWallet, Nightly, and Ledger are available through Wallet Selector. We add new providers as they land.",
   },
   {
     id: "terms",
     question: "How are loan terms enforced?",
     answer:
-      "Terms live in the contract. Repayments and liquidations follow that logic step by step, so you can trace every action on-chain.",
+      "Terms live inside the vault contract. Once you publish them, they cannot be edited, and every repayment or liquidation step follows those parameters.",
   },
   {
     id: "collateral",
     question: "What collateral do I need?",
     answer: (
       <>
-        Vaults lock NEAR as collateral. The amount you must lock depends on the terms you choose and lender appetite.
+        Vaults hold NEAR collateral. Set the health buffer you’re comfortable with—lenders can see it before committing, and healthier buffers typically attract faster fills.
       </>
     ),
   },
@@ -63,8 +63,8 @@ const FAQ_ITEMS: AccordionItem[] = [
     question: "What if I miss repayment?",
     answer: (
       <>
-        If a request is funded and you don’t repay on time, the contract follows the rules and may liquidate collateral to
-        cover the shortfall.
+        If a funded request reaches its deadline without repayment, liquidation can begin. The contract moves collateral in
+        batches to cover the outstanding amount, and dashboards surface progress so you can intervene.
       </>
     ),
   },
@@ -73,8 +73,8 @@ const FAQ_ITEMS: AccordionItem[] = [
     question: "Are there protocol fees?",
     answer: (
       <>
-        You pay normal network gas. First-time FT actions may need a small storage deposit. If protocol fees are introduced,
-        they appear in the UI before you confirm.
+        Not today. You only cover NEAR gas plus one-time NEP‑141 storage deposits. If protocol fees ever change, the exact
+        amount appears before you approve.
       </>
     ),
   },
@@ -83,11 +83,11 @@ const FAQ_ITEMS: AccordionItem[] = [
     question: "Which tokens are supported?",
     answer: (
       <>
-        USDC is supported today. Additional NEP‑141 tokens can be added over time. See{" "}
+        USDC is supported now. We can enable additional NEP‑141 assets—ping the team if you need a specific market. Review{" "}
         <Link href="/docs/token-registration" className="underline">
           token registration
         </Link>{" "}
-        for details.
+        before moving a new token.
       </>
     ),
   },
@@ -96,8 +96,8 @@ const FAQ_ITEMS: AccordionItem[] = [
     question: "Has the code been audited?",
     answer: (
       <>
-        The project is open‑source. As with any on‑chain protocol, use at your own risk. Review the code and only risk what
-        you can afford to lose.
+        The protocol is open-source and under ongoing review. As with any on-chain product, audit the contracts yourself and
+        deploy capital you’re prepared to monitor closely.
       </>
     ),
   },
@@ -111,8 +111,8 @@ export function LandingFAQ() {
           <div className="max-w-2xl space-y-3">
             <h2 className="text-[clamp(1.6rem,2.4vw,2.1rem)] font-semibold text-foreground">Frequently asked questions</h2>
             <p className="text-sm leading-relaxed text-secondary-text">
-              Start with the essentials before you connect your wallet. Each answer links to deeper documentation when you
-              need it.
+              Skim the essentials before connecting your wallet. Each answer links to deeper documentation when you want
+              more depth.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -138,7 +138,7 @@ export function LandingFAQ() {
             ))}
           </div>
           <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-4 text-xs leading-relaxed text-secondary-text">
-            Prefer a live walkthrough? We host onboarding calls every other week—drop into Telegram to reserve a slot.
+            Prefer a live walkthrough? We host onboarding calls every other week—join Telegram to grab a slot.
           </div>
         </div>
         <div className="rounded-[28px] border border-white/12 bg-surface/90 p-4 shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)] sm:p-6">

@@ -110,24 +110,24 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
             caption={
               <span className="flex items-center gap-2">
                 <span>
-                  {filteredCount} open request{filteredCount === 1 ? "" : "s"}
+                  Showing {filteredCount} of {totalOpen} open request{totalOpen === 1 ? "" : "s"}
                 </span>
                 {filteredCount !== totalOpen && (
                   <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[0.65rem] font-semibold text-primary">
-                    {totalOpen} total
+                    Filters applied
                   </span>
                 )}
               </span>
             }
             right={
-              <div className="flex flex-wrap items-center gap-2 justify-end">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 {(tokenFilter !== "all" || query.trim()) && (
                   <Button variant="ghost" size="sm" onClick={resetFilters}>
-                    Clear filters
+                    Reset filters
                   </Button>
                 )}
                 <Button size="sm" variant="secondary" onClick={refetch}>
-                  Refresh
+                  Refresh feed
                 </Button>
               </div>
             }
@@ -162,7 +162,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search vault or token"
+                placeholder="Search by vault or token"
                 className="w-full rounded-full border border-white/14 bg-background/80 px-11 py-2.5 text-sm text-foreground placeholder:text-secondary-text/70 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-72"
               />
             </label>
@@ -208,9 +208,9 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
             <>
               Nothing matches your filters.{" "}
               <button className="font-medium text-primary underline" onClick={resetFilters}>
-                Clear them
+                Reset them
               </button>{" "}
-              to see every request.
+              to review every open request.
             </>
           )}
         </div>

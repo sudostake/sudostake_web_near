@@ -58,9 +58,9 @@ export function SocialStrip() {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl space-y-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">Community</p>
-            <h2 className="text-lg font-semibold text-foreground">Stay close to the roadmap</h2>
+            <h2 className="text-lg font-semibold text-foreground">Join the conversation</h2>
             <p className="text-sm leading-relaxed text-secondary-text">
-              Release notes, governance votes, and community calls land in these channels first.
+              Ship with us in real time—roadmap previews, audit notes, and governance calls are posted here first.
             </p>
           </div>
           <ul className="flex flex-wrap gap-3">

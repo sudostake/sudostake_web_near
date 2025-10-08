@@ -8,9 +8,9 @@ import { PendingRequestsList } from "@/app/components/discover/PendingRequestsLi
 import { Container } from "@/app/components/layout/Container";
 
 const TIPS = [
-  "Check the collateral ratio and repayment window before funding.",
-  "Use the vault detail view to monitor collateral health after you lend.",
-  "Refresh the feed to catch newly published requests in real time.",
+  "Use the filters to zero in on the tokens and vaults that fit your mandate.",
+  "Open the vault view to audit collateral history, health, and pending actions.",
+  "Refresh periodically to catch new requests and status changes as they land.",
 ];
 
 function formatNetworkLabel(network: string) {
@@ -47,8 +47,8 @@ export default function DiscoverPage() {
                   Discover active liquidity requests
                 </h1>
                 <p className="text-sm leading-relaxed text-secondary-text">
-                  Review open vault requests, assess collateral ratios, and decide which borrowers to fund. Every card links
-                  to the full vault view so you can inspect on-chain history before committing capital.
+                  Compare live borrow requests at a glance. Each card surfaces collateral, APR, and runway—and links straight
+                  to the vault so you can review on-chain history before committing capital.
                 </p>
               </div>
               <Link

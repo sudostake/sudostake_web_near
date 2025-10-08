@@ -77,8 +77,8 @@ export function AccountSummary({
 function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
   return (
     <SectionHeader
-      title="Account balances"
-      caption="Track liquid NEAR and USDC ready to deploy."
+      title="Liquid balances"
+      caption="See the NEAR and USDC you can deploy into vaults or lending immediately."
       right={
         onRefreshBalances && (
           <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>
