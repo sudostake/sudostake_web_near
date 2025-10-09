@@ -232,6 +232,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     return formatDurationShort(remainingMs);
   }, [remainingMs]);
 
+  const expiryLabel = useMemo(() => (expiryDate ? formatDateTime(expiryDate) : null), [expiryDate]);
+
   // Collateral/liquidation calculations (all in NEAR)
   const collateralYocto = data?.liquidity_request?.collateral;
   const liquidatedYocto = data?.liquidation?.liquidated;
@@ -461,8 +463,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {content && (
         <>
-        <CurrentRequestPanel content={content} active={data?.state === "active"} />
-        {/* Countdown line removed: the lender action button below now conveys timing */}
+        <CurrentRequestPanel
+          content={content}
+          active={data?.state === "active"}
+          showTimeline={Boolean(expiryDate && data?.state === "active")}
+          countdownLabel={formattedCountdown}
+          expiryLabel={expiryLabel}
+          expired={Boolean(data?.state === "active" && remainingMs === 0)}
+        />
           {data?.state === "active" && role === "activeLender" && expiryDate && !data?.liquidation && (
             <LenderActionsPanel
               remainingMs={remainingMs}
@@ -484,10 +492,15 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
               actually starts. This matches the banner below which states that
               repayment is still possible until liquidation is triggered. */}
           {data?.state === "active" && isOwner && !data?.liquidation && (
-            <OwnerActionsPanel onRepay={() => setRepayOpen(true)} />
+            <OwnerActionsPanel
+              onRepay={() => setRepayOpen(true)}
+              remainingMs={remainingMs}
+              formattedCountdown={formattedCountdown}
+              expiryLabel={expiryLabel}
+            />
           )}
           {/* Accepted timestamp removed for a leaner UI */}
-          {data?.state === "active" && remainingMs === 0 && !data?.liquidation && (
+          {data?.state === "active" && remainingMs === 0 && !data?.liquidation && !isOwner && (
             <div className="rounded-lg border border-amber-200/60 bg-amber-50/80 px-3 py-2 text-xs text-amber-800" role="status">
               {STRINGS.expiredRepayWarning}
             </div>

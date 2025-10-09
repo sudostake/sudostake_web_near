@@ -17,10 +17,31 @@ export type CurrentRequestContent = {
 export function CurrentRequestPanel({
   content,
   active,
+  showTimeline = false,
+  countdownLabel,
+  expiryLabel,
+  expired = false,
 }: {
   content: CurrentRequestContent;
   active: boolean;
+  showTimeline?: boolean;
+  countdownLabel?: string | null;
+  expiryLabel?: string | null;
+  expired?: boolean;
 }) {
+  const showExpiryField = Boolean(active && showTimeline && (expiryLabel || countdownLabel));
+  const countdown = countdownLabel ?? null;
+  const timelineValue = expiryLabel ?? (countdown ? STRINGS.loanDeadlineCountdown(String(countdown)) : "—");
+  const timelineDetail = expiryLabel
+    ? expired
+      ? STRINGS.expiredLabel
+      : countdown
+      ? STRINGS.loanDeadlineCountdown(String(countdown))
+      : null
+    : expired
+    ? STRINGS.expiredLabel
+    : null;
+
   return (
     <Card className="space-y-4" role="region" aria-label={STRINGS.currentRequestTitle}>
       <div>
@@ -34,16 +55,34 @@ export function CurrentRequestPanel({
         {active && <Field label={STRINGS.totalDue} value={content.totalDue} mono />}
         <Field label={STRINGS.collateralLabel} value={content.collateral} mono />
         <Field label={STRINGS.durationLabel} value={formatDays(content.durationDays)} />
+        {showExpiryField && (
+          <Field
+            label={STRINGS.loanDeadlineLabel}
+            value={timelineValue}
+            detail={timelineDetail}
+          />
+        )}
       </div>
     </Card>
   );
 }
 
-function Field({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function Field({
+  label,
+  value,
+  mono = false,
+  detail,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  detail?: string | null;
+}) {
   return (
     <div className="space-y-1">
       <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
       <div className={`${mono ? "font-mono" : "font-medium"} break-all text-foreground`}>{value}</div>
+      {detail && <div className="text-xs text-secondary-text">{detail}</div>}
     </div>
   );
 }
