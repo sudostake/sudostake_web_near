@@ -49,7 +49,7 @@ export function OwnerActionsPanel({ onRepay, remainingMs, formattedCountdown, ex
                     : STRINGS.ownerLoanTermEndsIn(String(countdownDisplay))
                 }
               >
-                {hasExpired ? STRINGS.expiredLabel : countdownDisplay}
+                {hasExpired ? STRINGS.ownerLoanTermEnded : countdownDisplay}
               </span>
             )}
           </div>
