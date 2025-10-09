@@ -10,24 +10,24 @@ import { showToast } from "@/utils/toast";
 
 const HIGHLIGHTS = [
   {
-    title: "Your vault, your keys",
-    description: "Deposits, draws, and repayments stay under your wallet’s approval so collateral never leaves your custody.",
+    title: "Non-custodial by design",
+    description: "Your validator vault never leaves your wallet. Every draw, top-up, or repay pauses for your signature.",
   },
   {
-    title: "Terms lenders can trust",
-    description: "Share the amount, interest, collateral ratio, and deadline up front—no hidden clauses or mid-loan surprises.",
+    title: "Terms stay locked in",
+    description: "Set collateral buffers, interest, and deadlines before going live so lenders know exactly what they’re funding.",
   },
   {
-    title: "Every action stays auditable",
-    description: "SudoStake records an immutable history on NEAR so compliance, treasury, and contributors can reconcile quickly.",
+    title: "Audit-ready history",
+    description: "SudoStake keeps a clean on-chain ledger so finance teams, contributors, and lenders reconcile in minutes.",
   },
 ];
 
 const SAMPLE_REQUEST = [
-  { label: "Collateral locked", value: "1,250 NEAR" },
-  { label: "USDC requested", value: "5,000 USDC" },
-  { label: "Health buffer", value: "165% collateral" },
-  { label: "Repay within", value: "30 days" },
+  { label: "Collateral posted", value: "1,250 NEAR" },
+  { label: "USDC credit line", value: "5,000 USDC" },
+  { label: "Target buffer", value: "165% collateral" },
+  { label: "Repayment window", value: "30 days" },
 ];
 
 function formatNetworkLabel(network: string) {
@@ -114,11 +114,11 @@ export function Hero() {
               <span>{networkLabel}</span>
             </div>
             <h1 className="mt-5 text-[clamp(2.35rem,5vw,3.2rem)] font-semibold leading-tight text-foreground">
-              Stay staked on NEAR. Unlock USDC liquidity in minutes.
+              Keep NEAR staked. Borrow USDC on demand.
             </h1>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-secondary-text">
-              SudoStake gives teams a non-custodial credit line backed by the vault they already run. Publish transparent
-              terms, approve every move from your wallet, and keep repayment guardrails predictable for lenders.
+              SudoStake turns your staking position into a credit line without unwinding your validators. Publish transparent
+              terms, approve each action from your wallet, and keep lenders confident from request to repayment.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
@@ -181,7 +181,7 @@ export function Hero() {
               ))}
             </dl>
             <div className="relative mt-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-secondary-text">
-              Figures illustrate how a funded request appears in the dashboard. Publish your own terms before inviting lenders.
+              These figures show how a funded request appears in the dashboard. Draft your own terms before sharing with lenders.
             </div>
             <Link
               href="/discover"
