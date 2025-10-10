@@ -141,9 +141,7 @@ export function LandingFAQ() {
             Want a live walkthrough? Join Telegram to grab a slot on the next onboarding call.
           </div>
         </div>
-        <div className="rounded-[28px] border border-white/12 bg-surface/90 p-4 shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)] sm:p-6">
-          <Accordion items={FAQ_ITEMS} />
-        </div>
+        <Accordion items={FAQ_ITEMS} />
       </div>
     </section>
   );
