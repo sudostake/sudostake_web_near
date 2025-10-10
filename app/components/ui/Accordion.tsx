@@ -40,7 +40,7 @@ export function Accordion({ items }: Props) {
               role="region"
               aria-labelledby={triggerId}
               hidden={!isOpen}
-              className="px-5 pb-5 text-sm leading-relaxed text-secondary-text sm:px-6 sm:mt-3 mt-2"
+              className="px-5 pb-5 text-sm leading-relaxed text-secondary-text mt-2 sm:mt-3 sm:px-6"
             >
               {it.answer}
             </div>
