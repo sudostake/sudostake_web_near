@@ -93,6 +93,14 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     setQuery("");
   };
 
+  useEffect(() => {
+    if (!error) return;
+    const timer = window.setTimeout(() => {
+      refetch();
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [error, refetch]);
+
   return (
     <div className="space-y-5">
       <div id="discover-header-sentinel" aria-hidden="true" className="h-px" />
@@ -119,16 +127,13 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
               </span>
             }
             right={
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {(tokenFilter !== "all" || query.trim()) && (
+              (tokenFilter !== "all" || query.trim()) && (
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <Button variant="ghost" size="sm" onClick={resetFilters}>
                     Reset filters
                   </Button>
-                )}
-                <Button size="sm" variant="secondary" onClick={refetch}>
-                  Refresh feed
-                </Button>
-              </div>
+                </div>
+              )
             }
           />
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -165,11 +170,14 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       </header>
 
       {error && (
-        <div className="rounded-2xl border border-red-200/70 bg-red-50/85 p-4 text-sm text-red-700 shadow-sm" role="alert">
-          {error}
-          <button className="ml-3 font-medium text-red-700 underline hover:text-red-800" onClick={refetch}>
-            Retry
-          </button>
+        <div
+          className="flex flex-col gap-2 rounded-2xl border border-red-200/70 bg-red-50/85 p-4 text-sm text-red-700 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+          role="alert"
+        >
+          <span>{error}</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-red-600/70">
+            Retrying…
+          </span>
         </div>
       )}
 
@@ -191,13 +199,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       {!loading && filteredItems.length === 0 && (
         <div className="rounded-2xl border border-white/12 bg-surface/90 p-6 text-sm text-secondary-text shadow-sm">
           {totalOpen === 0 ? (
-            <>
-              No open requests right now. Check back soon or{" "}
-              <button className="font-medium text-primary underline" onClick={refetch}>
-                refresh
-              </button>
-              .
-            </>
+            <>No open requests right now. Check back soon.</>
           ) : (
             <>
               Nothing matches your filters.{" "}

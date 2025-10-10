@@ -10,7 +10,7 @@ import { Container } from "@/app/components/layout/Container";
 const TIPS = [
   "Use the filters to zero in on the tokens and vaults that fit your mandate.",
   "Open the vault view to audit collateral history, health, and pending actions.",
-  "Refresh periodically to catch new requests and status changes as they land.",
+  "Stay on the page—new requests flow in as soon as they’re indexed.",
 ];
 
 function formatNetworkLabel(network: string) {

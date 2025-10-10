@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Card } from "@/app/components/ui/Card";
-import { Button } from "@/app/components/ui/Button";
 
 export type ErrorMessageProps = {
   message: string;
@@ -10,15 +9,23 @@ export type ErrorMessageProps = {
 };
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
+  useEffect(() => {
+    if (!onRetry) return;
+    const timer = window.setTimeout(() => {
+      onRetry();
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [onRetry]);
+
   return (
     <Card role="alert" className="mx-auto max-w-xl space-y-3">
       <p className="text-sm text-red-600">
         <span className="font-semibold">Error:</span> {message}
       </p>
       {onRetry && (
-        <Button variant="secondary" onClick={onRetry} className="w-full sm:w-auto">
-          Retry
-        </Button>
+        <p className="text-xs font-medium uppercase tracking-wide text-red-600/70">
+          Retrying automatically…
+        </p>
       )}
     </Card>
   );

@@ -39,17 +39,26 @@ function UserIcon() {
     </svg>
   );
 }
+function WalletIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 7.5A2.25 2.25 0 0 1 6 5.25h12A2.25 2.25 0 0 1 20.25 7.5v9a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 16.5v-9Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12h.008v.008H16.5V12Z" />
+    </svg>
+  );
+}
 import Link from "next/link";
 // import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
 import { getActiveNetwork } from "@/utils/networks";
+import { showToast } from "@/utils/toast";
 
 /**
  * Navigation bar with Login/Logout button.
  */
 export function Navigation() {
-  const { signedAccountId, signOut } = useWalletSelector();
+  const { signedAccountId, signOut, signIn } = useWalletSelector();
   // const router = useRouter();
   const [network, setNetwork] = useState<string>("");
   useEffect(() => {
@@ -67,6 +76,13 @@ export function Navigation() {
     return `${head}…${tail}`;
   }, [signedAccountId]);
   const onLogout = () => signOut().catch((err) => console.error(err));
+  const onConnect = React.useCallback(() => {
+    Promise.resolve(signIn())
+      .catch((err) => {
+        console.error("Wallet sign-in failed", err);
+        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+      });
+  }, [signIn]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -162,6 +178,30 @@ export function Navigation() {
             </Link>
 
             {/* Desktop nav items are on the left next to brand */}
+
+            {!signedAccountId && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Connect wallet"
+                  onClick={onConnect}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+                >
+                  <WalletIcon />
+                  <span className="sr-only">Connect wallet</span>
+                </button>
+                <div className="hidden md:block">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={onConnect}
+                    className="items-center justify-center whitespace-nowrap"
+                  >
+                    Connect Wallet
+                  </Button>
+                </div>
+              </>
+            )}
 
             {signedAccountId && (
               <div className="relative" ref={menuRef}>

@@ -31,6 +31,8 @@ import { Container } from "@/app/components/layout/Container";
 import { VaultHeader } from "./components/VaultHeader";
 import { ErrorMessage } from "@/app/components/vaults/ErrorMessage";
 import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
+import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 
 export default function VaultPage() {
@@ -38,6 +40,8 @@ export default function VaultPage() {
   const { vaultId } = useParams<{ vaultId: string }>();
   const factoryId = useMemo(() => getActiveFactoryId(), []);
   const network = useMemo(() => networkFromFactoryId(factoryId), [factoryId]);
+  const { signedAccountId, signIn } = useWalletSelector();
+  const [connectingWallet, setConnectingWallet] = useState(false);
 
   const { data, loading, error, refetch } = useVault(factoryId, vaultId);
   const { isOwner } = useViewerRole(factoryId, vaultId);
@@ -265,6 +269,33 @@ export default function VaultPage() {
             state={data?.state}
             liquidation={Boolean(data?.liquidation)}
           />
+          {!signedAccountId && (
+            <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+              <div className="space-y-1">
+                <h2 className="text-sm font-semibold text-primary/90">Connect your wallet to take action</h2>
+                <p className="text-sm text-secondary-text">
+                  Sign in to fund requests, view lending history, and act on vault workflows.
+                </p>
+              </div>
+              <Button
+                onClick={() => {
+                  if (connectingWallet) return;
+                  setConnectingWallet(true);
+                  Promise.resolve(signIn())
+                    .catch((err) => {
+                      console.error("Wallet sign-in failed", err);
+                      showToast("Wallet connection failed. Please try again.", { variant: "error" });
+                    })
+                    .finally(() => setConnectingWallet(false));
+                }}
+                className="w-full sm:w-auto"
+                disabled={connectingWallet}
+                aria-busy={connectingWallet || undefined}
+              >
+                {connectingWallet ? "Opening wallet…" : "Connect Wallet"}
+              </Button>
+            </Card>
+          )}
           {Body}
         </Container>
         {isOwner && (
