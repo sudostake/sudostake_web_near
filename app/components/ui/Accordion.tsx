@@ -14,8 +14,18 @@ type Props = {
 
 export function Accordion({ items }: Props) {
   const [openId, setOpenId] = React.useState<string | null>(null);
+  const containerClassName = [
+    "rounded-2xl",
+    "border",
+    "border-white/12",
+    "bg-surface/90",
+    "shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)]",
+    "overflow-hidden",
+    "divide-y",
+    "divide-[color:var(--color-border)]",
+  ].join(" ");
   return (
-    <div className="rounded-2xl border border-white/12 bg-surface/90 shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)] overflow-hidden divide-y divide-[color:var(--color-border)]">
+    <div className={containerClassName}>
       {items.map((it) => {
         const isOpen = openId === it.id;
         const panelId = `${it.id}-panel`;
