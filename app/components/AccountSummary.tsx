@@ -36,7 +36,7 @@ export function AccountSummary({
     <Card
       className={`w-full h-full rounded-3xl border-white/10 bg-surface px-6 py-6 shadow-[0_16px_52px_-32px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8 ${className}`}
     >
-      <HeaderWithActions onRefreshBalances={onRefreshBalances} />
+      <HeaderWithActions />
       <div className="mt-5 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
         <BalanceStat
           label={`${near.symbol} balance`}
@@ -75,18 +75,13 @@ export function AccountSummary({
   );
 }
 
-function HeaderWithActions({ onRefreshBalances }: { onRefreshBalances?: () => void }) {
+function HeaderWithActions() {
   return (
     <div className="flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold text-foreground">Liquid balances</h2>
         <p className="text-sm text-secondary-text">Balances ready for deposits, transfers, or lender actions.</p>
       </div>
-      {onRefreshBalances && (
-        <Button size="sm" variant="secondary" onClick={() => onRefreshBalances?.()}>
-          Refresh
-        </Button>
-      )}
     </div>
   );
 }
