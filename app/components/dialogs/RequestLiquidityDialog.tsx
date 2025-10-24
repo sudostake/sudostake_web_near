@@ -17,9 +17,10 @@ type Props = {
   onClose: () => void;
   vaultId: string;
   onSuccess?: () => void;
+  disabledReason?: string | null;
 };
 
-export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Props) {
+export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess, disabledReason = null }: Props) {
   const { requestLiquidity, pending, error } = useRequestLiquidity();
   const { indexVault } = useIndexVault();
   const factoryId = getActiveFactoryId();
@@ -145,7 +146,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     hasValidCollateral &&
     hasValidDuration &&
     isCollateralWithinMax &&
-    isRegistered
+    isRegistered &&
+    !disabledReason
   );
 
   const showCollateralError = hasCollateralInput && !isCollateralWithinMax;
@@ -323,6 +325,11 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         )}
         {error && (
           <div className="text-xs text-red-500">{error}</div>
+        )}
+        {disabledReason && (
+          <div className="text-xs text-amber-600" role="alert">
+            {disabledReason}
+          </div>
         )}
       </div>
     </Modal>
