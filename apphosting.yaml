@@ -1,0 +1,36 @@
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
+runConfig:
+  minInstances: 0
+  # maxInstances: 100
+  # concurrency: 80
+  # cpu: 1
+  # memoryMiB: 512
+
+# Environment variables and secrets.
+env:
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  - variable: FIREBASE_SERVICE_ACCOUNT_KEY
+    secret: APP_SERVICE_ACCOUNT_KEY_SECRET
+
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDh4y6KeqapZaPJFV2oHm2Wqfc2lE"
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:566037540948:web:971870eb7903d06ab2fdc1"
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "sudostake.firebaseapp.com"
+
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-73112TGMG5"
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    value: "566037540948"
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "sudostake"
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    value: "sudostake.appspot.com"
