@@ -101,11 +101,11 @@ export function Hero() {
       <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-surface/85 px-5 py-10 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10 sm:py-12">
         <div
           aria-hidden="true"
-          className="absolute -right-24 -top-20 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.22),transparent_70%)] blur-2xl"
+          className="pointer-events-none absolute right-6 top-6 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.22),transparent_70%)] blur-2xl"
         />
         <div
           aria-hidden="true"
-          className="absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.18),transparent_70%)] blur-2xl"
+          className="pointer-events-none absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.18),transparent_70%)] blur-2xl"
         />
         <div className="relative grid items-start gap-y-14 gap-x-12 lg:grid-cols-[minmax(0,1.08fr),minmax(280px,1fr)]">
           <div>
