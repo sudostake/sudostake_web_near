@@ -31,7 +31,7 @@ export default function LoginPage() {
       <Container className="relative pt-16 sm:pt-20 pb-20">
         <main id="main" className="mx-auto max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
-            <section className="relative overflow-hidden rounded-[32px] border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
+            <section className="relative overflow-hidden rounded-4xl border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
               <div
                 aria-hidden="true"
                 className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.22),transparent_70%)] blur-2xl"
