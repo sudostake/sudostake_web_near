@@ -22,7 +22,7 @@ export function Accordion({ items }: Props) {
     "shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)]",
     "overflow-hidden",
     "divide-y",
-    "divide-[color:var(--color-border)]",
+    "divide-(color:--color-border)",
   ].join(" ");
   return (
     <div className={containerClassName}>

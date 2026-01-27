@@ -110,7 +110,7 @@ export default function DocsIndex() {
         className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
       />
       <Container className="relative pt-16 sm:pt-20 space-y-8">
-        <Card className="space-y-4 rounded-[32px] border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
+        <Card className="space-y-4 rounded-4xl border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
           <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Documentation built for operators</h1>
           <p className="max-w-3xl text-base leading-relaxed text-secondary-text sm:text-sm">
@@ -135,7 +135,7 @@ function DocQuickLink({ href, title, description }: { href: string; title: strin
   return (
     <Link
       href={href}
-      className="group block rounded-[24px] border border-white/12 bg-background/85 px-5 py-5 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
+      className="group block rounded-3xl border border-white/12 bg-background/85 px-5 py-5 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="text-base font-semibold text-foreground">{title}</span>

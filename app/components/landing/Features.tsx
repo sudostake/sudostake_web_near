@@ -36,7 +36,7 @@ const ASSURANCES = [
 export function Features() {
   return (
     <section className="mt-28">
-      <div className="rounded-[32px] border border-white/12 bg-surface/90 p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
+      <div className="rounded-4xl border border-white/12 bg-surface/90 p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
         <div className="grid gap-y-12 gap-x-10 lg:grid-cols-[minmax(0,1.08fr),minmax(260px,0.92fr)]">
           <div>
             <h2 className="text-[clamp(1.45rem,2.3vw,2rem)] font-semibold text-foreground">How it works</h2>

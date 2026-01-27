@@ -98,7 +98,7 @@ export function Hero() {
   const networkLabel = formatNetworkLabel(network);
   return (
     <section className="relative mt-20 md:mt-28">
-      <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-surface/85 px-5 py-10 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10 sm:py-12">
+      <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-surface/85 px-5 py-10 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10 sm:py-12">
         {/* Keep both glow accents the same size so the radius stays clean. */}
         <div
           aria-hidden="true"
