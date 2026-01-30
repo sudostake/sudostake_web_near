@@ -195,7 +195,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     }
   }, [remainingMs, isOwner, data?.state, data?.liquidation, ownerPostExpiryShown]);
 
-  // Process claims (lender action)
+  // Process claims (lender or owner)
   const { processClaims, pending: processPending, error: processError } = useProcessClaims();
   const { indexVault: indexAfterProcess } = useIndexVault();
   const lenderId = data?.accepted_offer?.lender;
@@ -233,6 +233,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   }, [remainingMs]);
 
   const expiryLabel = useMemo(() => (expiryDate ? formatDateTime(expiryDate) : null), [expiryDate]);
+  const ownerLiquidationSummary = useMemo(
+    () => STRINGS.liquidationOwnerSummary(expiryLabel ?? undefined),
+    [expiryLabel]
+  );
 
   // Collateral/liquidation calculations (all in NEAR)
   const collateralYocto = data?.liquidity_request?.collateral;
@@ -599,8 +603,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           </div>
           {role !== "activeLender" && (
             <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
-              {STRINGS.loanExpired}
-              {expiryDate ? ` on ${formatDateTime(expiryDate)}` : ""}. {STRINGS.liquidationInProgress}
+              {ownerLiquidationSummary}
             </div>
           )}
           {role === "activeLender" && (
@@ -795,6 +798,26 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
                   </div>
                 </div>
               </Card>
+              {isOwner && (
+                <div className="mt-4 flex flex-col items-end gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setPostExpiryOpen(true)}
+                    disabled={processPending || !hasClaimableNow}
+                    className="w-full justify-center gap-2 sm:w-auto"
+                    title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+                    aria-busy={processPending ? true : undefined}
+                  >
+                    {processPending ? STRINGS.processing : STRINGS.processNow}
+                  </Button>
+                  {processError && (
+                    <div className="text-xs text-red-600" role="alert">{processError}</div>
+                  )}
+                  {processPending && (
+                    <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
+                  )}
+                </div>
+              )}
 
               {unbondingTotalLabel && (
                 <UnbondingStatusCard
@@ -853,7 +876,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       )}
 
       {/* Post-expiry lender popup */}
-      {postExpiryOpen && role === "activeLender" && data?.state === "active" && content && data?.liquidity_request && (
+      {postExpiryOpen && (role === "activeLender" || isOwner) && data?.state === "active" && content && data?.liquidity_request && (
         <PostExpiryLenderDialog
           open={postExpiryOpen}
           onClose={() => setPostExpiryOpen(false)}
@@ -873,6 +896,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           willBePartial={willBePartial}
           canProcessNow={hasClaimableNow}
           inProgress={Boolean(data?.liquidation)}
+          showLenderGratitude={role === "activeLender"}
         />
       )}
       {/* Post-expiry owner popup */}

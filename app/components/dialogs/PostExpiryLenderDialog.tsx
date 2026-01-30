@@ -24,6 +24,7 @@ type Props = {
   willBePartial?: boolean;
   inProgress?: boolean;
   canProcessNow?: boolean;
+  showLenderGratitude?: boolean;
 };
 
 export function PostExpiryLenderDialog({
@@ -45,6 +46,7 @@ export function PostExpiryLenderDialog({
   willBePartial,
   inProgress,
   canProcessNow,
+  showLenderGratitude = true,
 }: Props) {
   const [showMore, setShowMore] = React.useState(false);
   const title = inProgress ? STRINGS.liquidationInProgress : STRINGS.loanExpired;
@@ -83,11 +85,13 @@ export function PostExpiryLenderDialog({
             <span>{STRINGS.liquidationInProgress}</span>
           </div>
         )}
-        <div className="rounded border bg-background p-3">
-          <div className="text-sm text-emerald-900">
-            {STRINGS.lenderGratitude}
+        {showLenderGratitude && (
+          <div className="rounded border bg-background p-3">
+            <div className="text-sm text-emerald-900">
+              {STRINGS.lenderGratitude}
+            </div>
           </div>
-        </div>
+        )}
         <div className="rounded border bg-background p-3">
           <div className="text-sm font-medium mb-2">{STRINGS.whatHappensNext}</div>
           <ul className="list-disc pl-5 space-y-1 text-sm">
