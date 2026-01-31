@@ -365,7 +365,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       if (!usdcId) { setVaultUsdcRegistered(null); return; }
       const bal = await storageBalanceOf(usdcId, vaultId);
       if (cancelled) return;
-      setVaultUsdcRegistered(!!(bal && typeof bal.total === "string" && bal.total !== "0"));
+      setVaultUsdcRegistered(bal !== null);
     }
     void run();
     return () => { cancelled = true; };
