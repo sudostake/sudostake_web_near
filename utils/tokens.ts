@@ -7,15 +7,9 @@ import { getActiveNetwork, type Network } from "@/utils/networks";
 // are controlled by the holder of the corresponding private key.
 // See: https://docs.near.org/concepts/basics/account#implicit-accounts
 //
-// Security/operations note:
-// For flexibility and quick remediation, this ID can be overridden via NEXT_PUBLIC_USDC_MAINNET_ID.
-// The override is only accepted if it matches the implicit-account format (64 hex chars).
 const DEFAULT_USDC_MAINNET_ID = "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1";
-const ENV_USDC_MAINNET_ID = process.env.NEXT_PUBLIC_USDC_MAINNET_ID;
-const USDC_MAINNET_ID =
-  ENV_USDC_MAINNET_ID && /^[0-9a-fA-F]{64}$/.test(ENV_USDC_MAINNET_ID)
-    ? ENV_USDC_MAINNET_ID
-    : DEFAULT_USDC_MAINNET_ID;
+const DEFAULT_USDC_TESTNET_ID =
+  "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af";
 
 export type TokenConfig = {
   id: string; // NEP-141 contract account id
@@ -28,8 +22,8 @@ export type TokenConfig = {
 const TOKENS_BY_NETWORK: Partial<Record<Network, Record<string, TokenConfig>>> = {
   // Known testnet USDC
   testnet: {
-    "usdc.tkn.primitives.testnet": {
-      id: "usdc.tkn.primitives.testnet",
+    [DEFAULT_USDC_TESTNET_ID]: {
+      id: DEFAULT_USDC_TESTNET_ID,
       symbol: "USDC",
       decimals: 6,
       name: "USD Coin (Testnet)",
@@ -41,8 +35,8 @@ const TOKENS_BY_NETWORK: Partial<Record<Network, Record<string, TokenConfig>>> =
     // USDC token on NEAR mainnet (implicit account). See also:
     // - https://github.com/near/near-discovery-token-registry/blob/main/mainnet.json
     // - https://github.com/sudostake/sudostake_agent_near/blob/main/agent/src/token_registry.py
-    [USDC_MAINNET_ID]: {
-      id: USDC_MAINNET_ID,
+    [DEFAULT_USDC_MAINNET_ID]: {
+      id: DEFAULT_USDC_MAINNET_ID,
       symbol: "USDC",
       decimals: 6,
       name: "USD Coin",
