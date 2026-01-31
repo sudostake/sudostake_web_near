@@ -206,7 +206,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
       title="Open liquidity request"
       disableBackdropClose={pending}
       footer={
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
           <Button variant="secondary" onClick={resetAndClose} disabled={pending}>
             Cancel
           </Button>
@@ -216,7 +216,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         </div>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs text-secondary-text">Vault</div>
@@ -225,7 +225,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
           <Badge variant="neutral" className="uppercase">{network}</Badge>
         </div>
 
-        <section className="rounded border bg-background p-3 space-y-2">
+        <section className="rounded border bg-background p-4 space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-xs text-secondary-text">Token (fixed)</div>
@@ -235,6 +235,13 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
                 <Badge variant="info">Fixed</Badge>
               </div>
             </div>
+            {checkingRegistration ? (
+              <Badge variant="neutral">Checking</Badge>
+            ) : isRegistered ? (
+              <Badge variant="success">Registered</Badge>
+            ) : (
+              <Badge variant="warn">Action required</Badge>
+            )}
           </div>
           <div>
             <div className="text-xs text-secondary-text mb-1">Token contract</div>
@@ -256,88 +263,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               </a>
             )}
           </div>
-        </section>
-
-        <section className="rounded border bg-background p-3">
-          <div className="text-sm font-medium">Loan terms</div>
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label={`Amount (${tokenSymbol})`}
-              type="number"
-              min={0}
-              step="any"
-              inputMode="decimal"
-              placeholder="0.0"
-              value={amount}
-              hint={`How much ${tokenSymbol} you want to borrow. Up to ${tokenDecimals} decimals.`}
-              onChange={(e) => setAmount(e.target.value)}
-            />
-            <Input
-              label={`Interest (${tokenSymbol})`}
-              type="number"
-              min={0}
-              step="any"
-              inputMode="decimal"
-              placeholder="e.g. 1.25"
-              value={interestToken}
-              hint={`Total interest in ${tokenSymbol} to repay.`}
-              onChange={(e) => setInterestToken(e.target.value)}
-            />
-          </div>
-        </section>
-
-        <section className="rounded border bg-background p-3">
-          <div className="text-sm font-medium">Collateral & duration</div>
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm">
-                <span className="text-secondary-text">Collateral (NEAR)</span>
-                <Input
-                  type="number"
-                  min={0}
-                  step="any"
-                  inputMode="decimal"
-                  placeholder="0.0"
-                  value={collateralNear}
-                  onChange={(e) => clampCollateral(e.target.value)}
-                />
-              </label>
-              <div className="mt-1 flex items-center justify-between text-xs text-secondary-text">
-                <span>Max available (staked): {maxCollateralNear} NEAR</span>
-                <Button variant="ghost" size="sm" onClick={() => setCollateralNear(maxCollateralNear)} disabled={maxCollateralYocto === "0"}>
-                  Max
-                </Button>
-              </div>
-              {showCollateralError && (
-                <div className="mt-1 text-xs text-red-500">Collateral exceeds your total staked balance.</div>
-              )}
-            </div>
-            <Input
-              label="Duration (days)"
-              type="number"
-              min={1}
-              step={1}
-              inputMode="numeric"
-              placeholder="7"
-              value={durationDays}
-              hint="How long this request should remain open."
-              onChange={(e) => setDurationDays(e.target.value)}
-            />
-          </div>
-        </section>
-
-        <section className="rounded border bg-background p-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-sm font-medium">Token registration</div>
-            {checkingRegistration ? (
-              <Badge variant="neutral">Checking</Badge>
-            ) : isRegistered ? (
-              <Badge variant="success">Registered</Badge>
-            ) : (
-              <Badge variant="warn">Action required</Badge>
-            )}
-          </div>
-          <div className="mt-2 text-sm text-secondary-text">
+          <div className="text-sm text-secondary-text">
             {checkingRegistration
               ? "Checking whether the vault is registered with the token contract."
               : isRegistered
@@ -348,7 +274,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
             )}
           </div>
           {!isRegistered && (
-            <div className="mt-3 flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit} aria-busy={regPending ? true : undefined}>
                 {regPending ? "Registering…" : "Register vault"}
               </Button>
@@ -368,31 +294,100 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
           )}
         </section>
 
-        <section className="rounded border bg-background p-3">
-          <div className="text-sm font-medium">Review</div>
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-secondary-text">Token</span>
-              <span>{tokenSymbol}</span>
+        <section className="rounded border bg-background p-4">
+          <div className="text-sm font-medium">Loan terms</div>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label={`Amount (${tokenSymbol})`}
+              type="number"
+              min={0}
+              step="any"
+              inputMode="decimal"
+              placeholder="0.0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <Input
+              label={`Interest (${tokenSymbol})`}
+              type="number"
+              min={0}
+              step="any"
+              inputMode="decimal"
+              placeholder="e.g. 1.25"
+              value={interestToken}
+              onChange={(e) => setInterestToken(e.target.value)}
+            />
+          </div>
+          <div className="mt-3 text-xs text-secondary-text">
+            Enter the total interest in {tokenSymbol}. Up to {tokenDecimals} decimals.
+          </div>
+        </section>
+
+        <section className="rounded border bg-background p-4">
+          <div className="text-sm font-medium">Collateral & duration</div>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Input
+                label="Collateral (NEAR)"
+                type="number"
+                min={0}
+                step="any"
+                inputMode="decimal"
+                placeholder="0.0"
+                value={collateralNear}
+                onChange={(e) => clampCollateral(e.target.value)}
+              />
+              <div className="mt-1 text-xs text-secondary-text">
+                <div>Max available (staked): {maxCollateralNear} NEAR</div>
+                <div className="mt-2 flex justify-start">
+                  <Button variant="ghost" size="sm" onClick={() => setCollateralNear(maxCollateralNear)} disabled={maxCollateralYocto === "0"}>
+                    Max
+                  </Button>
+                </div>
+              </div>
+              {showCollateralError && (
+                <div className="mt-1 text-xs text-red-500">Collateral exceeds your total staked balance.</div>
+              )}
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-secondary-text">Amount</span>
-              <span>{amount || "—"} {tokenSymbol}</span>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-secondary-text">Interest</span>
-              <span>{interestToken || "—"} {tokenSymbol}</span>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-secondary-text">Collateral</span>
-              <span>{collateralNear || "—"} NEAR</span>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-secondary-text">Duration</span>
-              <span>{durationDays || "—"} days</span>
+            <div className="space-y-2">
+              <Input
+                label="Duration (days)"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                placeholder="7"
+                value={durationDays}
+                onChange={(e) => setDurationDays(e.target.value)}
+              />
+              <div className="text-xs text-secondary-text">
+                Duration is the number of days this request stays open.
+              </div>
             </div>
           </div>
-          <div className="mt-2 text-xs text-secondary-text">
+        </section>
+
+        <section className="rounded border bg-background p-4">
+          <div className="text-sm font-medium">Summary</div>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-secondary-text">You will borrow</span>
+              <span className="font-medium">{amount || "—"} {tokenSymbol}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-secondary-text">Interest</span>
+              <span className="font-medium">{interestToken || "—"} {tokenSymbol}</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-secondary-text">Collateral</span>
+              <span className="font-medium">{collateralNear || "—"} NEAR</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-secondary-text">Duration</span>
+              <span className="font-medium">{durationDays || "—"} days</span>
+            </div>
+          </div>
+          <div className="mt-3 text-xs text-secondary-text">
             You’ll review and approve this request in your wallet.
           </div>
         </section>
