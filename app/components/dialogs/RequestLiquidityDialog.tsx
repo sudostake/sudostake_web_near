@@ -5,12 +5,14 @@ import { Modal } from "@/app/components/dialogs/Modal";
 import { useRequestLiquidity } from "@/hooks/useRequestLiquidity";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { getActiveNetwork, getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
-import { getDefaultUsdcTokenId } from "@/utils/tokens";
+import { getDefaultUsdcTokenId, getTokenConfigById } from "@/utils/tokens";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { utils } from "near-api-js";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
+import { CopyButton } from "@/app/components/ui/CopyButton";
+import { Badge } from "@/app/components/ui/Badge";
 
 type Props = {
   open: boolean;
@@ -49,18 +51,18 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     }
   }, [maxCollateralYocto]);
 
-  const [token, setToken] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [interestToken, setInterestToken] = useState<string>("");
   const [collateralNear, setCollateralNear] = useState<string>("");
   const [durationDays, setDurationDays] = useState<string>("7");
 
-  useEffect(() => {
-    if (!token) {
-      const usdc = getDefaultUsdcTokenId(network);
-      if (usdc) setToken(usdc);
-    }
-  }, [network, token]);
+  const token = useMemo(() => getDefaultUsdcTokenId(network) ?? "", [network]);
+  const tokenConfig = useMemo(
+    () => (token ? getTokenConfigById(token, network) : undefined),
+    [token, network]
+  );
+  const tokenSymbol = tokenConfig?.symbol ?? "FT";
+  const tokenName = tokenConfig?.name ?? "Token";
 
   // Ensure delegation data is fresh whenever the dialog is opened.
   useEffect(() => {
@@ -217,13 +219,39 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <Input
-          label="Token (NEP-141)"
-          type="text"
-          placeholder="e.g. usdc.tkn.primitives.testnet"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-        />
+        <div className="rounded border bg-surface p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-xs text-secondary-text">Token</div>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-foreground">{tokenSymbol}</span>
+                <span className="text-xs text-secondary-text">{tokenName}</span>
+                <Badge variant="info">Fixed</Badge>
+              </div>
+            </div>
+            <Badge variant="neutral" className="uppercase">{network}</Badge>
+          </div>
+          <div className="mt-2">
+            <div className="text-xs text-secondary-text mb-1">Token contract</div>
+            <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
+              <div className="truncate" title={token || undefined}>{token || "Not configured"}</div>
+              {token && <CopyButton value={token} title="Copy token id" />}
+            </div>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-secondary-text">
+            <span>This request is fixed to {tokenSymbol} on {network.toUpperCase()}.</span>
+            {token && (
+              <a
+                href={explorerAccountUrl(network, token)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary underline"
+              >
+                View token on Explorer
+              </a>
+            )}
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input
             label="Amount (token)"
