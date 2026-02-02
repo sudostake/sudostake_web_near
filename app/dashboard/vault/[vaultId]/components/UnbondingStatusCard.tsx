@@ -59,8 +59,7 @@ export function UnbondingStatusCard({
 
       {open && entries.length > 0 && (
         <>
-          <div className="h-px bg-foreground/10" />
-          <div className="mt-2">
+          <div className="mt-3">
             <UnbondingList entries={entries} bare />
           </div>
           {footnote && (
