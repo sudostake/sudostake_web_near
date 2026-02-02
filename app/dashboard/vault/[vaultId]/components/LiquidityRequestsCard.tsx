@@ -1,14 +1,12 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
 import { useVault } from "@/hooks/useVault";
 import { useViewerRole } from "@/hooks/useViewerRole";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import type { Network } from "@/utils/networks";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
-import { explorerAccountUrl } from "@/utils/networks";
 import { utils } from "near-api-js";
 import { SECONDS_PER_DAY, AVERAGE_EPOCH_SECONDS } from "@/utils/constants";
 import { formatDateTime } from "@/utils/datetime";
@@ -25,10 +23,6 @@ import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
-import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
-import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
-import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLenderDialog";
-import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
@@ -39,6 +33,7 @@ import { OwnerVaultRegistrationCard } from "./OwnerVaultRegistrationCard";
 import { LiquidityRequestHeader } from "./LiquidityRequestHeader";
 import { LiquidityRequestContent, type LiquidityRequestContentData } from "./LiquidityRequestContent";
 import { LiquidationStatusSection } from "./LiquidationStatusSection";
+import { LiquidityRequestDialogs } from "./LiquidityRequestDialogs";
 import {
   computeRemainingYocto,
   computeMaturedTotals,
@@ -487,10 +482,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         />
       )}
 
-      {/* Repay dialog consolidated below */}
-
-      {/* Post-expiry lender popup is rendered below with tighter guards to ensure required data is present */}
-
       {isOwner && hasOpenRequest && vaultRegisteredForToken === false && (
         <OwnerVaultRegistrationCard
           ownerMinDeposit={ownerMinDeposit ? utils.format.formatNearAmount(ownerMinDeposit) : null}
@@ -501,91 +492,56 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
           storageError={storageError}
         />
       )}
-
-      
-      {isOwner && (
-        <RequestLiquidityDialog open={openDialog} onClose={() => setOpenDialog(false)} vaultId={vaultId} />
-      )}
-
-      {/* Lender confirmation dialog */}
-      {acceptOpen && content && data?.liquidity_request && (
-        <AcceptLiquidityConfirm
-          open={acceptOpen}
-          onClose={() => setAcceptOpen(false)}
-          onConfirm={onAccept}
-          pending={pending}
-          error={acceptError ?? undefined}
-          vaultId={vaultId}
-          tokenSymbol={tokenSymbol}
-          decimals={tokenDecimals}
-          amountRaw={data.liquidity_request.amount}
-          interestRaw={data.liquidity_request.interest}
-          collateralYocto={data.liquidity_request.collateral}
-          durationSeconds={data.liquidity_request.duration}
-        />
-      )}
-
-      {/* Post-expiry lender popup */}
-      {postExpiryOpen && (role === "activeLender" || isOwner) && data?.state === "active" && content && data?.liquidity_request && (
-        <PostExpiryLenderDialog
-          open={postExpiryOpen}
-          onClose={() => setPostExpiryOpen(false)}
-          onBegin={onBeginLiquidation}
-          vaultId={vaultId}
-          tokenSymbol={tokenSymbol}
-          totalDueLabel={formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals)}
-          collateralNearLabel={utils.format.formatNearAmount(data.liquidity_request.collateral)}
-          pending={processPending}
-          error={processError ?? undefined}
-          payoutTo={lenderId ?? undefined}
-          payoutToUrl={lenderId ? explorerAccountUrl(network, lenderId) : undefined}
-          expectedImmediateLabel={expectedImmediateLabel ?? undefined}
-          maturedTotalLabel={maturedTotalLabel ?? undefined}
-          expectedNextLabel={expectedNextLabel ?? undefined}
-          closesRepay={closesRepay}
-          willBePartial={willBePartial}
-          canProcessNow={hasClaimableNow}
-          inProgress={Boolean(data?.liquidation)}
-          showLenderGratitude={role === "activeLender"}
-        />
-      )}
-      {/* Post-expiry owner popup */}
-      {ownerPostExpiryOpen && isOwner && data?.state === "active" && content && data?.liquidity_request && (
-        <PostExpiryOwnerDialog
-          open={ownerPostExpiryOpen}
-          onClose={() => setOwnerPostExpiryOpen(false)}
-          onRepay={() => {
-            setOwnerPostExpiryOpen(false);
-            setRepayOpen(true);
-          }}
-          vaultId={vaultId}
-          tokenSymbol={tokenSymbol}
-          totalDueLabel={formatMinimalTokenAmount(sumMinimal(content.amountRaw, content.interestRaw), tokenDecimals)}
-          collateralNearLabel={utils.format.formatNearAmount(data.liquidity_request.collateral)}
-        />
-      )}
-
-      {/* Repay dialog for owner */}
-      {repayOpen && isOwner && data?.liquidity_request && (
-        <RepayLoanDialog
-          open={repayOpen}
-          onClose={() => setRepayOpen(false)}
-          vaultId={vaultId}
-          factoryId={factoryId}
-          tokenId={data.liquidity_request.token}
-          principalMinimal={data.liquidity_request.amount}
-          interestMinimal={data.liquidity_request.interest}
-          onSuccess={() => {
-            onAfterRepay?.();
-            refetchAvail();
-            refetch();
-            setRepayOpen(false);
-          }}
-          onVaultTokenBalanceChange={() => {
-            onAfterTopUp?.();
-          }}
-        />
-      )}
+      <LiquidityRequestDialogs
+        isOwner={isOwner}
+        role={role}
+        state={data?.state}
+        vaultId={vaultId}
+        factoryId={factoryId}
+        network={network}
+        content={content}
+        liquidityRequest={data?.liquidity_request ?? null}
+        openDialog={openDialog}
+        onCloseOpenDialog={() => setOpenDialog(false)}
+        acceptOpen={acceptOpen}
+        onCloseAccept={() => setAcceptOpen(false)}
+        onConfirmAccept={onAccept}
+        acceptPending={pending}
+        acceptError={acceptError}
+        tokenSymbol={tokenSymbol}
+        tokenDecimals={tokenDecimals}
+        postExpiryOpen={postExpiryOpen}
+        onClosePostExpiry={() => setPostExpiryOpen(false)}
+        onBeginLiquidation={onBeginLiquidation}
+        processPending={processPending}
+        processError={processError}
+        lenderId={lenderId}
+        expectedImmediateLabel={expectedImmediateLabel}
+        maturedTotalLabel={maturedTotalLabel}
+        expectedNextLabel={expectedNextLabel}
+        closesRepay={closesRepay}
+        willBePartial={willBePartial}
+        canProcessNow={hasClaimableNow}
+        inProgress={Boolean(data?.liquidation)}
+        showLenderGratitude={role === "activeLender"}
+        ownerPostExpiryOpen={ownerPostExpiryOpen}
+        onCloseOwnerPostExpiry={() => setOwnerPostExpiryOpen(false)}
+        onOwnerRepay={() => {
+          setOwnerPostExpiryOpen(false);
+          setRepayOpen(true);
+        }}
+        repayOpen={repayOpen}
+        onCloseRepay={() => setRepayOpen(false)}
+        onRepaySuccess={() => {
+          onAfterRepay?.();
+          refetchAvail();
+          refetch();
+          setRepayOpen(false);
+        }}
+        onVaultTokenBalanceChange={() => {
+          onAfterTopUp?.();
+        }}
+      />
     </Card>
   );
 }
