@@ -31,21 +31,14 @@ import { PostExpiryLenderDialog } from "@/app/components/dialogs/PostExpiryLende
 import { PostExpiryOwnerDialog } from "@/app/components/dialogs/PostExpiryOwnerDialog";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
-import { STRINGS, fundedByString } from "@/utils/strings";
-// UnbondingList is now encapsulated inside UnbondingStatusCard for owner view
-import { UnbondingStatusCard } from "./UnbondingStatusCard";
+import { STRINGS } from "@/utils/strings";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
-import { Button } from "@/app/components/ui/Button";
-import { CurrentRequestPanel } from "./CurrentRequestPanel";
-import { LenderActionsPanel } from "./LenderActionsPanel";
-import { OwnerActionsPanel } from "./OwnerActionsPanel";
 import { VaultUsdcRegisteredNotice } from "./VaultUsdcRegisteredNotice";
-import { AcceptActionsPanel } from "./AcceptActionsPanel";
 import { OwnerVaultRegistrationCard } from "./OwnerVaultRegistrationCard";
-import { PotentialLenderRegistrationCard } from "./PotentialLenderRegistrationCard";
-import { Badge } from "@/app/components/ui/Badge";
-import { SpinningTokenPair } from "@/app/components/ui/SpinningTokenPair";
+import { LiquidityRequestHeader } from "./LiquidityRequestHeader";
+import { LiquidityRequestContent, type LiquidityRequestContentData } from "./LiquidityRequestContent";
+import { LiquidationStatusSection } from "./LiquidationStatusSection";
 import {
   computeRemainingYocto,
   computeMaturedTotals,
@@ -104,7 +97,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const [vaultRegisteredForToken, setVaultRegisteredForToken] = React.useState<boolean | null>(null);
   const [ownerMinDeposit, setOwnerMinDeposit] = React.useState<string | null>(null);
 
-  const content = useMemo(() => {
+  const content = useMemo<LiquidityRequestContentData | null>(() => {
     const req = data?.liquidity_request;
     if (!req) return null;
     const amount = formatTokenAmount(req.amount, req.token, network);
@@ -131,6 +124,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     if (!lenderTokenBal) return "—";
     return formatMinimalTokenAmount(lenderTokenBal, tokenDecimals);
   }, [lenderTokenBal, tokenDecimals]);
+  const lenderMinDepositLabel = useMemo(
+    () => (lenderMinDeposit ? utils.format.formatNearAmount(lenderMinDeposit) : null),
+    [lenderMinDeposit]
+  );
 
   // Expiry countdown for active loans
   const acceptedAtDate = useMemo(() => tsToDate(data?.accepted_offer?.accepted_at as unknown), [data?.accepted_offer?.accepted_at]);
@@ -272,8 +269,6 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     [expectedImmediateYocto, maturedYocto, remainingYocto]
   );
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
-  const hasVaultBalanceNow = expectedImmediateYocto > BigInt(0);
-  const hasMaturedNow = maturedYocto > BigInt(0);
   const closesRepay = true;
   const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0);
 
@@ -410,431 +405,86 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       className="space-y-6 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
       aria-label="Liquidity requests"
     >
-      <div className="flex items-center gap-4">
-        <SpinningTokenPair pauseOnHover />
-        <div className="flex-1 min-w-0">
-          {hasOpenRequest ? (
-            <>
-              <div className="text-base font-medium">
-                {isOwner
-                  ? data?.state === "active"
-                    ? STRINGS.ownerRequestTitleActive
-                    : STRINGS.ownerRequestTitlePending
-                  : data?.state === "active" && role === "activeLender"
-                  ? STRINGS.nonOwnerRequestTitleActiveLender
-                  : STRINGS.nonOwnerRequestTitleGeneric}
-              </div>
-              <div className="mt-1 text-sm text-secondary-text">
-                {isOwner
-                  ? data?.state === "pending"
-                    ? STRINGS.ownerRequestCaptionPending
-                    : data?.accepted_offer?.lender
-                    ? fundedByString(String(data.accepted_offer.lender))
-                    : STRINGS.ownerRequestCaptionFunded
-                  : data?.state === "pending"
-                  ? STRINGS.nonOwnerRequestCaptionPending
-                  : role === "activeLender"
-                  ? STRINGS.nonOwnerRequestCaptionActiveLender
-                  : STRINGS.nonOwnerRequestCaptionFunded}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="text-base font-medium">{STRINGS.accessUsdcTitle}</div>
-              <div className="mt-1 text-sm text-secondary-text">{STRINGS.accessUsdcCaption}</div>
-            </>
-          )}
-        </div>
-        {!hasOpenRequest && isOwner && (
-          <div className="shrink-0">
-            <Button
-              type="button"
-              onClick={() => setOpenDialog(true)}
-              disabled={openDisabled}
-              variant="secondary"
-              size="md"
-              className="gap-2"
-            >
-              {STRINGS.openRequest}
-            </Button>
-          </div>
-        )}
-      </div>
+      <LiquidityRequestHeader
+        hasOpenRequest={hasOpenRequest}
+        isOwner={isOwner}
+        state={data?.state}
+        role={role}
+        lenderId={data?.accepted_offer?.lender}
+        openDisabled={openDisabled}
+        onOpenRequest={() => setOpenDialog(true)}
+      />
 
       {!hasOpenRequest && isOwner && vaultUsdcRegistered !== null && (
         <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} />
       )}
 
       {content && (
-        <>
-        <CurrentRequestPanel
+        <LiquidityRequestContent
           content={content}
-          active={data?.state === "active"}
-          showTimeline={Boolean(expiryDate && data?.state === "active")}
-          countdownLabel={formattedCountdown}
+          state={data?.state}
+          role={role}
+          isOwner={isOwner}
+          liquidationActive={Boolean(data?.liquidation)}
+          expiryDate={expiryDate}
+          remainingMs={remainingMs}
+          formattedCountdown={formattedCountdown}
           expiryLabel={expiryLabel}
-          expired={Boolean(data?.state === "active" && remainingMs === 0)}
+          hasClaimableNow={hasClaimableNow}
+          claimableNowLabel={claimableNowLabel}
+          expectedNextLabel={expectedNextLabel}
+          lenderId={lenderId}
+          network={network}
+          processError={processError}
+          processPending={processPending}
+          maturedYocto={maturedYocto}
+          onOpenProcess={() => setPostExpiryOpen(true)}
+          onRepay={() => setRepayOpen(true)}
+          onCancel={onCancel}
+          cancelPending={cancelPending}
+          cancelError={cancelError}
+          tokenSymbol={tokenSymbol}
+          lenderBalanceLabel={lenderBalanceLabel}
+          lenderRegistered={lenderRegistered}
+          lenderMinDepositLabel={lenderMinDepositLabel}
+          storagePending={storagePending}
+          storageError={storageError}
+          onRegisterLender={onRegisterLender}
+          vaultRegisteredForToken={vaultRegisteredForToken}
+          pending={pending}
+          balLoading={balLoading}
+          sufficientBalance={sufficientBalance}
+          tokenDecimals={tokenDecimals}
+          acceptError={acceptError}
+          onOpenAccept={() => setAcceptOpen(true)}
+          vaultId={vaultId}
         />
-          {data?.state === "active" && role === "activeLender" && expiryDate && !data?.liquidation && (
-            <LenderActionsPanel
-              remainingMs={remainingMs}
-              formattedCountdown={formattedCountdown}
-              hasClaimableNow={hasClaimableNow}
-              claimableNowLabel={claimableNowLabel}
-              expectedNextLabel={expectedNextLabel}
-              lenderId={lenderId}
-              network={network}
-              processError={processError}
-              processPending={processPending}
-              maturedYocto={maturedYocto}
-              onOpenProcess={() => setPostExpiryOpen(true)}
-            />
-          )}
-          {/* Intentionally allow repayment post-term:
-              We keep the Repay button visible for the owner even after the
-              countdown reaches zero (remainingMs === 0), up until liquidation
-              actually starts. This matches the banner below which states that
-              repayment is still possible until liquidation is triggered. */}
-          {data?.state === "active" && isOwner && !data?.liquidation && (
-            <OwnerActionsPanel
-              onRepay={() => setRepayOpen(true)}
-              remainingMs={remainingMs}
-              formattedCountdown={formattedCountdown}
-              expiryLabel={expiryLabel}
-            />
-          )}
-          {/* Accepted timestamp removed for a leaner UI */}
-          {data?.state === "active" && remainingMs === 0 && !data?.liquidation && !isOwner && (
-            <div className="rounded-lg border border-amber-200/60 bg-amber-50/80 px-3 py-2 text-xs text-amber-800" role="status">
-              {STRINGS.expiredRepayWarning}
-            </div>
-          )}
-          {/* Lender appreciation card intentionally removed for a leaner UI */}
-          {isOwner && data?.state === "pending" ? (
-            <div className="flex flex-col items-end gap-2">
-              <Button
-                type="button"
-                onClick={onCancel}
-                disabled={cancelPending}
-                variant="secondary"
-                className="w-full justify-center gap-2 sm:w-auto"
-                aria-busy={cancelPending ? true : undefined}
-              >
-                {cancelPending ? "Cancelling…" : STRINGS.cancelRequest}
-              </Button>
-              {cancelError && <div className="text-xs text-red-600" role="alert">{cancelError}</div>}
-              {cancelPending && (
-                <div className="sr-only" role="status" aria-live="polite">Cancelling…</div>
-              )}
-            </div>
-          ) : data?.state === "pending" && role === "potentialLender" ? (
-            <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Lender registration">
-              <div className="text-sm text-secondary-text text-left">
-                {STRINGS.yourBalance}: <span className="font-mono">{lenderBalanceLabel} {tokenSymbol}</span>
-              </div>
-              <PotentialLenderRegistrationCard
-                network={network}
-                tokenId={content?.token}
-                lenderRegistered={lenderRegistered}
-                lenderMinDeposit={lenderMinDeposit ? utils.format.formatNearAmount(lenderMinDeposit) : null}
-                storagePending={storagePending}
-                storageError={storageError}
-                onRegister={onRegisterLender}
-              />
-              {vaultRegisteredForToken === false && (
-                <Card className="text-left text-sm rounded-xl border border-red-200/60 bg-red-50/80 px-4 py-3 text-red-800">
-                  {STRINGS.vaultNotRegisteredLendingDisabled}
-                  <div className="mt-2 space-x-3">
-                    <a
-                      href={explorerAccountUrl(network, vaultId)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-primary underline"
-                      aria-label={`View vault ${vaultId} on explorer`}
-                    >
-                      {STRINGS.viewVaultOnExplorer}
-                    </a>
-                    {content?.token && (
-                      <a
-                        href={explorerAccountUrl(network, content.token)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-primary underline"
-                        aria-label={`View token ${content.token} on explorer`}
-                      >
-                        {STRINGS.viewTokenOnExplorer}
-                      </a>
-                    )}
-                  </div>
-                </Card>
-              )}
-              <AcceptActionsPanel
-                pending={pending}
-                balLoading={balLoading}
-                sufficientBalance={sufficientBalance}
-                lenderRegistered={lenderRegistered}
-                vaultRegisteredForToken={vaultRegisteredForToken}
-                amountRaw={content?.amountRaw}
-                tokenDecimals={tokenDecimals}
-                tokenSymbol={tokenSymbol}
-                lenderBalanceLabel={lenderBalanceLabel}
-                acceptError={acceptError}
-                onOpen={() => setAcceptOpen(true)}
-              />
-            </Card>
-          ) : null}
-          {/* Single repay action is shown above in the owner section; avoid duplicating here */}
-        </>
       )}
 
       {/* Liquidation progress/status section */}
       {data?.state === "active" && data?.liquidation && (
-        <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Liquidation status">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-base font-medium">
-              {role === "activeLender" ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
-            </div>
-            <Badge
-              variant={role === "activeLender" ? "neutral" : "danger"}
-              title={expiryDate ? formatDateTime(expiryDate) : undefined}
-            >
-              {STRINGS.expiredLabel}
-            </Badge>
-          </div>
-          {role !== "activeLender" && (
-            <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
-              {ownerLiquidationSummary}
-            </div>
-          )}
-          {role === "activeLender" && (
-            <div>
-              <Card className="space-y-3 rounded-lg border border-white/10 bg-background/70 px-4 py-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
-                    <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated, 5)} NEAR</div>
-                  </div>
-                  {remainingTargetLabel && (
-                    <div>
-                      <div className="text-secondary-text">{STRINGS.remainingLabel}</div>
-                      <div className="font-medium">{remainingTargetLabel} NEAR{collateralLabel ? ` (Target: ${collateralLabel} NEAR)` : ""}</div>
-                    </div>
-                  )}
-                </div>
-                <div className="my-2 h-px bg-foreground/10" />
-                <div className="text-sm">
-                  <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
-                  <div className="mt-1">
-                    {hasClaimableNow ? (
-                      <div className="font-medium">{claimableNowLabel} NEAR {STRINGS.availableNow.toLowerCase()}</div>
-                    ) : (
-                      <div className="text-secondary-text">{STRINGS.nothingAvailableNow}</div>
-                    )}
-                    <ul className="mt-2 space-y-1">
-                      <li className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <svg
-                            aria-hidden="true"
-                            className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
-                            viewBox="0 0 16 16"
-                            fill="currentColor"
-                          >
-                            <rect x="2" y="6" width="12" height="6" rx="2" />
-                            <rect x="4" y="4" width="8" height="3" rx="1.5" />
-                            <circle cx="6" cy="9" r="0.6" />
-                            <circle cx="10" cy="9" r="0.6" />
-                          </svg>
-                          <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
-                          {hasVaultBalanceNow && (
-                            <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
-                          )}
-                        </div>
-                        <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
-                          {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
-                        </span>
-                      </li>
-                      {maturedTotalLabel && (
-                        <li className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <svg
-                              aria-hidden="true"
-                              className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
-                              viewBox="0 0 16 16"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="8" cy="8" r="6" />
-                              <path d="M5.5 8l2 2 3.5-3.5" />
-                            </svg>
-                            <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
-                            {hasMaturedNow && (
-                              <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
-                            )}
-                          </div>
-                          <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
-                            {maturedTotalLabel} NEAR
-                          </span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </Card>
-              <div className="mt-4 flex flex-col items-end gap-2">
-                <Button
-                  type="button"
-                  onClick={() => setPostExpiryOpen(true)}
-                  disabled={processPending || !hasClaimableNow}
-                  className="w-full justify-center gap-2 sm:w-auto"
-                  title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
-                  aria-busy={processPending ? true : undefined}
-                >
-                  {processPending ? STRINGS.processing : STRINGS.processNow}
-                </Button>
-                {processError && (
-                  <div className="text-xs text-red-600" role="alert">{processError}</div>
-                )}
-                {processPending && (
-                  <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
-                )}
-              </div>
-              {unbondingTotalLabel && (
-                <UnbondingStatusCard
-                  className="mt-2"
-                  open={showDetails}
-                  onToggle={() => setShowDetails((v) => !v)}
-                  count={unbondingEntries?.length ?? 0}
-                  totalLabel={unbondingTotalLabel}
-                  etaLabel={longestEtaLabel}
-                  entries={unbondingEntries}
-                  footnote={STRINGS.unbondingFootnoteLender}
-                />
-              )}
-            </div>
-          )}
-          {role !== "activeLender" && (
-            <>
-              <Card className="mt-2 rounded-lg border border-white/10 bg-background/70 px-4 py-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
-                    <div className="font-medium">{safeFormatYoctoNear(data.liquidation.liquidated, 5)} NEAR</div>
-                  </div>
-                  {remainingTargetLabel && (
-                    <div>
-                      <div className="text-secondary-text">{STRINGS.remainingLabel}</div>
-                      <div className="font-medium">{remainingTargetLabel} NEAR{collateralLabel ? ` (Target: ${collateralLabel} NEAR)` : ""}</div>
-                    </div>
-                  )}
-                </div>
-                <div className="my-2 h-px bg-foreground/10" />
-                <div className="text-sm">
-                  <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
-                  <div className="mt-1">
-                    {hasClaimableNow ? (
-                      <div className="font-medium">{claimableNowLabel} NEAR {STRINGS.availableNow.toLowerCase()}</div>
-                    ) : (
-                      <div className="text-secondary-text">{STRINGS.nothingAvailableNow}</div>
-                    )}
-                    <ul className="mt-2 space-y-1">
-                      <li className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <svg
-                            aria-hidden="true"
-                            className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
-                            viewBox="0 0 16 16"
-                            fill="currentColor"
-                          >
-                            <rect x="2" y="6" width="12" height="6" rx="2" />
-                            <rect x="4" y="4" width="8" height="3" rx="1.5" />
-                            <circle cx="6" cy="9" r="0.6" />
-                            <circle cx="10" cy="9" r="0.6" />
-                          </svg>
-                          <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
-                          {hasVaultBalanceNow && (
-                            <span
-                              aria-hidden="true"
-                              className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
-                            />
-                          )}
-                        </div>
-                        <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
-                          {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
-                        </span>
-                      </li>
-                      {maturedTotalLabel && (
-                        <li className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <svg
-                              aria-hidden="true"
-                              className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
-                              viewBox="0 0 16 16"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <circle cx="8" cy="8" r="6" />
-                              <path d="M5.5 8l2 2 3.5-3.5" />
-                            </svg>
-                            <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
-                            {hasMaturedNow && (
-                              <span
-                                aria-hidden="true"
-                                className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft"
-                              />
-                            )}
-                          </div>
-                          <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
-                            {maturedTotalLabel} NEAR
-                          </span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              </Card>
-              {isOwner && (
-                <div className="mt-4 flex flex-col items-end gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => setPostExpiryOpen(true)}
-                    disabled={processPending || !hasClaimableNow}
-                    className="w-full justify-center gap-2 sm:w-auto"
-                    title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
-                    aria-busy={processPending ? true : undefined}
-                  >
-                    {processPending ? STRINGS.processing : STRINGS.processNow}
-                  </Button>
-                  {processError && (
-                    <div className="text-xs text-red-600" role="alert">{processError}</div>
-                  )}
-                  {processPending && (
-                    <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
-                  )}
-                </div>
-              )}
-
-              {unbondingTotalLabel && (
-                <UnbondingStatusCard
-                  className="mt-2"
-                  open={showDetails}
-                  onToggle={() => setShowDetails((v) => !v)}
-                  count={unbondingEntries?.length ?? 0}
-                  totalLabel={unbondingTotalLabel}
-                  etaLabel={longestEtaLabel}
-                  entries={unbondingEntries}
-                  footnote={STRINGS.unbondingFootnoteOwner}
-                />
-              )}
-            </>
-          )}
-          {/* Removed redundant owner note; the header and expired+in-progress line already convey this */}
-        </Card>
+        <LiquidationStatusSection
+          role={role}
+          isOwner={isOwner}
+          expiryDate={expiryDate}
+          ownerLiquidationSummary={ownerLiquidationSummary}
+          liquidatedYocto={data.liquidation.liquidated}
+          remainingTargetLabel={remainingTargetLabel}
+          collateralLabel={collateralLabel}
+          claimableNowLabel={claimableNowLabel}
+          hasClaimableNow={hasClaimableNow}
+          expectedImmediateYocto={expectedImmediateYocto}
+          maturedYocto={maturedYocto}
+          maturedTotalLabel={maturedTotalLabel}
+          processPending={processPending}
+          processError={processError}
+          onProcess={() => setPostExpiryOpen(true)}
+          unbondingTotalLabel={unbondingTotalLabel}
+          unbondingEntries={unbondingEntries}
+          showDetails={showDetails}
+          onToggleDetails={() => setShowDetails((v) => !v)}
+          longestEtaLabel={longestEtaLabel}
+        />
       )}
 
       {/* Repay dialog consolidated below */}
