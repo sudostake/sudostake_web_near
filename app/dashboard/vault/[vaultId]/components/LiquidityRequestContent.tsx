@@ -144,6 +144,7 @@ export function LiquidityRequestContent({
       {showOwnerActions && (
         <OwnerActionsPanel
           onRepay={onRepay}
+          onBeginLiquidation={onOpenProcess}
           remainingMs={remainingMs}
           formattedCountdown={formattedCountdown}
           expiryLabel={expiryLabel}
