@@ -5,17 +5,20 @@ import { STRINGS } from "@/utils/strings";
 import { Button } from "@/app/components/ui/Button";
 import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
+import { startLiquidationInString } from "@/utils/strings";
 
 type Props = {
   onRepay: () => void;
+  onBeginLiquidation: () => void;
   remainingMs: number | null;
   formattedCountdown: string | null;
   expiryLabel?: string | null;
 };
 
-export function OwnerActionsPanel({ onRepay, remainingMs, formattedCountdown, expiryLabel }: Props) {
+export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, formattedCountdown, expiryLabel }: Props) {
   const hasCountdown = typeof remainingMs === "number" && remainingMs > 0;
   const hasExpired = typeof remainingMs === "number" && remainingMs === 0;
+  const canStartLiquidation = hasExpired;
   const showTiming = hasCountdown || hasExpired || Boolean(expiryLabel);
   const countdownDisplay = formattedCountdown ?? "—";
 
@@ -67,9 +70,21 @@ export function OwnerActionsPanel({ onRepay, remainingMs, formattedCountdown, ex
         </div>
       )}
 
-      <Button type="button" onClick={onRepay} className="w-full gap-2 sm:w-auto">
-        {STRINGS.ownerRepayNow}
-      </Button>
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <Button type="button" onClick={onRepay} className="w-full gap-2 sm:w-auto">
+          {STRINGS.ownerRepayNow}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onBeginLiquidation}
+          disabled={!canStartLiquidation}
+          className="w-full gap-2 sm:w-auto"
+          title={hasCountdown ? startLiquidationInString(String(countdownDisplay)) : undefined}
+        >
+          {hasCountdown ? startLiquidationInString(String(countdownDisplay)) : STRINGS.beginLiquidation}
+        </Button>
+      </div>
     </Card>
   );
 }
