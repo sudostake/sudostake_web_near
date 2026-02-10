@@ -5,7 +5,16 @@ import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { Button } from "@/app/components/ui/Button";
-import { getActiveNetwork } from "@/utils/networks";
+import { usePendingRequests } from "@/hooks/usePendingRequests";
+import { useTokenMetadata } from "@/hooks/useTokenMetadata";
+import { sumMinimal } from "@/utils/amounts";
+import { networkFromFactoryId } from "@/utils/api/rpcClient";
+import { calculateApr } from "@/utils/finance";
+import { formatMinimalTokenAmount } from "@/utils/format";
+import { safeFormatYoctoNear } from "@/utils/formatNear";
+import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
+import { formatDurationFromSeconds } from "@/utils/time";
+import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
 
 const HIGHLIGHTS = [
@@ -23,12 +32,15 @@ const HIGHLIGHTS = [
   },
 ];
 
-const SAMPLE_REQUEST = [
-  { label: "Collateral posted", value: "1,250 NEAR" },
-  { label: "USDC credit line", value: "5,000 USDC" },
-  { label: "Target buffer", value: "165% collateral" },
-  { label: "Repayment window", value: "30 days" },
+const FALLBACK_REQUEST = [
+  { label: "Amount", value: "5,000 USDC" },
+  { label: "Interest", value: "120 USDC" },
+  { label: "Repay", value: "5,120 USDC" },
+  { label: "Term", value: "30d" },
+  { label: "Collateral", value: "1,250 NEAR" },
+  { label: "Est. APR", value: "29.20%" },
 ];
+const LIVE_REQUEST_ROTATION_MS = 8000;
 
 function formatNetworkLabel(network: string) {
   if (!network) return "Ready on NEAR networks";
@@ -45,7 +57,72 @@ export function Hero() {
   const { signIn, walletSelector } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
   const [network, setNetwork] = React.useState<string>("");
-  React.useEffect(() => setNetwork(getActiveNetwork()), []);
+  const [factoryId, setFactoryId] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    setNetwork(getActiveNetwork());
+    setFactoryId(getActiveFactoryId());
+  }, []);
+  const { data: pendingRequests, loading: pendingLoading, error: pendingError } = usePendingRequests(factoryId);
+  const liveRequests = React.useMemo(
+    () => (pendingRequests ?? []).filter((item) => Boolean(item.liquidity_request)).slice(0, 3),
+    [pendingRequests]
+  );
+  const [liveRequestIndex, setLiveRequestIndex] = React.useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
+  React.useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const apply = () => setPrefersReducedMotion(media.matches);
+    apply();
+    media.addEventListener("change", apply);
+    return () => media.removeEventListener("change", apply);
+  }, []);
+  React.useEffect(() => {
+    if (prefersReducedMotion || liveRequests.length <= 1) return;
+    const timer = window.setInterval(() => {
+      setLiveRequestIndex((prev) => (prev + 1) % liveRequests.length);
+    }, LIVE_REQUEST_ROTATION_MS);
+    return () => window.clearInterval(timer);
+  }, [liveRequests.length, prefersReducedMotion]);
+  const activeLiveRequestIndex = React.useMemo(
+    () => (liveRequests.length > 0 ? liveRequestIndex % liveRequests.length : 0),
+    [liveRequestIndex, liveRequests.length]
+  );
+  const liveRequest = liveRequests[activeLiveRequestIndex];
+  const requestTokenId = liveRequest?.liquidity_request?.token ?? "";
+  const requestNetwork = React.useMemo(
+    () => (factoryId ? networkFromFactoryId(factoryId) : null),
+    [factoryId]
+  );
+  const requestTokenCfg = React.useMemo(
+    () => (requestTokenId && requestNetwork ? getTokenConfigById(requestTokenId, requestNetwork) : undefined),
+    [requestTokenId, requestNetwork]
+  );
+  const { meta: requestTokenMeta } = useTokenMetadata(requestTokenId);
+  const requestTokenDecimals = requestTokenMeta.decimals ?? requestTokenCfg?.decimals ?? 6;
+  const requestTokenSymbol = React.useMemo(() => {
+    if (requestTokenMeta.symbol) return requestTokenMeta.symbol;
+    if (requestTokenCfg?.symbol) return requestTokenCfg.symbol;
+    return "FT";
+  }, [requestTokenMeta.symbol, requestTokenCfg?.symbol]);
+  const requestRows = React.useMemo(() => {
+    const lr = liveRequest?.liquidity_request;
+    if (!lr) return FALLBACK_REQUEST;
+    const amount = formatMinimalTokenAmount(lr.amount, requestTokenDecimals);
+    const interest = formatMinimalTokenAmount(lr.interest, requestTokenDecimals);
+    const repay = formatMinimalTokenAmount(sumMinimal(lr.amount, lr.interest), requestTokenDecimals);
+    const collateral = safeFormatYoctoNear(lr.collateral, 5);
+    const apr = calculateApr(lr.interest, lr.amount, lr.duration).times(100);
+    const aprLabel = apr.gt(0) ? `${apr.round(2, 0 /* RoundDown */).toString()}%` : "—";
+    return [
+      { label: "Amount", value: `${amount} ${requestTokenSymbol}` },
+      { label: "Interest", value: `${interest} ${requestTokenSymbol}` },
+      { label: "Repay", value: `${repay} ${requestTokenSymbol}` },
+      { label: "Term", value: formatDurationFromSeconds(lr.duration) },
+      { label: "Collateral", value: `${collateral} NEAR` },
+      { label: "Est. APR", value: aprLabel },
+    ];
+  }, [liveRequest, requestTokenDecimals, requestTokenSymbol]);
+  const hasLiveRequest = Boolean(liveRequest?.liquidity_request);
   const [slowConnect, setSlowConnect] = React.useState(false);
   React.useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
@@ -96,6 +173,19 @@ export function Hero() {
     });
   }, [signIn]);
   const networkLabel = formatNetworkLabel(network);
+  const requestPanelTitle = hasLiveRequest ? "Live vault requests" : "Sample vault request";
+  const requestBadgeLabel = hasLiveRequest
+    ? `Live ${activeLiveRequestIndex + 1}/${liveRequests.length}`
+    : "Preview";
+  const requestPanelNote = hasLiveRequest
+    ? liveRequests.length > 1
+      ? `Auto-rotating through the ${liveRequests.length} latest open requests so terms stay aligned with Discover.`
+      : "Pulled from the most recent open request so the terms match what lenders evaluate in Discover."
+    : pendingLoading
+      ? "Loading the latest open request from Discover…"
+      : pendingError
+        ? "Live request feed is temporarily unavailable. Showing fallback terms with the same structure used in-app."
+        : "No open requests yet. This fallback mirrors the exact fields lenders review in-app.";
   return (
     <section className="relative mt-20 md:mt-28">
       <div className="relative overflow-hidden rounded-4xl border border-white/10 bg-surface/85 px-5 py-10 shadow-[0_28px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur-sm sm:px-10 sm:py-12">
@@ -168,13 +258,35 @@ export function Hero() {
               className="absolute inset-x-6 top-0 h-32 rounded-b-[48px] bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.24),transparent_75%)]"
             />
             <div className="relative flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-secondary-text">
-              <span>Sample vault request</span>
+              <span>{requestPanelTitle}</span>
               <span className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[0.65rem] font-semibold text-primary">
-                Preview
+                {requestBadgeLabel}
               </span>
             </div>
+            {hasLiveRequest && liveRequest?.id && (
+              <p className="relative mt-4 text-xs text-secondary-text/90">
+                Vault <span className="font-mono text-foreground/85 break-all">{liveRequest.id}</span>
+              </p>
+            )}
+            {hasLiveRequest && liveRequests.length > 1 && (
+              <div className="relative mt-3 flex items-center gap-2" aria-label="Live request rotation">
+                {liveRequests.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setLiveRequestIndex(idx)}
+                    aria-label={`Show live request ${idx + 1}`}
+                    aria-pressed={idx === activeLiveRequestIndex}
+                    className={[
+                      "h-1.5 rounded-full transition-all",
+                      idx === activeLiveRequestIndex ? "w-6 bg-primary" : "w-2 bg-foreground/20 hover:bg-foreground/35",
+                    ].join(" ")}
+                  />
+                ))}
+              </div>
+            )}
             <dl className="relative mt-6 space-y-4">
-              {SAMPLE_REQUEST.map((item) => (
+              {requestRows.map((item) => (
                 <div key={item.label} className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                   <dt className="text-xs uppercase tracking-wide text-secondary-text/80">{item.label}</dt>
                   <dd className="text-base font-semibold text-foreground sm:text-sm">{item.value}</dd>
@@ -182,7 +294,7 @@ export function Hero() {
               ))}
             </dl>
             <div className="relative mt-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-4 py-3 text-sm leading-relaxed text-secondary-text">
-              These figures show how a funded request appears in the dashboard. Draft your own terms before sharing with lenders.
+              {requestPanelNote}
             </div>
             <Link
               href="/discover"
