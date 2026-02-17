@@ -138,12 +138,6 @@ export function Navigation() {
               <span>SudoStake</span>
             </Link>
             {network && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2 py-1 text-[11px] uppercase tracking-wide text-[color:var(--text-secondary)] md:hidden">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/70" aria-hidden="true" />
-                {network}
-              </span>
-            )}
-            {network && (
               <span
                 className="hidden rounded border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2 py-0.5 text-xs text-[color:var(--text-secondary)] md:inline"
                 title="Active network"
