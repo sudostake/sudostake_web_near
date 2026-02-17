@@ -128,7 +128,7 @@ export function Navigation() {
         className="nav-panel fixed left-0 right-0 top-0"
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 sm:flex-nowrap sm:justify-between sm:px-6 sm:py-2.5 lg:px-8">
+        <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1.5 px-5 py-2 sm:flex-nowrap sm:justify-between sm:px-6 sm:py-2.5 lg:px-8">
           <div className="flex flex-1 items-center gap-2 sm:gap-4">
             <Link
               href="/"
