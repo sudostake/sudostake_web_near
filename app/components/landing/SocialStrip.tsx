@@ -2,6 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { Button } from "@/app/components/ui/Button";
+import { showToast } from "@/utils/toast";
 
 type SocialLink = {
   label: string;
@@ -52,37 +55,63 @@ const LINKS: SocialLink[] = [
 ];
 
 export function SocialStrip() {
+  const { signIn } = useWalletSelector();
+  const [connecting, setConnecting] = React.useState(false);
+
+  const onConnect = React.useCallback(() => {
+    setConnecting(true);
+    Promise.resolve(signIn()).catch((err) => {
+      console.error("Wallet sign-in failed", err);
+      showToast("Wallet connection failed. Please try again.", { variant: "error" });
+    }).finally(() => setConnecting(false));
+  }, [signIn]);
+
   return (
     <section className="mt-28">
       <div className="rounded-[28px] border border-white/12 bg-surface/85 px-5 py-6 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.55)] sm:px-10 sm:py-8">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-xl space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Community</p>
-            <h2 className="text-lg font-semibold text-foreground">Plug into updates</h2>
-            <p className="text-base leading-relaxed text-secondary-text sm:text-sm">
-              Stay close to releases—roadmap updates, audit notes, and governance calls land in these channels first.
+        <div className="space-y-7">
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Ready</p>
+            <h2 className="text-[clamp(1.35rem,2.2vw,1.9rem)] font-semibold text-foreground">
+              Take the next step now
+            </h2>
+            <p className="max-w-2xl text-base leading-relaxed text-secondary-text sm:text-sm">
+              Connect your wallet to start a borrower flow, or jump straight into Discover to evaluate open requests.
             </p>
           </div>
-          <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group inline-flex w-full items-center gap-2 rounded-full border border-white/14 bg-background/80 px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/14 bg-surface text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button size="lg" onClick={onConnect} disabled={connecting} aria-busy={connecting || undefined}>
+              {connecting ? "Opening wallet…" : "Connect Wallet"}
+            </Button>
+            <Link href="/discover">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                Open Discover
+              </Button>
+            </Link>
+          </div>
+          <div className="space-y-3 border-t border-white/10 pt-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Community and support</p>
+            <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group inline-flex w-full items-center gap-2 rounded-full border border-white/14 bg-background/80 px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
                   >
-                    {link.icon}
-                  </span>
-                  <span className="font-medium">{link.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-white/14 bg-surface text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
+                    >
+                      {link.icon}
+                    </span>
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </section>
