@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Card } from "@/app/components/ui/Card";
-import { Badge } from "@/app/components/ui/Badge";
 import { LabelValue } from "@/app/components/ui/LabelValue";
 import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import Link from "next/link";
@@ -54,19 +53,17 @@ export function PendingRequestCard({ item, factoryId }: Props) {
 
   const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
   return (
-    <Link href={href} className="group block focus:outline-none" aria-label={`View vault details for ${item.id}`}>
-      <Card className="relative flex flex-col gap-5 pr-8 transition-all duration-150 hover:border-primary/30 hover:shadow-md focus-visible:border-primary/40 focus-visible:shadow-lg sm:pr-12">
+    <Link href={href} className="block focus:outline-none" aria-label={`View vault details for ${item.id}`}>
+      <Card className="flex flex-col gap-4 transition-colors duration-150 hover:border-foreground/25 focus-visible:border-primary/40">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex min-w-0 items-start gap-4">
             <VaultIcon id={item.id} size="md" />
             <div className="min-w-0 space-y-2">
-              <div className="break-all text-lg font-semibold" title={item.id}>
+              <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Vault</p>
+              <div className="break-all text-base font-semibold" title={item.id}>
                 {item.id}
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="warn">Request open</Badge>
-                <Badge variant="neutral">{symbol}</Badge>
-              </div>
+              <p className="text-sm text-secondary-text">{symbol}</p>
             </div>
           </div>
         </div>
@@ -77,11 +74,6 @@ export function PendingRequestCard({ item, factoryId }: Props) {
           <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
           <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
           <LabelValue label="Est. APR" value={aprLabel} />
-        </div>
-        <div className="pointer-events-none absolute right-4 top-1/2 hidden -translate-y-1/2 text-primary opacity-0 transition-all duration-150 group-hover:translate-x-1 group-hover:opacity-100 group-focus-visible:translate-x-1 group-focus-visible:opacity-100 sm:flex">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} className="h-5 w-5" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
         </div>
       </Card>
     </Link>

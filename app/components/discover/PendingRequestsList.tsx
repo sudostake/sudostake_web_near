@@ -3,9 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePendingRequests } from "@/hooks/usePendingRequests";
 import { PendingRequestCard } from "./PendingRequestCard";
-import { SectionHeader } from "@/app/components/ui/SectionHeader";
 import type { PendingRequest } from "@/utils/data/pending";
-import { Button } from "@/app/components/ui/Button";
 import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { SearchIcon } from "@/app/components/icons/SearchIcon";
@@ -14,29 +12,6 @@ type WithRequest = PendingRequest & { liquidity_request: NonNullable<PendingRequ
 
 export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   const { data, loading, error, refetch } = usePendingRequests(factoryId);
-
-  // Track whether the sticky header is currently affixed to the top to toggle a shadow.
-  const [stuck, setStuck] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const sentinel = document.getElementById("discover-header-sentinel");
-    if (!sentinel) return;
-    const rootStyles = getComputedStyle(document.documentElement);
-    const navVar = rootStyles.getPropertyValue("--nav-height").trim();
-    const parsed = parseInt(navVar, 10);
-    const navPx = Number.isFinite(parsed) ? parsed : 56;
-    const rootMargin = `-${navPx}px 0px 0px 0px`;
-    const io = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        const next = entry.intersectionRatio < 1;
-        setStuck((prev) => (prev !== next ? next : prev));
-      },
-      { root: null, rootMargin, threshold: [1] }
-    );
-    io.observe(sentinel);
-    return () => io.disconnect();
-  }, []);
 
   const items = useMemo(() => (data ?? []).filter((d): d is WithRequest => Boolean(d.liquidity_request)), [data]);
 
@@ -85,9 +60,6 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
     });
   }, [items, tokenFilter, query, tokenLabelMap]);
 
-  const totalOpen = items.length;
-  const filteredCount = filteredItems.length;
-
   const resetFilters = () => {
     setTokenFilter("all");
     setQuery("");
@@ -102,89 +74,62 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   }, [error, refetch]);
 
   return (
-    <div className="space-y-5">
-      <div id="discover-header-sentinel" aria-hidden="true" className="h-px" />
-      <header
-        className={[
-          "sticky z-30 bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-shadow",
-          stuck ? "border-b border-foreground/10 shadow-sm" : "",
-        ].join(" ")}
-        style={{ top: "var(--nav-height, 56px)" }}
-      >
-        <div className="space-y-4 px-4 py-4 sm:px-6">
-          <SectionHeader
-            title="Discover Requests"
-            caption={
-              <span className="flex items-center gap-2">
-                <span>
-                  Showing {filteredCount} of {totalOpen} open request{totalOpen === 1 ? "" : "s"}
-                </span>
-                {filteredCount !== totalOpen && (
-                  <span className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-[0.65rem] font-semibold text-primary">
-                    Filters applied
-                  </span>
-                )}
-              </span>
-            }
-            right={
-              (tokenFilter !== "all" || query.trim()) && (
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  <Button variant="ghost" size="sm" onClick={resetFilters}>
-                    Reset filters
-                  </Button>
-                </div>
-              )
-            }
-          />
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap gap-2">
+    <div className="space-y-6">
+      <header className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <FilterChip
+              label="All tokens"
+              active={tokenFilter === "all"}
+              onClick={() => setTokenFilter("all")}
+            />
+            {tokenFilters.map((token) => (
               <FilterChip
-                label="All tokens"
-                active={tokenFilter === "all"}
-                onClick={() => setTokenFilter("all")}
+                key={token.id}
+                label={token.label}
+                active={tokenFilter === token.id}
+                onClick={() => setTokenFilter(token.id)}
               />
-              {tokenFilters.map((token) => (
-                <FilterChip
-                  key={token.id}
-                  label={token.label}
-                  active={tokenFilter === token.id}
-                  onClick={() => setTokenFilter(token.id)}
-                />
-              ))}
-            </div>
-            <label className="relative flex w-full items-center sm:w-auto">
-              <span className="sr-only">Search vaults</span>
-              <span aria-hidden="true" className="pointer-events-none absolute left-4 text-secondary-text/70">
-                <SearchIcon />
-              </span>
-              <input
-                type="search"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search by vault or token"
-                className="w-full rounded-full border border-white/14 bg-background/80 px-11 py-2.5 text-sm text-foreground placeholder:text-secondary-text/70 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/30 sm:w-72"
-              />
-            </label>
+            ))}
+            {(tokenFilter !== "all" || query.trim()) && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="rounded-full border border-border px-3.5 py-1.5 text-sm font-medium text-secondary-text hover:border-foreground/20 hover:text-foreground"
+              >
+                Clear
+              </button>
+            )}
           </div>
+          <label className="relative flex w-full items-center sm:w-auto">
+            <span className="sr-only">Search vaults</span>
+            <span aria-hidden="true" className="pointer-events-none absolute left-3 text-secondary-text/70">
+              <SearchIcon />
+            </span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search by vault or token"
+              className="w-full rounded-lg border border-border bg-background px-10 py-2.5 text-sm text-foreground placeholder:text-secondary-text/70 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-72"
+            />
+          </label>
         </div>
       </header>
 
       {error && (
         <div
-          className="flex flex-col gap-2 rounded-2xl border border-red-200/70 bg-red-50/85 p-4 text-sm text-red-700 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+          className="border border-border bg-background p-4 text-sm text-secondary-text"
           role="alert"
         >
-          <span>{error}</span>
-          <span className="text-xs font-medium uppercase tracking-wide text-red-600/70">
-            Retrying…
-          </span>
+          {error} Retrying…
         </div>
       )}
 
       {loading && (
         <div className="space-y-3">
           {[0, 1].map((idx) => (
-            <div key={idx} className="animate-pulse rounded-2xl border border-white/10 bg-surface/80 p-4 shadow-sm">
+            <div key={idx} className="animate-pulse border border-border bg-background p-4">
               <div className="h-4 w-1/3 rounded bg-foreground/10" />
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
@@ -197,16 +142,16 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
       )}
 
       {!loading && filteredItems.length === 0 && (
-        <div className="rounded-2xl border border-white/12 bg-surface/90 p-6 text-sm text-secondary-text shadow-sm">
-          {totalOpen === 0 ? (
-            <>No open requests right now. Check back soon.</>
+        <div className="border border-border bg-background p-5 text-sm text-secondary-text">
+          {items.length === 0 ? (
+            <>No open requests right now.</>
           ) : (
             <>
               Nothing matches your filters.{" "}
-              <button className="font-medium text-primary underline" onClick={resetFilters}>
-                Reset them
+              <button type="button" className="font-medium text-primary underline" onClick={resetFilters}>
+                Clear filters
               </button>{" "}
-              to review every open request.
+              to view all requests.
             </>
           )}
         </div>
@@ -234,10 +179,10 @@ function FilterChip({ label, active, onClick }: FilterChipProps) {
       onClick={onClick}
       aria-pressed={active}
       className={[
-        "rounded-full border px-3.5 py-1.5 text-sm font-semibold transition",
+        "rounded-full border px-3.5 py-1.5 text-sm font-medium transition",
         active
-          ? "border-primary/40 bg-primary/15 text-primary shadow-sm"
-          : "border-white/14 bg-background/80 text-secondary-text hover:border-primary/30 hover:text-primary",
+          ? "border-primary/35 bg-primary/10 text-primary"
+          : "border-border bg-background text-secondary-text hover:border-foreground/20 hover:text-foreground",
       ].join(" ")}
     >
       {label}
