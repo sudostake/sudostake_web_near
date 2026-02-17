@@ -6,8 +6,6 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import { Button } from "@/app/components/ui/Button";
 import { usePendingRequests } from "@/hooks/usePendingRequests";
-import { useTokenMetadata } from "@/hooks/useTokenMetadata";
-import { sumMinimal } from "@/utils/amounts";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { calculateApr } from "@/utils/finance";
 import { formatMinimalTokenAmount } from "@/utils/format";
@@ -17,15 +15,21 @@ import { formatDurationFromSeconds } from "@/utils/time";
 import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
 
-const FALLBACK_REQUEST = [
-  { label: "Amount", value: "5,000 USDC" },
-  { label: "Interest", value: "120 USDC" },
-  { label: "Repay", value: "5,120 USDC" },
-  { label: "Term", value: "30d" },
-  { label: "Collateral", value: "1,250 NEAR" },
-  { label: "Est. APR", value: "29.20%" },
-];
-const LIVE_REQUEST_ROTATION_MS = 8000;
+type RequestPreview = {
+  id: string;
+  amount: string;
+  term: string;
+  collateral: string;
+  apr: string;
+};
+
+const SAMPLE_REQUEST_PREVIEW: RequestPreview = {
+  id: "sample",
+  amount: "5,000 USDC",
+  term: "30d",
+  collateral: "1,250 NEAR",
+  apr: "29.20%",
+};
 
 export function Hero() {
   const { signIn, walletSelector } = useWalletSelector();
@@ -39,65 +43,40 @@ export function Hero() {
     () => (pendingRequests ?? []).filter((item) => Boolean(item.liquidity_request)).slice(0, 3),
     [pendingRequests]
   );
-  const [liveRequestIndex, setLiveRequestIndex] = React.useState(0);
-  const [prefersReducedMotion, setPrefersReducedMotion] = React.useState(false);
-  React.useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const apply = () => setPrefersReducedMotion(media.matches);
-    apply();
-    media.addEventListener("change", apply);
-    return () => media.removeEventListener("change", apply);
-  }, []);
-  React.useEffect(() => {
-    if (prefersReducedMotion || liveRequests.length <= 1) return;
-    const timer = window.setInterval(() => {
-      setLiveRequestIndex((prev) => (prev + 1) % liveRequests.length);
-    }, LIVE_REQUEST_ROTATION_MS);
-    return () => window.clearInterval(timer);
-  }, [liveRequests.length, prefersReducedMotion]);
-  const activeLiveRequestIndex = React.useMemo(
-    () => (liveRequests.length > 0 ? liveRequestIndex % liveRequests.length : 0),
-    [liveRequestIndex, liveRequests.length]
-  );
-  const liveRequest = React.useMemo(
-    () => liveRequests[activeLiveRequestIndex],
-    [liveRequests, activeLiveRequestIndex]
-  );
-  const requestTokenId = liveRequest?.liquidity_request?.token ?? "";
   const requestNetwork = React.useMemo(
     () => (factoryId ? networkFromFactoryId(factoryId) : null),
     [factoryId]
   );
-  const requestTokenCfg = React.useMemo(
-    () => (requestTokenId && requestNetwork ? getTokenConfigById(requestTokenId, requestNetwork) : undefined),
-    [requestTokenId, requestNetwork]
-  );
-  const { meta: requestTokenMeta } = useTokenMetadata(requestTokenId);
-  const requestTokenDecimals = requestTokenMeta.decimals ?? requestTokenCfg?.decimals ?? 6;
-  const requestTokenSymbol = React.useMemo(() => {
-    if (requestTokenMeta.symbol) return requestTokenMeta.symbol;
-    if (requestTokenCfg?.symbol) return requestTokenCfg.symbol;
-    return "FT";
-  }, [requestTokenMeta.symbol, requestTokenCfg?.symbol]);
-  const requestRows = React.useMemo(() => {
-    const lr = liveRequest?.liquidity_request;
-    if (!lr) return FALLBACK_REQUEST;
-    const amount = formatMinimalTokenAmount(lr.amount, requestTokenDecimals);
-    const totalRepayment = formatMinimalTokenAmount(sumMinimal(lr.amount, lr.interest), requestTokenDecimals);
-    const interest = formatMinimalTokenAmount(lr.interest, requestTokenDecimals);
-    const collateral = safeFormatYoctoNear(lr.collateral, 5);
-    const apr = calculateApr(lr.interest, lr.amount, lr.duration).times(100);
-    const aprLabel = apr.gt(0) ? `${apr.round(2, 0 /* RoundDown */).toString()}%` : "—";
-    return [
-      { label: "Amount", value: `${amount} ${requestTokenSymbol}` },
-      { label: "Interest", value: `${interest} ${requestTokenSymbol}` },
-      { label: "Repay", value: `${totalRepayment} ${requestTokenSymbol}` },
-      { label: "Term", value: formatDurationFromSeconds(lr.duration) },
-      { label: "Collateral", value: `${collateral} NEAR` },
-      { label: "Est. APR", value: aprLabel },
-    ];
-  }, [liveRequest, requestTokenDecimals, requestTokenSymbol]);
-  const hasLiveRequest = Boolean(liveRequest?.liquidity_request);
+  const requestPreviews = React.useMemo<RequestPreview[]>(() => {
+    return liveRequests.flatMap((item) => {
+      const lr = item.liquidity_request;
+      if (!lr) return [];
+      const tokenCfg = requestNetwork ? getTokenConfigById(lr.token, requestNetwork) : undefined;
+      const decimals = tokenCfg?.decimals ?? 6;
+      const symbol = tokenCfg?.symbol ?? "FT";
+      const amount = formatMinimalTokenAmount(lr.amount, decimals);
+      const collateral = safeFormatYoctoNear(lr.collateral, 5);
+      let aprLabel = "—";
+      try {
+        const apr = calculateApr(lr.interest, lr.amount, lr.duration).times(100);
+        aprLabel = apr.gt(0) ? `${apr.round(2, 0 /* RoundDown */).toString()}%` : "—";
+      } catch {
+        aprLabel = "—";
+      }
+      return [
+        {
+          id: item.id,
+          amount: `${amount} ${symbol}`,
+          term: formatDurationFromSeconds(lr.duration),
+          collateral: `${collateral} NEAR`,
+          apr: aprLabel,
+        },
+      ];
+    });
+  }, [liveRequests, requestNetwork]);
+  const hasLiveRequests = requestPreviews.length > 0;
+  const showSampleRequest = !hasLiveRequests && Boolean(pendingError);
+  const displayedRequests = hasLiveRequests ? requestPreviews : showSampleRequest ? [SAMPLE_REQUEST_PREVIEW] : [];
   const [slowConnect, setSlowConnect] = React.useState(false);
   React.useEffect(() => {
     let t: ReturnType<typeof setTimeout> | undefined;
@@ -147,20 +126,21 @@ export function Hero() {
       setSlowConnect(false);
     });
   }, [signIn]);
-  const requestPanelNote = hasLiveRequest
-    ? null
-    : pendingLoading
-      ? "Loading open requests…"
-      : pendingError
-        ? "Open request feed is unavailable. Showing sample values."
+  const requestPanelNote = pendingLoading
+    ? "Refreshing open requests…"
+    : pendingError
+      ? "Live request feed is unavailable. Showing sample terms."
+      : hasLiveRequests
+        ? `Showing ${requestPreviews.length} latest pending request${requestPreviews.length > 1 ? "s" : ""}.`
         : "No open requests right now.";
+  const showRequestPanelNote = pendingLoading || pendingError || hasLiveRequests;
 
   return (
     <section className="mt-14 sm:mt-20">
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr),minmax(260px,1fr)] lg:gap-12">
         <div className="space-y-5">
           <h1 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
-            USDC loans backed by staked NEAR.
+            Borrow USDC against your staked NEAR.
           </h1>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -187,36 +167,71 @@ export function Hero() {
           )}
         </div>
 
-        <aside>
-          <p className="text-sm font-semibold text-foreground">
-            Current open requests
-            {liveRequests.length > 1 ? (
-              <span className="ml-2 text-xs text-secondary-text">
-                {activeLiveRequestIndex + 1}/{liveRequests.length}
-              </span>
-            ) : null}
-          </p>
-          <p className="mt-1 text-xs text-secondary-text">Top 3 latest requests.</p>
-          {hasLiveRequest && liveRequest?.id && (
-            <p className="mt-2 text-xs text-secondary-text">
-              Vault <span className="font-mono break-all text-foreground/90">{liveRequest.id}</span>
-            </p>
+        <aside className="rounded-3xl border border-white/12 bg-surface/85 p-5 shadow-sm sm:p-6">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold text-foreground">Current open requests</p>
+              <p className="mt-1 text-xs text-secondary-text">Top 3 latest pending requests.</p>
+            </div>
+            <Link href="/discover" className="text-xs font-medium text-primary hover:text-primary/80">
+              View all
+            </Link>
+          </div>
+
+          {displayedRequests.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {displayedRequests.map((item, index) => (
+                <article key={`${item.id}-${index}`} className="rounded-2xl border border-white/10 bg-background/70 p-4">
+                  <div className="flex items-center justify-end gap-3">
+                    {showSampleRequest ? (
+                      <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Sample request</p>
+                    ) : (
+                      <Link
+                        href={`/dashboard/vault/${encodeURIComponent(item.id)}`}
+                        className="text-xs font-medium text-primary hover:text-primary/80"
+                      >
+                        Open vault
+                      </Link>
+                    )}
+                  </div>
+                  {!showSampleRequest && (
+                    <p className="mt-1 text-xs text-secondary-text">
+                      Vault{" "}
+                      <span className="inline-block max-w-[12rem] truncate align-bottom font-mono text-foreground/90" title={item.id}>
+                        {item.id}
+                      </span>
+                    </p>
+                  )}
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div>
+                      <dt className="text-xs text-secondary-text">Amount</dt>
+                      <dd className="text-sm font-semibold text-foreground">{item.amount}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-secondary-text">Est. APR</dt>
+                      <dd className="text-sm font-semibold text-foreground">{item.apr}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-secondary-text">Term</dt>
+                      <dd className="text-sm font-semibold text-foreground">{item.term}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-secondary-text">Collateral</dt>
+                      <dd className="text-sm font-semibold text-foreground">{item.collateral}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-background/55 px-4 py-5 text-sm text-secondary-text">
+              {pendingLoading
+                ? "Loading the latest open requests…"
+                : "No open requests right now. Check Discover for updates."}
+            </div>
           )}
 
-          <dl className="mt-5 space-y-4">
-            {requestRows.map((item) => (
-              <div key={item.label} className="flex items-center justify-between gap-4">
-                <dt className="text-sm text-secondary-text">{item.label}</dt>
-                <dd className="text-sm font-semibold text-foreground text-right">{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-
-          {requestPanelNote && <p className="mt-5 text-xs text-secondary-text">{requestPanelNote}</p>}
-
-          <Link href="/discover" className="mt-5 inline-flex text-sm font-medium text-primary hover:text-primary/80">
-            Go to marketplace
-          </Link>
+          {showRequestPanelNote && <p className="mt-4 text-xs text-secondary-text">{requestPanelNote}</p>}
         </aside>
       </div>
     </section>

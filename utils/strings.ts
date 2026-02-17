@@ -2,8 +2,8 @@
 
 export const STRINGS = {
   // Liquidity requests header/intro
-  accessUsdcTitle: "Access USDC backed by your staked tokens",
-  accessUsdcCaption: "Open a request for USDC using your vault as collateral.",
+  accessUsdcTitle: "Borrow USDC against your staked NEAR",
+  accessUsdcCaption: "Open a request and use your staked NEAR vault as collateral.",
   ownerRequestTitleActive: "Your request is funded",
   ownerRequestTitlePending: "Your liquidity request",
   nonOwnerRequestTitleActiveLender: "You funded this request",
