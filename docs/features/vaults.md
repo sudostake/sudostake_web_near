@@ -1,48 +1,36 @@
-# Vaults: everyday actions
+# Vault actions
 
 ## TL;DR
-- A vault is your project’s NEAR account. The factory mints it, and we keep a live copy of its crucial fields in Firestore so dashboards update instantly.
-- Every big move—requesting liquidity, funding, repaying, staking—has a matching hook and guide so you can go from idea to action quickly.
-- If the data ever looks stale, hit **Retry indexing** and we refresh the vault straight from chain.
-- Thinking about opening your first vault? Follow the checklist below before you mint anything.
+- The vault page is the main operating screen for borrowing and repayment.
+- Actions shown depend on your role (`owner`, `activeLender`, `potentialLender`, `guest`) and vault state.
+- Core states are `idle`, `pending`, and `active`.
 
-## Vault at a glance
-- **Identity:** `vault-<number>.<factory_id>` (auto-created by the factory contract).
-- **State:** `idle`, `pending`, `active`, or `closed` based on liquidity status.
-- **Mirror:** Firestore stores `liquidity_request`, `accepted_offer`, staking entries, and timestamps so the UI renders immediately.
+## State flow
+- `idle`: owner can open a new request.
+- `pending`: request is open; owner can cancel; potential lender can accept.
+- `active`: loan funded; owner can repay; lender monitors expiry and claim processing.
 
-> New to vaults? Start with [Mint a vault](../guides/create-vault.md), register with the lending token, and keep a small NEAR buffer for follow-up transactions.
+## Owner controls
+- Manage vault funds: deposit, withdraw, transfer ownership.
+- Manage delegations: delegate, undelegate, claim unstaked (subject to state restrictions).
+- Open request when idle.
+- Cancel request while pending.
+- Repay while active.
 
-## What you can do today
-- **Create a vault** — `useCreateVault` handles the mint + init flow (see [Mint a vault](../guides/create-vault.md)).
-- **Request liquidity** — `useRequestLiquidity` sends `request_liquidity` with a friendly form (see [Open a liquidity request](../guides/opening-liquidity-request.md)).
-- **Accept as a lender** — `useAcceptLiquidityRequest` posts the funds and locks the offer (see [Fund a liquidity request](../guides/fund-liquidity-request.md)).
-- **Repay the loan** — `useRepayLoan` pays principal + interest back to the lender (see [Repay a loan](../guides/repay-loan.md)).
-- **Manage NEAR balances** — `useDeposit`, `useWithdraw`, `useDelegate`, `useUndelegate`, `useClaimUnstaked`.
-- **Transfer ownership** — `useTransferOwnership` lets you hand the vault to a new controller.
-- **Force a refresh** — `useIndexVault` (client) or `POST /api/index_vault` (server) re-fetches on-chain state and rewrites the Firestore copy.
+## Lender controls
+- Accept request when pending and eligible.
+- Process claims after expiry when available.
 
-## Data that powers the UI
-- Each factory becomes a Firestore collection; each vault is a document identified by its account ID.
-- Key fields: overall `state`, pending request details, active offer info, staking entries, `current_epoch`, and audit timestamps.
-- Full schema: [Data model](../reference/data-model.md).
+## Shared page sections
+- Vault header (account, balances, state).
+- Available balance and delegations.
+- Liquidity request card and dialogs.
+- Liquidation status section when liquidation exists.
 
-## Keeping the view fresh
-- Transactions settle on-chain instantly but Firestore might lag for a few seconds.
-- The UI blocks actions that need up-to-the-minute data and shows a **Retry indexing** button. That hits `/api/index_vault` which:
-  1. Calls `get_vault_state`.
-  2. Transforms the response into a `VaultDocument`.
-  3. Writes it back to Firestore.
-- Operations deep dive: [Indexing and consistency](../operations/indexing.md).
+## Indexing
+After state-changing actions, the app re-indexes vault data. Use retry indexing if the page appears stale.
 
-## Where to look in the repo
-- `hooks/` — all the hooks listed above live here with typed responses and loading states.
-- `utils/indexing/service.ts` — fetch-transform-save logic.
-- `utils/db/vaults.ts` — shared Firestore helpers.
-- `app/api/index_vault/route.ts` — manual indexing endpoint.
-
-## Related paths
-- [Viewer roles](../reference/roles.md) explain who can see or do what.
-- [Mint a vault](../guides/create-vault.md).
-- [Open a liquidity request](../guides/opening-liquidity-request.md).
-- [Repay a loan](../guides/repay-loan.md).
+## Related
+- [Viewer roles](../reference/roles.md)
+- [Open a liquidity request](../guides/opening-liquidity-request.md)
+- [Repay a loan](../guides/repay-loan.md)

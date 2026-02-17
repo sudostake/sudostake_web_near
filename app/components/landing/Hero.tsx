@@ -12,7 +12,7 @@ import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import { calculateApr } from "@/utils/finance";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
-import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
+import { getActiveFactoryId } from "@/utils/networks";
 import { formatDurationFromSeconds } from "@/utils/time";
 import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
@@ -30,10 +30,8 @@ const LIVE_REQUEST_ROTATION_MS = 8000;
 export function Hero() {
   const { signIn, walletSelector } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
-  const [network, setNetwork] = React.useState<string>("");
   const [factoryId, setFactoryId] = React.useState<string | null>(null);
   React.useEffect(() => {
-    setNetwork(getActiveNetwork());
     setFactoryId(getActiveFactoryId());
   }, []);
   const { data: pendingRequests, loading: pendingLoading, error: pendingError } = usePendingRequests(factoryId);
@@ -149,9 +147,8 @@ export function Hero() {
       setSlowConnect(false);
     });
   }, [signIn]);
-  const networkLabel = network ? network : "testnet";
   const requestPanelNote = hasLiveRequest
-    ? "Cycling through latest open requests from Discover."
+    ? null
     : pendingLoading
       ? "Loading open requests…"
       : pendingError
@@ -159,99 +156,68 @@ export function Hero() {
         : "No open requests right now.";
 
   return (
-    <section className="mt-12 sm:mt-16">
-      <div className="rounded-2xl border border-white/12 bg-surface px-5 py-6 sm:px-8 sm:py-8">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-secondary-text">
-          <span className="rounded-full border border-white/12 bg-background/70 px-3 py-1 uppercase">
-            {networkLabel}
-          </span>
-          {network && network !== "mainnet" && (
-            <span className="rounded-full border border-white/12 bg-background/70 px-3 py-1">
-              Testnet: demo balances
-            </span>
+    <section className="mt-14 sm:mt-20">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr),minmax(260px,1fr)] lg:gap-12">
+        <div className="space-y-5">
+          <h1 className="text-3xl font-semibold leading-tight text-foreground sm:text-4xl">
+            USDC loans backed by staked NEAR.
+          </h1>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button
+              className="w-full sm:w-auto"
+              size="lg"
+              onClick={handleConnect}
+              disabled={connecting}
+              aria-busy={connecting || undefined}
+            >
+              {connecting ? "Opening wallet…" : "Connect Wallet"}
+            </Button>
+            <Link href="/discover" className="w-full sm:w-auto">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                Browse Requests
+              </Button>
+            </Link>
+          </div>
+
+          {connecting && (
+            <p className="text-xs text-secondary-text/90" role="status" aria-live="polite">
+              {slowConnect ? "Check your wallet to continue." : "Opening wallet…"}
+            </p>
           )}
         </div>
 
-        <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1.2fr),minmax(260px,1fr)]">
-          <div className="space-y-4">
-            <h1 className="text-[clamp(1.9rem,3.8vw,2.5rem)] font-semibold leading-tight text-foreground">
-              USDC loans backed by staked NEAR.
-            </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-secondary-text">
-              Borrowers create loan requests using NEAR collateral. Lenders fund those requests and earn interest when loans
-              are repaid.
+        <aside>
+          <p className="text-sm font-semibold text-foreground">
+            Current open requests
+            {liveRequests.length > 1 ? (
+              <span className="ml-2 text-xs text-secondary-text">
+                {activeLiveRequestIndex + 1}/{liveRequests.length}
+              </span>
+            ) : null}
+          </p>
+          <p className="mt-1 text-xs text-secondary-text">Top 3 latest requests.</p>
+          {hasLiveRequest && liveRequest?.id && (
+            <p className="mt-2 text-xs text-secondary-text">
+              Vault <span className="font-mono break-all text-foreground/90">{liveRequest.id}</span>
             </p>
+          )}
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                className="w-full sm:w-auto"
-                size="lg"
-                onClick={handleConnect}
-                disabled={connecting}
-                aria-busy={connecting || undefined}
-              >
-                {connecting ? "Opening wallet…" : "Borrow: Open Dashboard"}
-              </Button>
-              <Link href="/discover" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full sm:w-auto">
-                  Lend: Browse Requests
-                </Button>
-              </Link>
-            </div>
+          <dl className="mt-5 space-y-4">
+            {requestRows.map((item) => (
+              <div key={item.label} className="flex items-center justify-between gap-4">
+                <dt className="text-sm text-secondary-text">{item.label}</dt>
+                <dd className="text-sm font-semibold text-foreground text-right">{item.value}</dd>
+              </div>
+            ))}
+          </dl>
 
-            {connecting && (
-              <p className="text-xs text-secondary-text/90" role="status" aria-live="polite">
-                {slowConnect ? "Check your wallet to continue." : "Opening wallet…"}
-              </p>
-            )}
+          {requestPanelNote && <p className="mt-5 text-xs text-secondary-text">{requestPanelNote}</p>}
 
-            <div className="rounded-xl border border-white/12 bg-background/60 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">What happens next</p>
-              <ol className="mt-2 space-y-1.5 text-sm text-secondary-text">
-                <li>1. Borrowers: connect wallet, create a vault, then open a USDC request.</li>
-                <li>2. Lenders: browse requests, review terms, then fund the one you want.</li>
-                <li>3. New to the flow? Read the <Link href="/docs/playbook" className="text-primary hover:text-primary/80">quick playbook</Link>.</li>
-              </ol>
-            </div>
-          </div>
-
-          <aside className="rounded-xl border border-white/12 bg-background/70 p-4 sm:p-5">
-            <p className="text-sm font-semibold text-foreground">
-              Current borrower requests
-              {liveRequests.length > 1 ? (
-                <span className="ml-2 text-xs text-secondary-text">
-                  {activeLiveRequestIndex + 1}/{liveRequests.length}
-                </span>
-              ) : null}
-            </p>
-            <p className="mt-1 text-xs text-secondary-text">
-              Terms shown here are what lenders review before funding.
-            </p>
-            {hasLiveRequest && liveRequest?.id && (
-              <p className="mt-2 text-xs text-secondary-text">
-                Vault <span className="font-mono break-all text-foreground/90">{liveRequest.id}</span>
-              </p>
-            )}
-
-            <dl className="mt-4 space-y-3">
-              {requestRows.map((item) => (
-                <div key={item.label} className="flex items-center justify-between gap-4">
-                  <dt className="text-xs uppercase tracking-wide text-secondary-text/80">{item.label}</dt>
-                  <dd className="text-sm font-semibold text-foreground text-right">{item.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <p className="mt-4 text-xs text-secondary-text">{requestPanelNote}</p>
-
-            <Link
-              href="/discover"
-              className="mt-4 inline-flex text-sm font-medium text-primary hover:text-primary/80"
-            >
-              Go to marketplace
-            </Link>
-          </aside>
-        </div>
+          <Link href="/discover" className="mt-5 inline-flex text-sm font-medium text-primary hover:text-primary/80">
+            Go to marketplace
+          </Link>
+        </aside>
       </div>
     </section>
   );
