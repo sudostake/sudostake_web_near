@@ -41,7 +41,7 @@ export function CopyButton({ value, className = "", size = 16, title }: Props) {
       aria-label={title ?? STRINGS.copy}
       title={title ?? STRINGS.copy}
       onClick={onCopy}
-      className={`inline-flex items-center justify-center h-5 w-5 rounded hover:bg-surface/70 hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 ${className}`}
+      className={`inline-flex h-5 w-5 items-center justify-center rounded hover:bg-[color:var(--surface-muted)] hover:text-primary focus:outline-none focus:ring-1 focus:ring-primary/40 ${className}`}
     >
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="opacity-80" style={{ width: size, height: size }} aria-hidden="true">
         <path d="M16 1H6a2 2 0 0 0-2 2v10h2V3h10V1z"/>

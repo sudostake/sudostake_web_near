@@ -103,7 +103,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
           </div>
           <label className="relative flex w-full items-center sm:w-auto">
             <span className="sr-only">Search vaults</span>
-            <span aria-hidden="true" className="pointer-events-none absolute left-3 text-secondary-text/70">
+            <span aria-hidden="true" className="pointer-events-none absolute left-3 text-secondary-text">
               <SearchIcon />
             </span>
             <input
@@ -111,7 +111,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by vault or token"
-              className="w-full rounded-lg border border-border bg-background px-10 py-2.5 text-sm text-foreground placeholder:text-secondary-text/70 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-72"
+              className="w-full rounded-lg border border-border bg-background px-10 py-2.5 text-sm text-foreground placeholder:text-secondary-text focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:w-72"
             />
           </label>
         </div>

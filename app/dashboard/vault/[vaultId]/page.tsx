@@ -179,7 +179,7 @@ export default function VaultPage() {
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="animate-pulse rounded-[28px] border border-white/12 bg-surface/90 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
+            className="surface-card animate-pulse rounded-[28px] px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
           >
             <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
             <div className="mt-4 h-20 rounded-2xl bg-foreground/5" />
@@ -252,7 +252,7 @@ export default function VaultPage() {
     <div className="relative min-h-screen overflow-hidden bg-background pb-28">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.16),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.16),transparent_65%)]"
       />
       <main id="main" className="relative w-full" aria-busy={loading || undefined}>
         <Container className="pt-12 sm:pt-16 space-y-8">

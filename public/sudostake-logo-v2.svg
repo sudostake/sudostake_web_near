@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="280" height="280" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sudostakeLogoTitle">
+  <title id="sudostakeLogoTitle">SudoStake identity mark</title>
+  <defs>
+    <linearGradient id="sudostakeBgGradient" x1="10%" y1="6%" x2="92%" y2="94%">
+      <stop offset="0%" stop-color="#1f2836" />
+      <stop offset="55%" stop-color="#121a27" />
+      <stop offset="100%" stop-color="#0a1019" />
+    </linearGradient>
+    <radialGradient id="sudostakeGlow" cx="50%" cy="24%" r="78%">
+      <stop offset="0%" stop-color="#c9d9ee" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0b111b" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="sudostakeMarkGradient" x1="8%" y1="12%" x2="92%" y2="88%">
+      <stop offset="0%" stop-color="#f6fbff" />
+      <stop offset="52%" stop-color="#d8e7f8" />
+      <stop offset="100%" stop-color="#9ab4d3" />
+    </linearGradient>
+  </defs>
+
+  <rect width="280" height="280" rx="74" fill="url(#sudostakeBgGradient)" />
+  <rect width="280" height="280" rx="74" fill="url(#sudostakeGlow)" />
+  <rect x="18" y="18" width="244" height="244" rx="62" fill="none" stroke="#d5e1f0" stroke-opacity="0.2" stroke-width="2" />
+
+  <path
+    d="M62 111C85 98 113 99 140 111C167 123 195 124 218 111"
+    fill="none"
+    stroke="url(#sudostakeMarkGradient)"
+    stroke-width="24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M62 161C85 148 113 149 140 161C167 173 195 174 218 161"
+    fill="none"
+    stroke="url(#sudostakeMarkGradient)"
+    stroke-width="24"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M71 103C90 93 114 93 140 103C166 113 190 113 209 103"
+    fill="none"
+    stroke="#ffffff"
+    stroke-opacity="0.28"
+    stroke-width="5"
+    stroke-linecap="round"
+  />
+  <path
+    d="M71 153C90 143 114 143 140 153C166 163 190 163 209 153"
+    fill="none"
+    stroke="#ffffff"
+    stroke-opacity="0.2"
+    stroke-width="5"
+    stroke-linecap="round"
+  />
+</svg>

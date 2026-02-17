@@ -60,7 +60,11 @@ function LiquidationPayoutCard({
   const hasVaultBalanceNow = expectedImmediateYocto > BigInt(0);
   const hasMaturedNow = maturedYocto > BigInt(0);
   return (
-    <Card className={["rounded-lg border border-white/10 bg-background/70 px-4 py-3", className].filter(Boolean).join(" ")}>
+    <Card
+      className={["rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3", className]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
         <div>
           <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
@@ -192,7 +196,11 @@ export function LiquidationStatusSection({
 }: Props) {
   const isActiveLender = role === "activeLender";
   return (
-    <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Liquidation status">
+    <Card
+      className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      role="region"
+      aria-label="Liquidation status"
+    >
       <div className="flex items-center justify-between gap-2">
         <div className="text-base font-medium">
           {isActiveLender ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
@@ -205,7 +213,7 @@ export function LiquidationStatusSection({
         </Badge>
       </div>
       {!isActiveLender && (
-        <div className="mt-1 text-xs text-zinc-700 dark:text-zinc-300">
+        <div className="mt-1 text-xs text-secondary-text">
           {ownerLiquidationSummary}
         </div>
       )}

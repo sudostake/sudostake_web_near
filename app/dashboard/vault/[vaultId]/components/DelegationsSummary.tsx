@@ -38,7 +38,7 @@ function statusPillClass(status: DelegationStatus | null): string {
     case DelegationStatus.Unstaking:
       return `${base} bg-amber-100 text-amber-800 ring-amber-300/50 dark:bg-amber-800/50 dark:text-amber-100 dark:ring-amber-500/40`;
     case DelegationStatus.Active:
-      return `${base} bg-blue-100 text-blue-800 ring-blue-300/50 dark:bg-blue-800/50 dark:text-blue-100 dark:ring-blue-500/40`;
+      return `${base} bg-primary/15 text-primary ring-primary/35`;
     default:
       return `${base} bg-background`;
   }
@@ -67,7 +67,7 @@ function accentBarClass(status: DelegationStatus | null): string {
     case DelegationStatus.Unstaking:
       return `${base} bg-amber-300/80 dark:bg-amber-300/50`;
     case DelegationStatus.Active:
-      return `${base} bg-blue-300/80 dark:bg-blue-300/50`;
+      return `${base} bg-primary/70`;
     default:
       return `${base} bg-foreground/10`;
   }
@@ -94,7 +94,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
   return (
     <li
-      className="group relative overflow-hidden rounded border border-foreground/10 bg-background/60 hover:bg-background/75 transition-colors p-3 dark:bg-background/60"
+      className="group relative overflow-hidden rounded border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 transition-colors hover:bg-[color:var(--surface)]"
       key={entry.validator}
     >
       <div className={accentBarClass(status)} aria-hidden="true" />
@@ -192,7 +192,9 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
               aria-label={`Delegate to ${entry.validator}`}
               className={[
                 "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
-                canClaim ? "border bg-surface hover:bg-surface/90" : "bg-primary text-primary-text",
+                canClaim
+                  ? "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]"
+                  : "bg-primary text-primary-text",
               ].join(" ")}
               onClick={() => onDelegate?.(entry.validator)}
               disabled={!canDelegate}
@@ -202,7 +204,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
             <button
               type="button"
               aria-label={`Undelegate from ${entry.validator}`}
-              className="text-xs rounded border bg-surface hover:bg-surface/90 py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="text-xs rounded border border-[color:var(--border)] bg-[color:var(--surface)] py-1 px-2 whitespace-nowrap hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-primary/40"
               onClick={() => onUndelegate?.(entry.validator)}
               disabled={!canUndelegate}
             >

@@ -1,17 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  color-scheme: light dark;
+  --background: #f4f7fc;
+  --foreground: #0f1a2f;
   --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --primary: #1d4ed8;
-  --primary-text: #ffffff;
-  --secondary-text: #475569;
-  --border: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --surface-muted: #eef2f8;
+  --surface-glass: var(--surface);
+  --primary: #0f766e;
+  --primary-text: #f5fffd;
+  --secondary-text: #52607a;
+  --border: color-mix(in oklab, var(--foreground) 12%, transparent);
   --radius-sm: 0.5rem;
   --radius-md: 1rem;
   --radius-lg: 1.5rem;
+  --panel-bg: var(--surface);
+  --panel-border: color-mix(in oklab, var(--foreground) 16%, transparent 34%);
+  --hero-panel-from: var(--surface);
+  --hero-panel-to: var(--surface);
+  --surface-card-bg: var(--surface);
+  --surface-primary: var(--surface);
+  --border-soft: var(--border);
+  --border-strong: color-mix(in oklab, var(--foreground) 18%, transparent);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--secondary-text);
+  --text-tertiary: color-mix(in oklab, var(--secondary-text) 75%, transparent 25%);
+  --text-muted: color-mix(in oklab, var(--secondary-text) 55%, transparent 45%);
+  --shadow-soft-color: rgba(15, 23, 42, 0.11);
+  --accent-primary: var(--primary);
+  --accent-primary-hover: color-mix(in oklab, var(--primary) 88%, black 12%);
+  --accent-strong: color-mix(in oklab, var(--primary) 22%, transparent);
 }
 
 @theme inline {
@@ -22,20 +40,40 @@
   --color-primary-text: var(--primary-text);
   --color-secondary-text: var(--secondary-text);
   --color-border: var(--border);
-  --font-sans: var(--font-geist-sans);
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-primary-hover: var(--accent-primary-hover);
+  --color-accent-strong: var(--accent-strong);
+  --font-sans: var(--font-jakarta-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #060b16;
-    --foreground: #e2e8f0;
-    --surface: #111827;
-    --surface-muted: #1e293b;
-    --primary: #2563eb;
-    --primary-text: #ffffff;
-    --secondary-text: #94a3b8;
+    color-scheme: dark;
+    --background: #070f1e;
+    --foreground: #e8eefc;
+    --surface: #0d172b;
+    --surface-muted: #101d35;
+    --surface-glass: color-mix(in oklab, var(--surface) 90%, transparent);
+    --primary: #2dd4bf;
+    --primary-text: #052822;
+    --secondary-text: #9eb0cf;
     --border: color-mix(in oklab, var(--foreground) 16%, transparent);
+    --surface-primary: var(--surface);
+    --border-soft: color-mix(in oklab, var(--foreground) 20%, transparent);
+    --text-primary: var(--foreground);
+    --text-secondary: var(--secondary-text);
+    --text-tertiary: color-mix(in oklab, var(--secondary-text) 75%, transparent 25%);
+    --text-muted: color-mix(in oklab, var(--secondary-text) 55%, transparent 45%);
+    --shadow-soft-color: rgba(0, 6, 18, 0.35);
+    --accent-primary: var(--primary);
+    --accent-primary-hover: color-mix(in oklab, var(--primary) 88%, black 12%);
+    --accent-strong: color-mix(in oklab, var(--primary) 22%, transparent);
+    --panel-bg: var(--surface);
+    --panel-border: color-mix(in oklab, var(--foreground) 16%, transparent 45%);
+    --hero-panel-from: var(--surface);
+    --hero-panel-to: var(--surface);
+    --surface-card-bg: var(--surface);
   }
 }
 
@@ -47,8 +85,8 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    line-height: 1.6;
+    font-family: var(--font-jakarta-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
   }
 
   a {
@@ -58,6 +96,11 @@
 
   a:hover {
     color: var(--primary);
+  }
+
+  a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
   }
 }
 
@@ -80,6 +123,22 @@
 }
 
 @layer components {
+  .btn-primary {
+    background: #0b5f59;
+    color: #ffffff;
+    border: 1px solid color-mix(in oklab, #0b5f59 85%, black 15%);
+  }
+
+  .btn-primary:hover {
+    background: #094a45;
+    color: #ffffff;
+  }
+
+  .btn-primary:focus-visible {
+    outline: 2px solid #0b5f59;
+    outline-offset: 4px;
+  }
+
   .focus-soft {
     transition:
       border-color 160ms ease,
@@ -93,6 +152,102 @@
     border-color: color-mix(in oklab, var(--primary) 55%, transparent);
     background-color: color-mix(in oklab, var(--surface) 96%, var(--primary) 4%);
     box-shadow: none;
+  }
+
+  .hero-panel {
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
+    box-shadow: none;
+  }
+
+  .surface-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    box-shadow: none;
+  }
+
+  .surface-card {
+    background: var(--surface-card-bg);
+    border: 1px solid color-mix(in oklab, var(--border) 75%, transparent 25%);
+    box-shadow: none;
+  }
+
+  .nav-panel {
+    background: var(--surface);
+    border-bottom: 1px solid var(--panel-border);
+  }
+
+  .footer-panel {
+    background: var(--surface-muted);
+    border-top: 1px solid var(--panel-border);
+    box-shadow: none;
+  }
+}
+
+@layer utilities {
+  .surface-panel {
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+    box-shadow: none;
+  }
+
+  .section-shell {
+    border-radius: 32px;
+    border: 1px solid color-mix(in srgb, var(--border-strong) 48%, transparent);
+    background: color-mix(in srgb, var(--surface-primary) 90%, transparent);
+    box-shadow: 0 28px 60px -32px color-mix(in srgb, var(--shadow-soft-color) 35%, transparent);
+    overflow: hidden;
+    clip-path: inset(0 round 32px);
+  }
+
+  .section-heading {
+    font-size: clamp(1.75rem, 3.1vw, 2.35rem);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.16;
+  }
+
+  .section-subtitle {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    max-width: 42rem;
+  }
+
+  .bg-surface-primary {
+    background-color: var(--surface-primary);
+  }
+
+  .bg-surface-muted {
+    background-color: var(--surface-muted);
+  }
+
+  .bg-surface-glass {
+    background-color: var(--surface-glass);
+  }
+
+  .border-soft {
+    border-color: var(--border-soft);
+  }
+
+  .border-strong {
+    border-color: var(--border-strong);
+  }
+
+  .text-primary-strong {
+    color: var(--text-primary);
+  }
+
+  .text-secondary-strong {
+    color: var(--text-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--text-tertiary);
+  }
+
+  .text-muted {
+    color: var(--text-muted);
   }
 }
 

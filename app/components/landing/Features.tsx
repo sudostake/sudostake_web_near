@@ -32,7 +32,7 @@ const PATHS = [
 export function Features() {
   return (
     <section className="mt-28">
-      <div className="rounded-4xl border border-white/12 bg-surface/90 p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
+      <div className="surface-card rounded-4xl p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
         <div className="space-y-8">
           <div className="max-w-2xl space-y-3">
             <h2 className="text-[clamp(1.45rem,2.3vw,2rem)] font-semibold text-foreground">Choose your next action</h2>
@@ -42,7 +42,7 @@ export function Features() {
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
             {PATHS.map((path) => (
-              <div key={path.title} className="rounded-3xl border border-white/10 bg-background/70 p-6 shadow-sm">
+              <div key={path.title} className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground">{path.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-secondary-text">{path.summary}</p>
                 <ul className="mt-4 space-y-2 text-sm text-secondary-text">

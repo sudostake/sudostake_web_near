@@ -59,7 +59,7 @@ export function PendingRequestCard({ item, factoryId }: Props) {
           <div className="flex min-w-0 items-start gap-4">
             <VaultIcon id={item.id} size="md" />
             <div className="min-w-0 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Vault</p>
+              <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Vault</p>
               <div className="break-all text-base font-semibold" title={item.id}>
                 {item.id}
               </div>

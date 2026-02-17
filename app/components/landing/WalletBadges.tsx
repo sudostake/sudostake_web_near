@@ -5,11 +5,11 @@ import React from "react";
 type Wallet = { name: string; color: string; letter?: string };
 
 const WALLETS: Wallet[] = [
-  { name: "Bitte", color: "bg-blue-600" },
-  { name: "Meteor", color: "bg-purple-600" },
-  { name: "MyNearWallet", color: "bg-emerald-600" },
+  { name: "Bitte", color: "bg-teal-700" },
+  { name: "Meteor", color: "bg-emerald-700" },
+  { name: "MyNearWallet", color: "bg-teal-600" },
   { name: "Nightly", color: "bg-slate-700" },
-  { name: "Ledger", color: "bg-gray-500" },
+  { name: "Ledger", color: "bg-zinc-600" },
 ];
 
 export function WalletBadges() {

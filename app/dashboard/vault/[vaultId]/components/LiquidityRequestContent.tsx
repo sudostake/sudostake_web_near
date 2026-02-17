@@ -175,7 +175,11 @@ export function LiquidityRequestContent({
           )}
         </div>
       ) : isPending && role === "potentialLender" ? (
-        <Card className="space-y-3 rounded-xl border border-white/10 bg-background/75 px-4 py-4" role="region" aria-label="Lender registration">
+        <Card
+          className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+          role="region"
+          aria-label="Lender registration"
+        >
           <div className="text-sm text-secondary-text text-left">
             {STRINGS.yourBalance}: <span className="font-mono">{lenderBalanceLabel} {tokenSymbol}</span>
           </div>
