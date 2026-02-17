@@ -1,26 +1,26 @@
 # Connect your wallet
 
 ## TL;DR
-- We rely on NEAR Wallet Selector, so the same “Connect Wallet” flow works with Bitte, Meteor, MyNearWallet, Ledger, Nightly, and future wallets that plug into the selector.
-- Once you connect, the top navigation shows your account and unlocks actions like creating a vault or accepting a loan.
-- All RPC calls flow through `/api/rpc`, so switching between testnet and mainnet is safe and consistent.
-- Whether you are a vault owner or lender, connecting is the first step; the UI reveals the right actions after the role check.
+- Connecting a wallet is required for any state-changing action.
+- Browsing Discover and reading vault pages works without signing in.
+- Supported wallets are configured via NEAR Wallet Selector.
 
-## What happens when you connect
-1. **Wallet Selector boots up** inside `app/providers.tsx` and knows which wallets are available.
-2. **You tap “Connect Wallet”.** We call `signIn()` from the selector.
-3. **Your chosen wallet opens.** Pick an account and approve access. If you cancel, we surface a friendly notice and you stay signed out.
-4. **Selector stores the session.** After redirect, the header updates to show your account name and the quick menu (copy account, switch network, sign out).
-5. **Actions unlock.** Hooks like `useWalletSelector()` return your account ID so features can gate risky actions while keeping read-only pages open to everyone.
+## Supported wallets
+- Bitte
+- Meteor
+- MyNearWallet
+- Nightly
+- Ledger
 
-Read the full moment-by-moment breakdown in [Sign-in flow](./authentication-signin-flow.md).
+## What unlocks after connect
+- Borrower actions: create vault, open/cancel request, repay, manage vault funds and delegations.
+- Lender actions: accept request, process claims when available.
+- Account-specific lists in dashboard (`Vaults`, `Positions`).
 
-## Where to look in the code
-- `app/providers.tsx` — WalletSelectorProvider configuration and network routing.
-- `app/components/Navigation.tsx` — Connect/logout button, quick account menu, and handoff to feature pages.
-- `hooks/useWalletSelector.ts` — Lightweight hook that surfaces the selector instance and active account to any component.
+## Where to connect
+- Landing page borrower CTA.
+- Top navigation `Connect Wallet`.
+- Vault page prompt when viewing while signed out.
 
-## Troubleshooting quick wins
-- **Button does nothing:** Check that the selector scripts loaded. In dev, refresh with cache disabled.
-- **Wallet popup blocked:** Browsers sometimes block new windows. We fall back to full-page redirects, but you can also allow popups for the site.
-- **Account mismatch:** If you switch accounts inside the wallet, the selector notices and the UI updates automatically. If not, click “Logout” then reconnect.
+## Sign out
+- Use account menu in navigation -> `Logout`.

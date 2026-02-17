@@ -35,17 +35,17 @@ const FEATURED_LINKS = [
   {
     href: "/docs/playbook",
     title: "Start with the playbook",
-    description: "Understand how vault owners and lenders collaborate, from setup to repayment.",
+    description: "See the full borrower and lender flow in one page.",
   },
   {
     href: "/docs/guides/create-vault",
-    title: "Create your vault",
-    description: "Mint, configure, and collateralise a vault so you can publish your first request.",
+    title: "Borrower quickstart",
+    description: "Create a vault and open your first request.",
   },
   {
     href: "/docs/guides/fund-liquidity-request",
-    title: "Fund a request",
-    description: "Review key signals, lend safely, and monitor repayments with confidence.",
+    title: "Lender quickstart",
+    description: "Find a request in Discover and fund it.",
   },
 ] satisfies Array<{ href: string; title: string; description: string }>;
 
@@ -53,33 +53,32 @@ export default function DocsIndex() {
   const sections = [
     buildSection(
       "learn",
-      "Learn the basics",
+      "Start",
       [
-        linkIfFile("playbook.md", "See the full journey"),
-        linkIfFile("README.md", "What’s in these docs"),
-        linkIfFile("architecture.md", "How SudoStake stays in sync"),
-        linkIfFile("reference/networks.md", "Choose the right network"),
+        linkIfFile("README.md", "Docs home"),
+        linkIfFile("playbook.md", "Playbook"),
+        linkIfFile("architecture.md", "Architecture overview"),
+        linkIfFile("reference/networks.md", "Networks"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
       "get-ready",
-      "Get set up",
+      "Connection and setup",
       [
         linkIfFile("features/authentication.md", "Connect your wallet"),
-        linkIfFile("features/authentication-signin-flow.md", "Sign-in step by step"),
-        linkIfFile("reference/token-registration.md", "Register with a token"),
-        linkIfFile("features/tokens.md", "Check balances and deposits"),
+        linkIfFile("features/authentication-signin-flow.md", "Sign-in flow"),
+        linkIfFile("features/tokens.md", "Tokens and balances"),
+        linkIfFile("reference/token-registration.md", "Token registration"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
       "owners",
-      "For vault owners",
+      "Borrower path",
       [
-        linkIfFile("guides/create-vault.md", "Create your vault"),
-        linkIfFile("features/vaults.md", "Manage vault actions"),
-        linkIfFile("guides/opening-liquidity-request.md", "Request liquidity"),
+        linkIfFile("guides/create-vault.md", "Create a vault"),
+        linkIfFile("guides/opening-liquidity-request.md", "Open a request"),
         linkIfFile("guides/repay-loan.md", "Repay a loan"),
-        linkIfFile("operations/indexing.md", "Keep information fresh"),
+        linkIfFile("features/vaults.md", "Vault actions"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
@@ -87,18 +86,18 @@ export default function DocsIndex() {
       "For lenders",
       [
         linkIfFile("guides/fund-liquidity-request.md", "Fund a request"),
-        linkIfFile("features/discover.md", "Browse open requests"),
-        linkIfFile("features/lender-positions.md", "Track funded vaults"),
-        linkIfFile("guides/repay-loan.md", "See what repayment looks like"),
+        linkIfFile("features/discover.md", "Discover marketplace"),
+        linkIfFile("features/lender-positions.md", "Lender positions"),
       ].filter(Boolean) as DocLink[]
     ),
     buildSection(
       "reference",
-      "Helpful references",
+      "Reference and operations",
       [
-        linkIfFile("reference/data-model.md", "What the app stores"),
-        linkIfFile("reference/roles.md", "Who can do what"),
-        linkIfFile("reference/networks.md", "Network quick facts"),
+        linkIfFile("reference/roles.md", "Viewer roles"),
+        linkIfFile("reference/data-model.md", "Data model"),
+        linkIfFile("reference/api.md", "API routes"),
+        linkIfFile("operations/indexing.md", "Indexing and consistency"),
       ].filter(Boolean) as DocLink[]
     ),
   ].filter(Boolean) as Section[];
@@ -112,10 +111,9 @@ export default function DocsIndex() {
       <Container className="relative pt-16 sm:pt-20 space-y-8">
         <Card className="space-y-4 rounded-4xl border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
-          <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">Documentation built for operators</h1>
+          <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">SudoStake docs</h1>
           <p className="max-w-3xl text-base leading-relaxed text-secondary-text sm:text-sm">
-            Pick the path that matches your role. Every article pairs concise explanations with checklists so teams can move
-            from wallet connection to active lending without guesswork.
+            Pick your path: borrower or lender. These docs map directly to what is currently available in the app.
           </p>
         </Card>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
