@@ -17,7 +17,7 @@ export default function Home() {
   if (signedAccountId) return null;
 
   return (
-    <div className="min-h-screen pb-16 font-(family-name:--font-geist-sans)">
+    <div className="min-h-screen pb-16">
       <main id="main">
         <Container className="pt-12 sm:pt-16">
           <Hero />

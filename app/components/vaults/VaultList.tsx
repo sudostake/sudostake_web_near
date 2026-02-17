@@ -22,9 +22,9 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
     "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5";
   const interactiveCardClasses = [
     "transition-all duration-200",
-    "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)]",
-    "group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)]",
-    "group-focus-visible:-translate-y-0.5 group-focus-visible:border-primary/50 group-focus-visible:shadow-[0_18px_40px_-26px_rgba(37,99,235,0.4)]",
+    "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
+    "group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
+    "group-focus-visible:-translate-y-0.5 group-focus-visible:border-primary/50 group-focus-visible:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
   ].join(" ");
 
   const stateFor = (id: string): VaultSummary["state"] | undefined => {
@@ -52,7 +52,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
       </div>
       <div className="flex w-full flex-wrap items-center gap-3 text-sm text-secondary-text sm:w-auto sm:justify-end">
         <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
-        <span aria-hidden="true" className="hidden text-xs font-medium uppercase tracking-wide text-secondary-text/70 sm:inline">
+        <span aria-hidden="true" className="hidden text-xs font-medium uppercase tracking-wide text-secondary-text sm:inline">
           Open
         </span>
         <svg

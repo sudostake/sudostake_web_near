@@ -34,7 +34,7 @@ export function AccountSummary({
 
   return (
     <Card
-      className={`w-full h-full rounded-3xl border-white/10 bg-surface px-6 py-6 shadow-[0_16px_52px_-32px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8 ${className}`}
+      className={`surface-card h-full w-full rounded-3xl px-6 py-6 shadow-[0_16px_52px_-32px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8 ${className}`}
     >
       <HeaderWithActions />
       <div className="mt-5 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
@@ -100,8 +100,8 @@ function BalanceStat({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-surface-muted/70 p-4 sm:p-5">
-      <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">{label}</div>
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 sm:p-5">
+      <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</div>
       <div className="mt-2 flex min-w-0 items-baseline gap-1 text-[2.15rem] font-semibold leading-none">
         {loading ? (
           <div className="h-8 w-24 animate-pulse rounded-full bg-surface" aria-hidden="true" />

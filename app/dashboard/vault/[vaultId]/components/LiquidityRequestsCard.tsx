@@ -397,7 +397,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
   return (
     <Card
-      className="space-y-6 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
+      className="surface-card space-y-6 rounded-2xl px-4 py-5 sm:px-6 sm:py-6"
       aria-label="Liquidity requests"
     >
       <LiquidityRequestHeader

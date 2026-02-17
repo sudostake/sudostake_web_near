@@ -16,7 +16,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       aria-label={STRINGS.back}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-foreground/10 bg-surface hover:border-primary/30 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] hover:border-primary/30 hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -92,16 +92,12 @@ export function VaultHeader({
   }
 
   return (
-    <Card
-      className="space-y-6 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
-      role="region"
-      aria-label="Vault overview"
-    >
+    <Card className="surface-card space-y-6 rounded-2xl px-4 py-5 sm:px-6 sm:py-6" role="region" aria-label="Vault overview">
       <div className="flex flex-wrap items-center gap-3 sm:justify-between">
         <div className="flex items-center gap-3">
           <BackButton onClick={onBack} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Vault overview</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Vault overview</p>
             <h1 className="mt-1 break-all text-[clamp(1.8rem,3.8vw,2.4rem)] font-semibold" title={vaultId}>
               {vaultShortName}
             </h1>
@@ -180,7 +176,7 @@ export function VaultHeader({
               <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
                 {vaultNearLoading ? "Loading…" : vaultNear}
               </span>
-              <span className="text-sm text-secondary-text/80">{NATIVE_TOKEN}</span>
+              <span className="text-sm text-secondary-text">{NATIVE_TOKEN}</span>
             </span>
           }
         />
@@ -192,7 +188,7 @@ export function VaultHeader({
                 <span className="break-all" title={`${usdcDisplay} USDC`}>
                   {vaultUsdcLoading ? "Loading…" : usdcDisplay}
                 </span>
-                <span className="text-sm text-secondary-text/80">USDC</span>
+                <span className="text-sm text-secondary-text">USDC</span>
               </span>
             }
           />

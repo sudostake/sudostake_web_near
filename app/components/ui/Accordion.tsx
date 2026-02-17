@@ -17,9 +17,9 @@ export function Accordion({ items }: Props) {
   const containerClassName = [
     "rounded-2xl",
     "border",
-    "border-white/12",
-    "bg-surface/90",
-    "shadow-[0_20px_60px_-44px_rgba(15,23,42,0.6)]",
+    "border-[color:var(--border)]",
+    "bg-[color:var(--surface)]",
+    "shadow-[0_20px_60px_-44px_rgba(15,23,42,0.35)]",
     "overflow-hidden",
     "divide-y",
     "divide-(color:--color-border)",

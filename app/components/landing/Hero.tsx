@@ -161,13 +161,13 @@ export function Hero() {
           </div>
 
           {connecting && (
-            <p className="text-xs text-secondary-text/90" role="status" aria-live="polite">
+            <p className="text-xs text-secondary-text" role="status" aria-live="polite">
               {slowConnect ? "Check your wallet to continue." : "Opening wallet…"}
             </p>
           )}
         </div>
 
-        <aside className="rounded-3xl border border-white/12 bg-surface/85 p-5 shadow-sm sm:p-6">
+        <aside className="surface-card rounded-3xl p-5 shadow-sm sm:p-6">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">Current open requests</p>
@@ -181,10 +181,10 @@ export function Hero() {
           {displayedRequests.length > 0 ? (
             <div className="mt-4 space-y-3">
               {displayedRequests.map((item, index) => (
-                <article key={`${item.id}-${index}`} className="rounded-2xl border border-white/10 bg-background/70 p-4">
+                <article key={`${item.id}-${index}`} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4">
                   <div className="flex items-center justify-end gap-3">
                     {showSampleRequest ? (
-                      <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">Sample request</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Sample request</p>
                     ) : (
                       <Link
                         href={`/dashboard/vault/${encodeURIComponent(item.id)}`}
@@ -224,7 +224,7 @@ export function Hero() {
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-2xl border border-dashed border-white/15 bg-background/55 px-4 py-5 text-sm text-secondary-text">
+            <div className="mt-4 rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-5 text-sm text-secondary-text">
               {pendingLoading
                 ? "Loading the latest open requests…"
                 : "No open requests right now. Check Discover for updates."}

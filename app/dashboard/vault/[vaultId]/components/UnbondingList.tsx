@@ -39,7 +39,7 @@ export function UnbondingList({ entries, bare = false }: Props) {
         const { validator, unlockEpoch, unstakeEpoch, remaining } = row;
         return (
           <li key={`${validator}-${idx}`}>
-            <Card className="space-y-2 rounded-lg border border-white/10 bg-background/70 px-4 py-3 shadow-none sm:px-4 sm:py-3">
+            <Card className="space-y-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3 shadow-none sm:px-4 sm:py-3">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <div className="flex items-center gap-1 min-w-0">
                   <a

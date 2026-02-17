@@ -92,7 +92,7 @@ const FAQ_ITEMS: AccordionItem[] = [
 
 export function LandingFAQ() {
   return (
-    <section className="mt-28 border-t border-white/10 pt-16">
+    <section className="mt-28 border-t border-[color:var(--border)] pt-16">
       <div className="grid gap-12 lg:grid-cols-[minmax(0,0.95fr),minmax(280px,0.8fr)]">
         <div className="space-y-8">
           <div className="max-w-2xl space-y-3">
@@ -108,7 +108,7 @@ export function LandingFAQ() {
                 href={link.href}
                 target={link.external ? "_blank" : undefined}
                 rel={link.external ? "noreferrer" : undefined}
-                className="group rounded-2xl border border-white/12 bg-surface/85 px-5 py-5 text-sm shadow-sm transition hover:border-primary/30 hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
+                className="group rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-5 py-5 text-sm shadow-sm transition hover:border-primary/30 hover:bg-[color:var(--surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
               >
                 <span className="flex items-start justify-between gap-3">
                   <span className="text-base font-semibold text-foreground">{link.title}</span>

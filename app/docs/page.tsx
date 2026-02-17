@@ -106,10 +106,10 @@ export default function DocsIndex() {
     <div className="relative min-h-screen overflow-hidden bg-background pb-28">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_65%)]"
       />
       <Container className="relative pt-16 sm:pt-20 space-y-8">
-        <Card className="space-y-4 rounded-4xl border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
+        <Card className="surface-card space-y-4 rounded-4xl px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
           <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">SudoStake docs</h1>
           <p className="max-w-3xl text-base leading-relaxed text-secondary-text sm:text-sm">
@@ -121,7 +121,7 @@ export default function DocsIndex() {
             <DocQuickLink key={link.href} {...link} />
           ))}
         </div>
-        <Card className="space-y-6 rounded-[28px] border-white/12 bg-surface/95 px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
+        <Card className="surface-card space-y-6 rounded-[28px] px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
           <DocsIndexClient sections={sections} />
         </Card>
       </Container>
@@ -133,7 +133,7 @@ function DocQuickLink({ href, title, description }: { href: string; title: strin
   return (
     <Link
       href={href}
-      className="group block rounded-3xl border border-white/12 bg-background/85 px-5 py-5 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
+      className="group block rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-5 py-5 transition-all hover:border-primary/40 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
     >
       <span className="flex items-center justify-between gap-2">
         <span className="text-base font-semibold text-foreground">{title}</span>

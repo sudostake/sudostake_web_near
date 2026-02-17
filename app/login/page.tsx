@@ -26,15 +26,15 @@ export default function LoginPage() {
     <div className="relative min-h-screen overflow-hidden bg-background pb-24">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-28vh] h-[55vh] bg-[radial-gradient(ellipse_at_top,rgba(37,99,235,0.2),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-28vh] h-[55vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_65%)]"
       />
       <Container className="relative pt-16 sm:pt-20 pb-20">
         <main id="main" className="mx-auto max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
-            <section className="relative overflow-hidden rounded-4xl border border-white/12 bg-surface/95 px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
+            <section className="surface-card relative overflow-hidden rounded-4xl px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
               <div
                 aria-hidden="true"
-                className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(14,116,144,0.22),transparent_70%)] blur-2xl"
+                className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(15,118,110,0.22),transparent_70%)] blur-2xl"
               />
               <div className="relative space-y-6">
                 <div className="space-y-3">
@@ -55,7 +55,7 @@ export default function LoginPage() {
                     Browse requests first
                   </Link>
                 </div>
-                <div className="grid gap-4 rounded-2xl border border-white/12 bg-background/85 px-5 py-5">
+                <div className="grid gap-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-5 py-5">
                   <h2 className="text-sm font-semibold text-foreground">Why your account stays secure</h2>
                   <ul className="space-y-2 text-sm leading-relaxed text-secondary-text sm:text-sm">
                     <li>Approve every transaction from your NEAR wallet—no custodial intermediaries.</li>
@@ -74,8 +74,8 @@ export default function LoginPage() {
                 </div>
               </div>
             </section>
-            <aside className="rounded-[28px] border border-white/12 bg-surface/95 px-5 py-7 shadow-[0_24px_80px_-55px_rgba(15,23,42,0.6)] sm:px-6">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text/90">Supported wallets</h2>
+            <aside className="surface-card rounded-[28px] px-5 py-7 shadow-[0_24px_80px_-55px_rgba(15,23,42,0.6)] sm:px-6">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Supported wallets</h2>
               <div className="mt-4">
                 <WalletBadges />
               </div>

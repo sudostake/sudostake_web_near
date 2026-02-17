@@ -25,8 +25,8 @@ export function Button({
     lg: "px-4 h-10 text-base",
   };
   const variants: Record<Variant, string> = {
-    primary: "bg-primary text-primary-text hover:bg-primary/90",
-    secondary: "border bg-surface hover:bg-surface/90",
+    primary: "btn-primary",
+    secondary: "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]",
     ghost: "hover:bg-foreground/10",
   };
   return (

@@ -51,6 +51,7 @@ import Link from "next/link";
 // import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
+import { LogoMark } from "@/app/components/LogoMark";
 import { getActiveNetwork } from "@/utils/networks";
 import { showToast } from "@/utils/toast";
 
@@ -107,14 +108,14 @@ export function Navigation() {
     if (!el) return;
     const setVar = () => {
       const h = el.offsetHeight || 56;
-      document.documentElement.style.setProperty('--nav-height', h + 'px');
+      document.documentElement.style.setProperty("--nav-height", h + "px");
     };
     setVar();
-    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(setVar) : null;
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(setVar) : null;
     if (ro) ro.observe(el);
-    window.addEventListener('resize', setVar);
+    window.addEventListener("resize", setVar);
     return () => {
-      window.removeEventListener('resize', setVar);
+      window.removeEventListener("resize", setVar);
       if (ro) ro.disconnect();
     };
   }, []);
@@ -124,24 +125,29 @@ export function Navigation() {
       {/* Ensure the account dropdown overlays sticky page headers (vault view uses z-30). */}
       <nav
         ref={navRef}
-        className={[
-          "fixed left-0 right-0 top-0 border-b bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/50",
-        ].join(" ")}
+        className="nav-panel fixed left-0 right-0 top-0"
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-2 gap-y-1.5 px-4 sm:px-6 lg:px-8 py-1.5 sm:flex-nowrap sm:justify-between sm:py-2.5">
+        <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1.5 px-5 py-2 sm:flex-nowrap sm:justify-between sm:px-6 sm:py-2.5 lg:px-8">
           <div className="flex flex-1 items-center gap-2 sm:gap-4">
-            <Link href="/" className="text-xl font-bold whitespace-nowrap">
-              SudoStake
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2.5 whitespace-nowrap text-lg font-bold text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-xl"
+            >
+              <LogoMark size={34} className="h-8 w-8 rounded-full sm:h-9 sm:w-9" ariaLabel="SudoStake home" />
+              <span>SudoStake</span>
             </Link>
             {network && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/12 bg-background/70 px-2 py-1 text-[11px] uppercase tracking-wide text-secondary-text md:hidden">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2 py-1 text-[11px] uppercase tracking-wide text-[color:var(--text-secondary)] md:hidden">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary/70" aria-hidden="true" />
                 {network}
               </span>
             )}
             {network && (
-              <span className="hidden md:inline text-xs rounded border bg-surface px-2 py-0.5 text-secondary-text" title="Active network">
+              <span
+                className="hidden rounded border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2 py-0.5 text-xs text-[color:var(--text-secondary)] md:inline"
+                title="Active network"
+              >
                 {network}
               </span>
             )}
@@ -151,7 +157,7 @@ export function Navigation() {
             <Link
               href="/discover"
               aria-label="Discover"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <DiscoverIcon />
               <span className="sr-only">Discover</span>
@@ -159,7 +165,7 @@ export function Navigation() {
             <Link
               href="/docs"
               aria-label="Docs"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
             >
               <span className="sr-only">Docs</span>
               {/* Simple book icon */}
@@ -170,10 +176,16 @@ export function Navigation() {
             </Link>
 
             {/* Desktop links on the right */}
-            <Link href="/discover" className="hidden md:inline text-sm text-secondary-text hover:underline">
+            <Link
+              href="/discover"
+              className="hidden text-sm text-[color:var(--text-secondary)] transition hover:text-[color:var(--accent-primary)] md:inline"
+            >
               Discover
             </Link>
-            <Link href="/docs" className="hidden md:inline text-sm text-secondary-text hover:underline">
+            <Link
+              href="/docs"
+              className="hidden text-sm text-[color:var(--text-secondary)] transition hover:text-[color:var(--accent-primary)] md:inline"
+            >
               Docs
             </Link>
 
@@ -185,7 +197,7 @@ export function Navigation() {
                   type="button"
                   aria-label="Connect wallet"
                   onClick={onConnect}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
                 >
                   <WalletIcon />
                   <span className="sr-only">Connect wallet</span>
@@ -211,7 +223,7 @@ export function Navigation() {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen || undefined}
                   onClick={() => setMenuOpen((o) => !o)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border bg-surface hover:bg-surface/90 focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
                 >
                   <UserIcon />
                   <span className="sr-only">Account</span>
@@ -235,10 +247,10 @@ export function Navigation() {
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 mt-2 w-44 rounded-app border bg-surface shadow-lg py-1 z-50"
+                    className="absolute right-0 z-50 mt-2 w-44 rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] py-1 shadow-lg"
                   >
                     {signedAccountId && (
-                      <div className="px-3 py-2 text-xs text-secondary-text/90 border-b border-white/12" role="none">
+                      <div className="border-b border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]/90" role="none">
                         <span className="font-mono block truncate" title={signedAccountId}>{signedAccountId}</span>
                       </div>
                     )}

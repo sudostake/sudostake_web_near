@@ -23,13 +23,13 @@ export function AvailableBalanceCard({
       role="region"
       aria-label={STRINGS.availableBalanceTitle}
       aria-busy={loading || undefined}
-      className="space-y-3 rounded-2xl border border-white/10 bg-surface px-4 py-5 sm:px-6 sm:py-6"
+      className="surface-card space-y-3 rounded-2xl px-4 py-5 sm:px-6 sm:py-6"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wide text-secondary-text/80">
+        <span className="text-xs font-semibold uppercase tracking-wide text-secondary-text">
           {STRINGS.availableBalanceTitle}
         </span>
-        {loading && <span className="text-[11px] text-secondary-text/70">Updating…</span>}
+        {loading && <span className="text-[11px] text-secondary-text">Updating…</span>}
       </div>
       <div className="flex items-baseline gap-2 text-[clamp(2rem,4vw,2.3rem)] font-semibold text-foreground">
         {loading ? (
@@ -39,7 +39,7 @@ export function AvailableBalanceCard({
             {display}
           </span>
         )}
-        <span className="text-sm text-secondary-text/80">{symbol}</span>
+        <span className="text-sm text-secondary-text">{symbol}</span>
       </div>
     </Card>
   );
