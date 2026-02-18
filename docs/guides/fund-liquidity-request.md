@@ -2,7 +2,7 @@
 
 ## TL;DR
 - Time: 3 to 5 minutes.
-- Requirement: lender wallet connected, enough token balance, storage registration complete.
+- Requirement: lender wallet connected, enough token balance, and storage registration if prompted.
 - Result: request becomes `active` and your account is recorded as lender.
 
 ## Where funding happens
@@ -13,12 +13,11 @@
 ## Steps
 1. Open a vault from Discover.
 2. Review terms shown on the request card.
-3. If prompted, register:
-   - Your wallet with the token.
-   - The vault with the token (owner action may be required).
-4. Click `Accept request`.
-5. Confirm in wallet (`ft_transfer_call`).
-6. Wait for indexing.
+3. If prompted, register your wallet with the token.
+4. If prompted, confirm the vault is registered with the token (owner action may be required).
+5. Click `Accept request`.
+6. Confirm in wallet (`ft_transfer_call`).
+7. Wait for indexing.
 
 ## After funding
 - Vault state changes to `active`.

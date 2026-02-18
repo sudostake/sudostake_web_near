@@ -23,7 +23,7 @@ Discover cards use these labels:
 ## Data behavior
 - Default: realtime Firestore subscription.
 - Optional: REST polling with `NEXT_PUBLIC_PENDING_USE_API=true`.
-- Errors auto-retry and can be refreshed manually.
+- Errors auto-retry in the list view.
 
 ## Related
 - [Fund a liquidity request](../guides/fund-liquidity-request.md)

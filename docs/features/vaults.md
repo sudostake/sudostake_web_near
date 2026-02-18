@@ -8,14 +8,15 @@
 ## State flow
 - `idle`: owner can open a new request.
 - `pending`: request is open; owner can cancel; potential lender can accept.
-- `active`: loan funded; owner can repay; lender monitors expiry and claim processing.
+- `active`: loan funded; owner can repay; lender can process claims after expiry when claimable.
 
 ## Owner controls
 - Manage vault funds: deposit, withdraw, transfer ownership.
 - Manage delegations: delegate, undelegate, claim unstaked (subject to state restrictions).
 - Open request when idle.
 - Cancel request while pending.
-- Repay while active.
+- Repay while active and before liquidation has started.
+- Start liquidation/claim processing after expiry.
 
 ## Lender controls
 - Accept request when pending and eligible.
@@ -28,7 +29,7 @@
 - Liquidation status section when liquidation exists.
 
 ## Indexing
-After state-changing actions, the app re-indexes vault data. Use retry indexing if the page appears stale.
+After state-changing actions, the app re-indexes vault data. If indexing fails, the app shows a blocking `Retry indexing` modal.
 
 ## Related
 - [Viewer roles](../reference/roles.md)

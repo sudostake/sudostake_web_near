@@ -9,16 +9,13 @@
 - Token is fixed to the default USDC for the active network.
 - You set: amount, interest, collateral, and duration.
 - The app validates token storage registration for the vault before submission.
+- Duration is used as the loan term after the request is accepted.
 
 ## Steps
 1. Open your vault page.
 2. In the liquidity section, click `Open request`.
 3. If prompted, register the vault with the token.
-4. Fill in request values:
-   - Amount
-   - Interest
-   - Collateral (NEAR)
-   - Duration (days)
+4. Fill in request values: amount, interest, collateral (NEAR), and duration (days).
 5. Click `Continue` and approve `request_liquidity` in wallet.
 6. Wait for indexing.
 

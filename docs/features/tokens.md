@@ -2,13 +2,14 @@
 
 ## TL;DR
 - The app currently centers on USDC lending with NEAR collateral.
-- Token storage registration is checked in funding and repayment flows.
-- Balances are shown for wallet and vault where relevant.
+- Token storage registration checks are built into request, funding, and repayment flows.
+- Wallet and vault balances are shown where actions depend on them.
 
 ## Current token behavior
 - Request creation dialog uses the default USDC token for the active network.
-- Discover and vault views render token metadata from registry + on-chain metadata.
-- Amounts are converted between display and minimal units in dialogs/hooks.
+- Discover cards use token metadata from on-chain `ft_metadata` with registry fallback.
+- Vault request panels use app token config and token decimals for formatting.
+- Dialogs convert display values to minimal units before contract calls.
 
 ## Where balances appear
 - Dashboard summary: wallet NEAR and USDC.

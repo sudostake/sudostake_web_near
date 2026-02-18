@@ -45,8 +45,6 @@ Optional feature flags and overrides:
 NEXT_PUBLIC_LENDING_USE_API=false
 # Use REST API instead of Firestore realtime for pending requests (default: false)
 NEXT_PUBLIC_PENDING_USE_API=false
-# Override the NEAR mainnet USDC implicit account (64 hex chars) if needed
-NEXT_PUBLIC_USDC_MAINNET_ID=17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1
 ```
 
 3) Run the development server

@@ -12,6 +12,7 @@ Without registration, token transfers to or from that account can fail.
 - Opening a request: vault registration check for the request token.
 - Funding a request: lender wallet and vault registration checks.
 - Repay top-up flow: owner wallet and vault registration checks.
+- Registration actions call `storage_deposit` with `registration_only: true`.
 
 ## Manual flow (reference)
 1. Read `storage_balance_bounds` on the token.
