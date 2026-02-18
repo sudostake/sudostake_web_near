@@ -11,13 +11,13 @@
 
 ## Core fields used by UI
 - `owner`
-- `state` (`idle`, `pending`, `active`)
+- `state` (`idle`, `pending`, `active`) derived from liquidity request + accepted offer
 - `liquidity_request` (token, amount, interest, collateral, duration)
 - `accepted_offer` (lender, accepted_at)
 - `liquidation`
 - `unstake_entries`
 - `current_epoch`
-- indexing metadata (`updated_at`, tx hash, factory id)
+- indexing metadata (`factory_id`, `tx_hash`, `created_at`, `updated_at`)
 
 ## Refresh model
 - On key mutations, the app re-reads on-chain vault state and rewrites the document.

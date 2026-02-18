@@ -3,7 +3,7 @@
 ## TL;DR
 - Indexing keeps Firestore vault documents aligned with on-chain vault state.
 - Most important actions trigger indexing automatically.
-- Retry indexing is the recovery path when UI state lags.
+- If indexing fails, the app blocks with a `Retry indexing` modal until it succeeds.
 
 ## When indexing runs
 - After creating a vault.
@@ -15,6 +15,11 @@
 1. Reads fresh vault state from chain.
 2. Transforms state to the app document shape.
 3. Writes back to Firestore for realtime subscribers.
+
+## Route behavior
+- `/api/index_vault` performs immediate indexing and returns success/failure.
+- `/api/indexing/enqueue` stores a background job for worker recovery.
+- `/api/indexing/worker` processes queued jobs with retry backoff.
 
 ## Symptoms of stale data
 - Request state does not change after a confirmed transaction.

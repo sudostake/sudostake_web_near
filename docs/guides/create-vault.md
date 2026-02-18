@@ -2,7 +2,7 @@
 
 ## TL;DR
 - Time: about 2 minutes.
-- Requirement: connected wallet with enough NEAR for the vault creation deposit.
+- Requirement: connected wallet with enough NEAR for the vault creation deposit (currently `10 NEAR`).
 - Result: a new vault appears in your dashboard.
 
 ## Before you start
