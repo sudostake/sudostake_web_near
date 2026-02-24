@@ -129,6 +129,7 @@ export function Navigation() {
 
   const [network, setNetwork] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
 
@@ -149,11 +150,15 @@ export function Navigation() {
   const onLogout = () => signOut().catch((err) => console.error(err));
 
   const onConnect = React.useCallback(() => {
-    Promise.resolve(signIn()).catch((err) => {
-      console.error("Wallet sign-in failed", err);
-      showToast("Wallet connection failed. Please try again.", { variant: "error" });
-    });
-  }, [signIn]);
+    if (connecting) return;
+    setConnecting(true);
+    Promise.resolve(signIn())
+      .catch((err) => {
+        console.error("Wallet sign-in failed", err);
+        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+      })
+      .finally(() => setConnecting(false));
+  }, [connecting, signIn]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -220,6 +225,20 @@ export function Navigation() {
           <div className="hidden items-center gap-1 md:flex">
             {routes.map((route) => {
               const active = isRouteActive(pathname, route);
+              if (!signedAccountId && route.id === "login") {
+                return (
+                  <button
+                    key={route.id}
+                    type="button"
+                    className={desktopLinkClass(active)}
+                    onClick={onConnect}
+                    disabled={connecting}
+                    aria-busy={connecting || undefined}
+                  >
+                    {connecting ? "Opening wallet..." : route.label}
+                  </button>
+                );
+              }
               return (
                 <Link
                   key={route.id}
@@ -258,6 +277,8 @@ export function Navigation() {
                   type="button"
                   aria-label="Connect wallet"
                   onClick={onConnect}
+                  disabled={connecting}
+                  aria-busy={connecting || undefined}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
                 >
                   <WalletIcon />
@@ -265,7 +286,7 @@ export function Navigation() {
                 </button>
                 <div className="hidden md:block">
                   <Button variant="primary" size="sm" onClick={onConnect} className="items-center justify-center whitespace-nowrap">
-                    Connect wallet
+                    {connecting ? "Opening wallet..." : "Connect wallet"}
                   </Button>
                 </div>
               </>

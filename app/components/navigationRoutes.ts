@@ -19,7 +19,6 @@ export const PUBLIC_NAV_ROUTES: NavRoute[] = [
   APP_ROUTES.home,
   APP_ROUTES.discover,
   APP_ROUTES.docs,
-  APP_ROUTES.login,
 ];
 
 export const AUTH_NAV_ROUTES: NavRoute[] = [
