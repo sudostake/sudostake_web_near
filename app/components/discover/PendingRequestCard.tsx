@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Card } from "@/app/components/ui/Card";
-import { LabelValue } from "@/app/components/ui/LabelValue";
 import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import Link from "next/link";
 import Big from "big.js";
@@ -11,23 +10,24 @@ import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import type { PendingRequest } from "@/utils/data/pending";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
-import { useTokenMetadata } from "@/hooks/useTokenMetadata";
 import { formatDurationFromSeconds } from "@/utils/time";
 import { calculateApr } from "@/utils/finance";
 
 type Props = {
   item: PendingRequest;
   factoryId: string;
+  tokenSymbol?: string;
+  tokenDecimals?: number;
 };
 
-export function PendingRequestCard({ item, factoryId }: Props) {
+export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals }: Props) {
   const lr = item.liquidity_request;
   const network = networkFromFactoryId(factoryId);
   const tokenId = lr?.token ?? "";
   const registryCfg = tokenId ? getTokenConfigById(tokenId, network) : undefined;
-  const { meta } = useTokenMetadata(tokenId);
-  const decimals = (meta.decimals ?? registryCfg?.decimals ?? 6);
-  const symbol = (meta.symbol ?? registryCfg?.symbol ?? "FT");
+  const fallbackSymbol = tokenId.includes(".") ? tokenId.split(".")[0]?.toUpperCase() ?? tokenId : tokenId;
+  const decimals = tokenDecimals ?? registryCfg?.decimals ?? 6;
+  const symbol = tokenSymbol ?? registryCfg?.symbol ?? fallbackSymbol ?? "FT";
   const durationSeconds = lr?.duration ?? 0;
 
   const amountLabel = useMemo(() => (lr ? formatMinimalTokenAmount(lr.amount, decimals) : "—"), [lr, decimals]);
@@ -50,32 +50,69 @@ export function PendingRequestCard({ item, factoryId }: Props) {
       return `${aprPct.round(2, 0 /* RoundDown */).toString()}%`;
     } catch { return "—"; }
   }, [lr, durationSeconds]);
+  const ownerLabel = useMemo(() => {
+    if (!item.owner) return "Unknown owner";
+    if (item.owner.length <= 22) return item.owner;
+    return `${item.owner.slice(0, 9)}…${item.owner.slice(-8)}`;
+  }, [item.owner]);
 
   const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
+  if (!lr) return null;
+
   return (
     <Link href={href} className="block focus:outline-none" aria-label={`View vault details for ${item.id}`}>
-      <Card className="flex flex-col gap-4 transition-colors duration-150 hover:border-foreground/25 focus-visible:border-primary/40">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 items-start gap-4">
-            <VaultIcon id={item.id} size="md" />
-            <div className="min-w-0 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Vault</p>
-              <div className="break-all text-base font-semibold" title={item.id}>
-                {item.id}
+      <Card className="group rounded-2xl p-4 sm:p-4 transition-colors duration-150 hover:border-foreground/25 hover:bg-[color:var(--surface-muted)] focus-visible:border-primary/40">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <VaultIcon id={item.id} size="md" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary-text">Vault</p>
+                <p className="mt-1 break-all text-sm font-semibold text-foreground" title={item.id}>
+                  {item.id}
+                </p>
+                <p className="mt-1 text-xs text-secondary-text">
+                  Owner{" "}
+                  <span className="font-mono text-foreground/90" title={item.owner ?? "Unknown owner"}>
+                    {ownerLabel}
+                  </span>
+                </p>
               </div>
-              <p className="text-sm text-secondary-text">{symbol}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-secondary-text">
+                {symbol}
+              </span>
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                {aprLabel} APR
+              </span>
             </div>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 text-sm text-secondary-text sm:grid-cols-2 xl:grid-cols-3">
-          <LabelValue label="Amount" value={`${amountLabel} ${symbol}`} />
-          <LabelValue label="Interest" value={`${interestLabel} ${symbol}`} />
-          <LabelValue label="Repay" value={`${repayLabel} ${symbol}`} />
-          <LabelValue label="Term" value={formatDurationFromSeconds(durationSeconds)} />
-          <LabelValue label="Collateral" value={`${collateralNear} NEAR`} />
-          <LabelValue label="Est. APR" value={aprLabel} />
+
+          <div className="grid grid-cols-2 gap-2 text-sm md:grid-cols-3">
+            <MetricCell label="Amount" value={`${amountLabel} ${symbol}`} />
+            <MetricCell label="Interest" value={`${interestLabel} ${symbol}`} />
+            <MetricCell label="Repay" value={`${repayLabel} ${symbol}`} />
+            <MetricCell label="Term" value={formatDurationFromSeconds(durationSeconds)} />
+            <MetricCell label="Collateral" value={`${collateralNear} NEAR`} />
+            <MetricCell label="APR" value={aprLabel} />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-[color:var(--border)] pt-3 text-xs">
+            <p className="text-secondary-text">Open vault to review funding actions</p>
+            <span className="font-medium text-primary transition group-hover:text-primary/80">Open vault</span>
+          </div>
         </div>
       </Card>
     </Link>
+  );
+}
+
+function MetricCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-2.5 py-2">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">{value}</p>
+    </div>
   );
 }
