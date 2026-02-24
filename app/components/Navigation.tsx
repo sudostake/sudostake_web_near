@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
 import { LogoMark } from "@/app/components/LogoMark";
-import { AUTH_NAV_ROUTES, PUBLIC_NAV_ROUTES, isRouteActive, type NavRoute } from "@/app/components/navigationRoutes";
+import { AUTH_NAV_ROUTES, PUBLIC_NAV_ROUTES, getBrandRoute, isRouteActive, type NavRoute } from "@/app/components/navigationRoutes";
 import { getActiveNetwork } from "@/utils/networks";
 import { showToast } from "@/utils/toast";
 
@@ -125,7 +125,7 @@ export function Navigation() {
     () => routes.filter((route) => route.id !== "login").slice(0, 3),
     [routes]
   );
-  const brandHref = signedAccountId ? "/dashboard" : "/";
+  const brandHref = getBrandRoute(Boolean(signedAccountId)).href;
 
   const [network, setNetwork] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);

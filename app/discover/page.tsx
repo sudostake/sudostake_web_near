@@ -2,13 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
+import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { getActiveFactoryId } from "@/utils/networks";
 import { PendingRequestsList } from "@/app/components/discover/PendingRequestsList";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
+import { getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
 
 export default function DiscoverPage() {
+  const { signedAccountId } = useWalletSelector();
   const factoryId = getActiveFactoryId();
+  const borrowerEntryRoute = getBorrowerEntryRoute(Boolean(signedAccountId));
+  const borrowerCtaLabel = signedAccountId ? "Open dashboard" : "Connect wallet";
 
   return (
     <div className="relative min-h-screen overflow-hidden pb-20">
@@ -30,9 +35,9 @@ export default function DiscoverPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link href="/dashboard">
+                <Link href={borrowerEntryRoute.href}>
                   <Button size="sm" variant="secondary">
-                    Open dashboard
+                    {borrowerCtaLabel}
                   </Button>
                 </Link>
                 <Link href="/docs/guides/fund-liquidity-request">

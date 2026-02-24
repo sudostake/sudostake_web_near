@@ -2,34 +2,52 @@
 
 import React from "react";
 import Link from "next/link";
+import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
+import { APP_ROUTES, getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
 
-const PATHS = [
-  {
-    title: "I want to borrow",
-    summary: "Create a vault, open a USDC request, and manage repayment from the dashboard.",
-    steps: [
-      "Connect a supported wallet.",
-      "Create your vault and open a request.",
-      "Repay before liquidation starts.",
-    ],
-    href: "/dashboard",
-    cta: "Start borrower flow",
-  },
-  {
-    title: "I want to lend",
-    summary: "Use Discover to review live requests and fund one directly from your wallet.",
-    steps: [
-      "Browse open requests in Discover.",
-      "Check amount, term, collateral, and APR.",
-      "Accept a request when terms fit your strategy.",
-    ],
-    href: "/discover",
-    cta: "Open Discover",
-  },
-];
+type FeaturePath = {
+  title: string;
+  summary: string;
+  steps: string[];
+  href: string;
+  cta: string;
+};
 
 export function Features() {
+  const { signedAccountId } = useWalletSelector();
+  const borrowerEntryRoute = getBorrowerEntryRoute(Boolean(signedAccountId));
+
+  const paths = React.useMemo<FeaturePath[]>(
+    () => [
+      {
+        title: "I want to borrow",
+        summary: signedAccountId
+          ? "Create a vault, open a USDC request, and manage repayment from the dashboard."
+          : "Connect your wallet, then open a vault and launch a USDC request.",
+        steps: [
+          "Connect a supported wallet.",
+          "Create your vault and open a request.",
+          "Repay before liquidation starts.",
+        ],
+        href: borrowerEntryRoute.href,
+        cta: signedAccountId ? "Start borrower flow" : "Connect to borrow",
+      },
+      {
+        title: "I want to lend",
+        summary: "Use Discover to review live requests and fund one directly from your wallet.",
+        steps: [
+          "Browse open requests in Discover.",
+          "Check amount, term, collateral, and APR.",
+          "Accept a request when terms fit your strategy.",
+        ],
+        href: APP_ROUTES.discover.href,
+        cta: "Open Discover",
+      },
+    ],
+    [borrowerEntryRoute.href, signedAccountId]
+  );
+
   return (
     <section className="mt-28">
       <div className="surface-card rounded-4xl p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
@@ -41,7 +59,7 @@ export function Features() {
             </p>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
-            {PATHS.map((path) => (
+            {paths.map((path) => (
               <div key={path.title} className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-6 shadow-sm">
                 <h3 className="text-lg font-semibold text-foreground">{path.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-secondary-text">{path.summary}</p>
@@ -61,7 +79,7 @@ export function Features() {
               </div>
             ))}
           </div>
-          <Link href="/docs" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80">
+          <Link href={APP_ROUTES.docs.href} className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80">
             Need details first? Read docs
             <span
               aria-hidden="true"

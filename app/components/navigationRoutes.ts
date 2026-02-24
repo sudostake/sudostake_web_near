@@ -1,30 +1,38 @@
-"use client";
+export type RouteId = "home" | "dashboard" | "discover" | "docs" | "login";
 
 export type NavRoute = {
-  id: "home" | "dashboard" | "discover" | "docs" | "login";
+  id: RouteId;
   label: string;
   href: string;
   prefixes: string[];
 };
 
+export const APP_ROUTES: Record<RouteId, NavRoute> = {
+  home: { id: "home", label: "Home", href: "/", prefixes: ["/"] },
+  dashboard: { id: "dashboard", label: "Dashboard", href: "/dashboard", prefixes: ["/dashboard"] },
+  discover: { id: "discover", label: "Discover", href: "/discover", prefixes: ["/discover"] },
+  docs: { id: "docs", label: "Docs", href: "/docs", prefixes: ["/docs"] },
+  login: { id: "login", label: "Login", href: "/login", prefixes: ["/login"] },
+};
+
 export const PUBLIC_NAV_ROUTES: NavRoute[] = [
-  { id: "home", label: "Home", href: "/", prefixes: ["/"] },
-  { id: "discover", label: "Discover", href: "/discover", prefixes: ["/discover"] },
-  { id: "docs", label: "Docs", href: "/docs", prefixes: ["/docs"] },
-  { id: "login", label: "Login", href: "/login", prefixes: ["/login"] },
+  APP_ROUTES.home,
+  APP_ROUTES.discover,
+  APP_ROUTES.docs,
+  APP_ROUTES.login,
 ];
 
 export const AUTH_NAV_ROUTES: NavRoute[] = [
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", prefixes: ["/dashboard"] },
-  { id: "discover", label: "Discover", href: "/discover", prefixes: ["/discover"] },
-  { id: "docs", label: "Docs", href: "/docs", prefixes: ["/docs"] },
+  APP_ROUTES.dashboard,
+  APP_ROUTES.discover,
+  APP_ROUTES.docs,
 ];
 
 export const FOOTER_ROUTES: NavRoute[] = [
-  { id: "home", label: "Home", href: "/", prefixes: ["/"] },
-  { id: "dashboard", label: "Dashboard", href: "/dashboard", prefixes: ["/dashboard"] },
-  { id: "discover", label: "Discover", href: "/discover", prefixes: ["/discover"] },
-  { id: "docs", label: "Docs", href: "/docs", prefixes: ["/docs"] },
+  APP_ROUTES.home,
+  APP_ROUTES.dashboard,
+  APP_ROUTES.discover,
+  APP_ROUTES.docs,
 ];
 
 export function isRouteActive(pathname: string, route: NavRoute): boolean {
@@ -32,4 +40,12 @@ export function isRouteActive(pathname: string, route: NavRoute): boolean {
     if (prefix === "/") return pathname === "/";
     return pathname === prefix || pathname.startsWith(`${prefix}/`);
   });
+}
+
+export function getBrandRoute(isSignedIn: boolean): NavRoute {
+  return isSignedIn ? APP_ROUTES.dashboard : APP_ROUTES.home;
+}
+
+export function getBorrowerEntryRoute(isSignedIn: boolean): NavRoute {
+  return isSignedIn ? APP_ROUTES.dashboard : APP_ROUTES.login;
 }

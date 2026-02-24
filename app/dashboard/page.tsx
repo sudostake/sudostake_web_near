@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { AccountSummary } from "../components/AccountSummary";
 import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
@@ -15,19 +13,13 @@ import { useUserVaults } from "@/hooks/useUserVaults";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { useRouteAccess } from "@/app/hooks/useRouteAccess";
 
 export default function Dashboard() {
-  const { signedAccountId } = useWalletSelector();
-  const router = useRouter();
+  const { signedAccountId, blocked } = useRouteAccess("authOnly");
 
   const [showCreate, setShowCreate] = React.useState(false);
-
-  // If user signs out (no account), redirect to login
-  useEffect(() => {
-    if (!signedAccountId) {
-      router.replace("/login");
-    }
-  }, [signedAccountId, router]);
 
   // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
   const activeNetwork = getActiveNetwork();
@@ -68,7 +60,7 @@ export default function Dashboard() {
       : "Create vaults, open requests, and keep collateral actions under control.";
   const activeTabLabel = tab === "positions" ? "Lender positions" : "Owner vaults";
 
-  if (!signedAccountId) {
+  if (blocked || !signedAccountId) {
     return null;
   }
 
@@ -117,7 +109,7 @@ export default function Dashboard() {
               >
                 Create new vault
               </Button>
-              <Link href="/discover" className="w-full">
+              <Link href={APP_ROUTES.discover.href} className="w-full">
                 <Button variant="secondary" size="md" className="w-full">
                   Browse open requests
                 </Button>

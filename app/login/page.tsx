@@ -1,26 +1,23 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
 import { WalletBadges } from "@/app/components/landing/WalletBadges";
 import { Container } from "@/app/components/layout/Container";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { useRouteAccess } from "@/app/hooks/useRouteAccess";
 
 export default function LoginPage() {
-  const { signedAccountId, signIn } = useWalletSelector();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (signedAccountId) router.replace("/dashboard");
-  }, [signedAccountId, router]);
+  const { signIn } = useWalletSelector();
+  const { blocked } = useRouteAccess("guestOnly");
 
   const onConnect = () => signIn();
 
   // Keep this page stable: do not auto-open wallet here.
 
-  if (signedAccountId) return null;
+  if (blocked) return null;
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background pb-24">
@@ -51,7 +48,7 @@ export default function LoginPage() {
                   <Button size="lg" onClick={onConnect} className="w-full sm:w-auto">
                     Connect Wallet
                   </Button>
-                  <Link href="/discover" className="text-sm font-medium text-primary hover:text-primary/80">
+                  <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary/80">
                     Browse requests first
                   </Link>
                 </div>

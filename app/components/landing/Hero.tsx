@@ -14,6 +14,7 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { formatDurationFromSeconds } from "@/utils/time";
 import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
+import { APP_ROUTES, getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
 
 type RequestPreview = {
   id: string;
@@ -33,7 +34,7 @@ const SAMPLE_REQUEST_PREVIEWS: RequestPreview[] = [
     term: "30d",
     collateral: "1,250 NEAR",
     apr: "29.20%",
-    href: "/discover",
+    href: APP_ROUTES.discover.href,
   },
   {
     id: "sample-beta",
@@ -42,7 +43,7 @@ const SAMPLE_REQUEST_PREVIEWS: RequestPreview[] = [
     term: "14d",
     collateral: "640 NEAR",
     apr: "24.10%",
-    href: "/discover",
+    href: APP_ROUTES.discover.href,
   },
 ];
 
@@ -59,7 +60,7 @@ const VALUE_POINTS = [
 ];
 
 export function Hero() {
-  const { signIn, walletSelector } = useWalletSelector();
+  const { signIn, walletSelector, signedAccountId } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
   const [factoryId, setFactoryId] = React.useState<string | null>(null);
   React.useEffect(() => {
@@ -183,6 +184,10 @@ export function Hero() {
       setSlowConnect(false);
     });
   }, [signIn]);
+  const borrowerEntryRoute = React.useMemo(
+    () => getBorrowerEntryRoute(Boolean(signedAccountId)),
+    [signedAccountId]
+  );
   const requestPanelNote = pendingLoading
     ? "Refreshing live requests..."
     : pendingError
@@ -226,12 +231,12 @@ export function Hero() {
             >
               {connecting ? "Opening wallet..." : "Connect wallet"}
             </Button>
-            <Link href="/dashboard" className="w-full">
+            <Link href={borrowerEntryRoute.href} className="w-full">
               <Button size="lg" variant="secondary" className="w-full">
-                Borrow with vault
+                {signedAccountId ? "Borrow with vault" : "Connect to borrow"}
               </Button>
             </Link>
-            <Link href="/discover" className="w-full">
+            <Link href={APP_ROUTES.discover.href} className="w-full">
               <Button size="lg" variant="secondary" className="w-full">
                 Lend in Discover
               </Button>
@@ -277,7 +282,7 @@ export function Hero() {
               <p className="text-sm font-semibold text-foreground">Live request board</p>
               <p className="mt-1 text-xs text-secondary-text">Snapshot of active borrower demand.</p>
             </div>
-            <Link href="/discover" className="text-xs font-medium text-primary hover:text-primary/80">
+            <Link href={APP_ROUTES.discover.href} className="text-xs font-medium text-primary hover:text-primary/80">
               Open Discover
             </Link>
           </header>
@@ -329,7 +334,7 @@ export function Hero() {
 
           <p className="mt-4 text-xs text-secondary-text">{requestPanelNote}</p>
           <div className="mt-4 flex items-center gap-4 text-xs font-medium text-secondary-text">
-            <Link href="/docs" className="hover:text-primary">
+            <Link href={APP_ROUTES.docs.href} className="hover:text-primary">
               Read docs
             </Link>
             <Link href="/docs/features/authentication-signin-flow" className="hover:text-primary">
