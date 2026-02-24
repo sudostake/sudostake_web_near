@@ -4,23 +4,36 @@ import React from "react";
 import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
-import { APP_ROUTES, getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { showToast } from "@/utils/toast";
 
 type FeaturePath = {
+  key: "borrow" | "lend";
   title: string;
   summary: string;
   steps: string[];
-  href: string;
   cta: string;
 };
 
 export function Features() {
-  const { signedAccountId } = useWalletSelector();
-  const borrowerEntryRoute = getBorrowerEntryRoute(Boolean(signedAccountId));
+  const { signedAccountId, signIn } = useWalletSelector();
+  const [connecting, setConnecting] = React.useState(false);
+
+  const onConnect = React.useCallback(() => {
+    if (connecting) return;
+    setConnecting(true);
+    Promise.resolve(signIn())
+      .catch((err) => {
+        console.error("Wallet sign-in failed", err);
+        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+      })
+      .finally(() => setConnecting(false));
+  }, [connecting, signIn]);
 
   const paths = React.useMemo<FeaturePath[]>(
     () => [
       {
+        key: "borrow",
         title: "I want to borrow",
         summary: signedAccountId
           ? "Create a vault, open a USDC request, and manage repayment from the dashboard."
@@ -30,10 +43,10 @@ export function Features() {
           "Create your vault and open a request.",
           "Repay before liquidation starts.",
         ],
-        href: borrowerEntryRoute.href,
         cta: signedAccountId ? "Start borrower flow" : "Connect to borrow",
       },
       {
+        key: "lend",
         title: "I want to lend",
         summary: "Use Discover to review live requests and fund one directly from your wallet.",
         steps: [
@@ -41,11 +54,10 @@ export function Features() {
           "Check amount, term, collateral, and APR.",
           "Accept a request when terms fit your strategy.",
         ],
-        href: APP_ROUTES.discover.href,
         cta: "Open Discover",
       },
     ],
-    [borrowerEntryRoute.href, signedAccountId]
+    [signedAccountId]
   );
 
   return (
@@ -71,11 +83,27 @@ export function Features() {
                     </li>
                   ))}
                 </ul>
-                <Link href={path.href} className="mt-5 inline-flex">
-                  <Button variant="primary" size="md">
-                    {path.cta}
-                  </Button>
-                </Link>
+                {path.key === "borrow" ? (
+                  signedAccountId ? (
+                    <Link href={APP_ROUTES.dashboard.href} className="mt-5 inline-flex">
+                      <Button variant="primary" size="md">
+                        {path.cta}
+                      </Button>
+                    </Link>
+                  ) : (
+                    <div className="mt-5 inline-flex">
+                      <Button variant="primary" size="md" onClick={onConnect} disabled={connecting} aria-busy={connecting || undefined}>
+                        {connecting ? "Opening wallet..." : path.cta}
+                      </Button>
+                    </div>
+                  )
+                ) : (
+                  <Link href={APP_ROUTES.discover.href} className="mt-5 inline-flex">
+                    <Button variant="primary" size="md">
+                      {path.cta}
+                    </Button>
+                  </Link>
+                )}
               </div>
             ))}
           </div>

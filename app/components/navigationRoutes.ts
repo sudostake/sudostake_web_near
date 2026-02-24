@@ -45,7 +45,3 @@ export function isRouteActive(pathname: string, route: NavRoute): boolean {
 export function getBrandRoute(isSignedIn: boolean): NavRoute {
   return isSignedIn ? APP_ROUTES.dashboard : APP_ROUTES.home;
 }
-
-export function getBorrowerEntryRoute(isSignedIn: boolean): NavRoute {
-  return isSignedIn ? APP_ROUTES.dashboard : APP_ROUTES.login;
-}

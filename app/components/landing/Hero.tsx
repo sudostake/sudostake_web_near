@@ -14,7 +14,7 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { formatDurationFromSeconds } from "@/utils/time";
 import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
-import { APP_ROUTES, getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
 
 type RequestPreview = {
   id: string;
@@ -184,10 +184,6 @@ export function Hero() {
       setSlowConnect(false);
     });
   }, [signIn]);
-  const borrowerEntryRoute = React.useMemo(
-    () => getBorrowerEntryRoute(Boolean(signedAccountId)),
-    [signedAccountId]
-  );
   const requestPanelNote = pendingLoading
     ? "Refreshing live requests..."
     : pendingError
@@ -231,11 +227,24 @@ export function Hero() {
             >
               {connecting ? "Opening wallet..." : "Connect wallet"}
             </Button>
-            <Link href={borrowerEntryRoute.href} className="w-full">
-              <Button size="lg" variant="secondary" className="w-full">
-                {signedAccountId ? "Borrow with vault" : "Connect to borrow"}
+            {signedAccountId ? (
+              <Link href={APP_ROUTES.dashboard.href} className="w-full">
+                <Button size="lg" variant="secondary" className="w-full">
+                  Borrow with vault
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                variant="secondary"
+                className="w-full"
+                onClick={handleConnect}
+                disabled={connecting}
+                aria-busy={connecting || undefined}
+              >
+                {connecting ? "Opening wallet..." : "Connect to borrow"}
               </Button>
-            </Link>
+            )}
             <Link href={APP_ROUTES.discover.href} className="w-full">
               <Button size="lg" variant="secondary" className="w-full">
                 Lend in Discover

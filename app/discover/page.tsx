@@ -7,13 +7,24 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { PendingRequestsList } from "@/app/components/discover/PendingRequestsList";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
-import { getBorrowerEntryRoute } from "@/app/components/navigationRoutes";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { showToast } from "@/utils/toast";
 
 export default function DiscoverPage() {
-  const { signedAccountId } = useWalletSelector();
+  const { signedAccountId, signIn } = useWalletSelector();
   const factoryId = getActiveFactoryId();
-  const borrowerEntryRoute = getBorrowerEntryRoute(Boolean(signedAccountId));
-  const borrowerCtaLabel = signedAccountId ? "Open dashboard" : "Connect wallet";
+  const [connecting, setConnecting] = React.useState(false);
+
+  const onConnect = React.useCallback(() => {
+    if (connecting) return;
+    setConnecting(true);
+    Promise.resolve(signIn())
+      .catch((err) => {
+        console.error("Wallet sign-in failed", err);
+        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+      })
+      .finally(() => setConnecting(false));
+  }, [connecting, signIn]);
 
   return (
     <div className="relative min-h-screen overflow-hidden pb-20">
@@ -35,11 +46,17 @@ export default function DiscoverPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link href={borrowerEntryRoute.href}>
-                  <Button size="sm" variant="secondary">
-                    {borrowerCtaLabel}
+                {signedAccountId ? (
+                  <Link href={APP_ROUTES.dashboard.href}>
+                    <Button size="sm" variant="secondary">
+                      Open dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button size="sm" variant="secondary" onClick={onConnect} disabled={connecting} aria-busy={connecting || undefined}>
+                    {connecting ? "Opening wallet..." : "Connect wallet"}
                   </Button>
-                </Link>
+                )}
                 <Link href="/docs/guides/fund-liquidity-request">
                   <Button size="sm" variant="secondary">
                     Funding guide
