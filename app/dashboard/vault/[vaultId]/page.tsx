@@ -175,32 +175,64 @@ export default function VaultPage() {
     Body = <ErrorMessage message={error} onRetry={refetch} />;
   } else if (loading) {
     Body = (
-      <div className="space-y-4" aria-live="polite" aria-busy="true">
-        {[0, 1, 2].map((i) => (
+      <div className="space-y-3" aria-live="polite" aria-busy="true">
+        {[0, 1].map((i) => (
           <div
             key={i}
-            className="surface-card animate-pulse rounded-[28px] px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]"
+            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-[0_20px_72px_-50px_rgba(15,23,42,0.6)]"
           >
-            <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
-            <div className="mt-4 h-20 rounded-2xl bg-foreground/5" />
+            <div className="h-4 w-1/4 rounded-full bg-foreground/10" />
+            <div className="mt-3 h-16 rounded-xl bg-foreground/5" />
           </div>
         ))}
+        <div className="grid gap-3 lg:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={`secondary-${i}`} className="surface-card animate-pulse rounded-2xl px-5 py-5">
+              <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
+              <div className="mt-3 h-14 rounded-xl bg-foreground/5" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   } else {
+    const supportGridClass = isOwner ? "grid gap-3 lg:grid-cols-2" : "space-y-3";
     Body = (
-      <div className="space-y-6">
-        <AvailableBalanceCard
-          balance={availBalance}
-          loading={availLoading}
+      <div className="space-y-4">
+        <LiquidityRequestsCard
+          vaultId={vaultId}
+          factoryId={factoryId}
+          onAfterAccept={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterRepay={() => {
+            refetchVaultUsdc();
+            refetchAvail();
+            refetchDeleg();
+          }}
+          onAfterTopUp={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterProcess={debouncedProcessRefresh}
         />
 
-        {isOwner && (
-          <Card className="space-y-4">
-            <h2 className="text-lg font-semibold">Manage vault funds</h2>
-            <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
-          </Card>
-        )}
+        <div className={supportGridClass}>
+          <AvailableBalanceCard
+            balance={availBalance}
+            loading={availLoading}
+          />
+
+          {isOwner && (
+            <Card className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5">
+              <div className="space-y-1">
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary/85">Vault controls</p>
+                <h2 className="text-lg font-semibold text-foreground">Manage vault funds</h2>
+                <p className="text-sm text-secondary-text">Deposit, withdraw, or transfer ownership from this panel.</p>
+              </div>
+              <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
+            </Card>
+          )}
+        </div>
 
         {/* Delegations list & controls */}
         <DelegationsActionsProvider
@@ -227,35 +259,18 @@ export default function VaultPage() {
             showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
           />
         </DelegationsActionsProvider>
-
-        <LiquidityRequestsCard
-          vaultId={vaultId}
-          factoryId={factoryId}
-          onAfterAccept={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterRepay={() => {
-            refetchVaultUsdc();
-            refetchAvail();
-            refetchDeleg();
-          }}
-          onAfterTopUp={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterProcess={debouncedProcessRefresh}
-        />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background pb-28">
+    <div className="relative min-h-screen overflow-hidden bg-background pb-24">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-32vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.16),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_66%)]"
       />
       <main id="main" className="relative w-full" aria-busy={loading || undefined}>
-        <Container className="pt-12 sm:pt-16 space-y-8">
+        <Container className="space-y-5 pt-8 sm:pt-10 lg:pt-12">
           <VaultHeader
             onBack={() => router.back()}
             vaultId={String(vaultId)}
@@ -272,7 +287,7 @@ export default function VaultPage() {
           {!signedAccountId && (
             <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
               <div className="space-y-1">
-                <h2 className="text-sm font-semibold text-primary/90">Connect your wallet to take action</h2>
+                <h2 className="text-sm font-semibold text-primary/90">Connect wallet to execute vault actions</h2>
                 <p className="text-sm text-secondary-text">
                   Sign in to fund requests, view lending history, and act on vault workflows.
                 </p>
@@ -292,7 +307,7 @@ export default function VaultPage() {
                 disabled={connectingWallet}
                 aria-busy={connectingWallet || undefined}
               >
-                {connectingWallet ? "Opening wallet…" : "Connect Wallet"}
+                {connectingWallet ? "Opening wallet..." : "Connect wallet"}
               </Button>
             </Card>
           )}

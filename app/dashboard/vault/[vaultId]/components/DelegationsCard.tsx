@@ -95,17 +95,17 @@ export function DelegationsCard({
   return (
     <Card
       aria-labelledby="delegations-summary-heading"
-      className="surface-card space-y-5 rounded-2xl px-4 py-5 sm:px-6 sm:py-6"
+      className="surface-card space-y-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
       role="region"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="delegations-summary-heading" className="text-lg font-semibold">{STRINGS.delegationsSummaryTitle}</h2>
-          <p className="text-sm text-secondary-text">Monitor validator stakes and claimable balances.</p>
+          <p className="text-xs text-secondary-text">Track validator stakes, unstaking progress, and claimability.</p>
         </div>
         {(loading || refundsLoading) && (
           <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-xs text-secondary-text">
-            Loading…
+            Loading...
           </span>
         )}
       </div>
@@ -137,7 +137,7 @@ export function DelegationsCard({
       />
 
       {Array.isArray(summary) && summary.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl bg-[color:var(--surface-muted)] px-4 py-3 text-xs text-secondary-text">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3 text-xs text-secondary-text">
           <span>
             {STRINGS.totalStaked}: <span className="font-mono text-foreground">{shortAmount(stats.stakedDisplay, 6)}</span> {NATIVE_TOKEN}
           </span>

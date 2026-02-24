@@ -43,11 +43,14 @@ export function LiquidityRequestHeader(props: Props) {
   const title = headerTitle(props);
   const caption = headerCaption(props);
   return (
-    <div className="flex items-center gap-4">
-      <SpinningTokenPair pauseOnHover />
-      <div className="flex-1 min-w-0">
-        <div className="text-base font-medium">{title}</div>
-        <div className="mt-1 text-sm text-secondary-text">{caption}</div>
+    <div className="flex flex-col gap-3 border-b border-[color:var(--border)] pb-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex min-w-0 items-center gap-3">
+        <SpinningTokenPair pauseOnHover />
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Liquidity request</p>
+          <div className="mt-1 text-lg font-semibold leading-tight text-foreground">{title}</div>
+          <div className="mt-1 text-sm text-secondary-text">{caption}</div>
+        </div>
       </div>
       {!props.hasOpenRequest && props.isOwner && (
         <div className="shrink-0">
@@ -56,7 +59,7 @@ export function LiquidityRequestHeader(props: Props) {
             onClick={props.onOpenRequest}
             disabled={props.openDisabled}
             variant="secondary"
-            size="md"
+            size="sm"
             className="gap-2"
           >
             {STRINGS.openRequest}

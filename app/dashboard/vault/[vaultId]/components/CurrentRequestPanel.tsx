@@ -3,7 +3,6 @@
 import React from "react";
 import { formatDays } from "@/utils/time";
 import { STRINGS } from "@/utils/strings";
-import { Card } from "@/app/components/ui/Card";
 
 export type CurrentRequestContent = {
   token: string;
@@ -43,12 +42,16 @@ export function CurrentRequestPanel({
     : null;
 
   return (
-    <Card className="space-y-4" role="region" aria-label={STRINGS.currentRequestTitle}>
+    <section
+      className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      role="region"
+      aria-label={STRINGS.currentRequestTitle}
+    >
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{STRINGS.currentRequestTitle}</p>
-        <p className="text-sm text-secondary-text">Snapshot of the request terms lenders will evaluate.</p>
+        <p className="text-xs text-secondary-text">Snapshot of terms currently enforced on-chain.</p>
       </div>
-      <div className="grid gap-3 text-sm sm:grid-cols-2">
+      <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <Field label={STRINGS.tokenLabel} value={content.token} mono={false} />
         <Field label={STRINGS.amountLabel} value={content.amount} mono />
         <Field label={STRINGS.interestLabel} value={content.interest} mono />
@@ -63,7 +66,7 @@ export function CurrentRequestPanel({
           />
         )}
       </div>
-    </Card>
+    </section>
   );
 }
 
@@ -79,9 +82,9 @@ function Field({
   detail?: string | null;
 }) {
   return (
-    <div className="space-y-1">
-      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
-      <div className={`${mono ? "font-mono" : "font-medium"} break-all text-foreground`}>{value}</div>
+    <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2">
+      <div className="text-[10px] uppercase tracking-wide text-secondary-text">{label}</div>
+      <div className={`${mono ? "font-mono" : "font-semibold"} mt-1 break-all text-foreground`}>{value}</div>
       {detail && <div className="text-xs text-secondary-text">{detail}</div>}
     </div>
   );

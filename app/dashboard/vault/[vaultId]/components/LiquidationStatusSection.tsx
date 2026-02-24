@@ -61,7 +61,7 @@ function LiquidationPayoutCard({
   const hasMaturedNow = maturedYocto > BigInt(0);
   return (
     <Card
-      className={["rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3", className]
+      className={["rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3", className]
         .filter(Boolean)
         .join(" ")}
     >
@@ -151,11 +151,12 @@ type ProcessActionsProps = {
 
 function ProcessActions({ hasClaimableNow, processPending, processError, onProcess }: ProcessActionsProps) {
   return (
-    <div className="mt-4 flex flex-col items-end gap-2">
+    <div className="mt-3 flex flex-col items-end gap-2">
       <Button
         type="button"
         onClick={onProcess}
         disabled={processPending || !hasClaimableNow}
+        size="sm"
         className="w-full justify-center gap-2 sm:w-auto"
         title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
         aria-busy={processPending ? true : undefined}
@@ -202,7 +203,7 @@ export function LiquidationStatusSection({
       aria-label="Liquidation status"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="text-base font-medium">
+        <div className="text-sm font-semibold uppercase tracking-wide text-foreground">
           {isActiveLender ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
         </div>
         <Badge
