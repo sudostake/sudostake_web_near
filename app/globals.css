@@ -83,7 +83,10 @@
   }
 
   body {
-    background: var(--background);
+    background:
+      radial-gradient(1200px 520px at 12% -12%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 72%),
+      radial-gradient(900px 460px at 110% 0%, color-mix(in oklab, var(--foreground) 8%, transparent), transparent 76%),
+      var(--background);
     color: var(--foreground);
     font-family: var(--font-jakarta-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     line-height: 1.5;
@@ -173,12 +176,14 @@
   }
 
   .nav-panel {
-    background: var(--surface);
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+    backdrop-filter: saturate(145%) blur(14px);
+    -webkit-backdrop-filter: saturate(145%) blur(14px);
     border-bottom: 1px solid var(--panel-border);
   }
 
   .footer-panel {
-    background: var(--surface-muted);
+    background: color-mix(in oklab, var(--surface-muted) 90%, transparent);
     border-top: 1px solid var(--panel-border);
     box-shadow: none;
   }
