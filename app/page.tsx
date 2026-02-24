@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (signedAccountId) router.push("/dashboard");
+    if (signedAccountId) router.replace("/dashboard");
   }, [signedAccountId, router]);
 
   if (signedAccountId) return null;

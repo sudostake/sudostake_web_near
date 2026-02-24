@@ -22,10 +22,10 @@ export default function Dashboard() {
 
   const [showCreate, setShowCreate] = React.useState(false);
 
-  // If user signs out (no account), redirect to landing
+  // If user signs out (no account), redirect to login
   useEffect(() => {
     if (!signedAccountId) {
-      router.replace("/");
+      router.replace("/login");
     }
   }, [signedAccountId, router]);
 
