@@ -164,6 +164,7 @@ export function LiquidityRequestContent({
             onClick={onCancel}
             disabled={cancelPending}
             variant="secondary"
+            size="sm"
             className="w-full justify-center gap-2 sm:w-auto"
             aria-busy={cancelPending ? true : undefined}
           >

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
 import { renderJsonDoc, renderMarkdownDoc, type RenderedDoc } from "../lib/docRenderer";
 import { Card } from "@/app/components/ui/Card";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
 
 type ResolvedDoc = { file: string; type: "md" | "json" };
 
@@ -38,7 +39,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
       <Container className="pt-12 sm:pt-16">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
           <article className="flex-1 space-y-6">
-            <Link href="/docs" className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-primary">
+            <Link href={APP_ROUTES.docs.href} className="inline-flex items-center gap-1 text-sm text-secondary-text hover:text-primary">
               <span aria-hidden="true">←</span>
               Back to docs
             </Link>

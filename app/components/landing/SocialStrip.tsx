@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Button } from "@/app/components/ui/Button";
 import { showToast } from "@/utils/toast";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
 
 type SocialLink = {
   label: string;
@@ -83,7 +84,7 @@ export function SocialStrip() {
             <Button size="lg" onClick={onConnect} disabled={connecting} aria-busy={connecting || undefined}>
               {connecting ? "Opening wallet…" : "Connect Wallet"}
             </Button>
-            <Link href="/discover">
+            <Link href={APP_ROUTES.discover.href}>
               <Button size="lg" variant="secondary" className="w-full sm:w-auto">
                 Open Discover
               </Button>

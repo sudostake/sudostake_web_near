@@ -94,7 +94,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
   return (
     <li
-      className="group relative overflow-hidden rounded border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 transition-colors hover:bg-[color:var(--surface)]"
+      className="group relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 transition-colors hover:bg-[color:var(--surface)]"
       key={entry.validator}
     >
       <div className={accentBarClass(status)} aria-hidden="true" />
@@ -180,7 +180,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
               <button
                 type="button"
                 aria-label={`Claim unstaked for ${entry.validator}`}
-                className="text-xs rounded bg-primary text-primary-text py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="text-xs rounded-full bg-primary text-primary-text py-1 px-2.5 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
                 onClick={() => onUnclaimUnstaked?.(entry.validator)}
                 disabled={!canClaim}
               >
@@ -191,7 +191,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
               type="button"
               aria-label={`Delegate to ${entry.validator}`}
               className={[
-                "text-xs rounded py-1 px-2 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
+                "text-xs rounded-full py-1 px-2.5 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
                 canClaim
                   ? "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]"
                   : "bg-primary text-primary-text",
@@ -204,7 +204,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
             <button
               type="button"
               aria-label={`Undelegate from ${entry.validator}`}
-              className="text-xs rounded border border-[color:var(--border)] bg-[color:var(--surface)] py-1 px-2 whitespace-nowrap hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-primary/40"
+              className="text-xs rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] py-1 px-2.5 whitespace-nowrap hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-primary/40"
               onClick={() => onUndelegate?.(entry.validator)}
               disabled={!canUndelegate}
             >

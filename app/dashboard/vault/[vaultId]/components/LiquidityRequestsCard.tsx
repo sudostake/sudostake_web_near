@@ -397,7 +397,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
   return (
     <Card
-      className="surface-card space-y-6 rounded-2xl px-4 py-5 sm:px-6 sm:py-6"
+      className="surface-card space-y-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
       aria-label="Liquidity requests"
     >
       <LiquidityRequestHeader
@@ -412,6 +412,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
 
       {!hasOpenRequest && isOwner && vaultUsdcRegistered !== null && (
         <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} />
+      )}
+
+      {!hasOpenRequest && !isOwner && (
+        <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4 text-sm text-secondary-text">
+          No open liquidity request for this vault right now.
+        </div>
       )}
 
       {content && (

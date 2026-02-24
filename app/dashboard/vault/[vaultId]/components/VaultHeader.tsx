@@ -5,7 +5,6 @@ import type { Network } from "@/utils/networks";
 import { explorerAccountUrl } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
 import { CopyButton } from "@/app/components/ui/CopyButton";
-import { LabelValue } from "@/app/components/ui/LabelValue";
 import { NATIVE_TOKEN } from "@/utils/constants";
 import { Card } from "@/app/components/ui/Card";
 import Link from "next/link";
@@ -92,108 +91,110 @@ export function VaultHeader({
   }
 
   return (
-    <Card className="surface-card space-y-6 rounded-2xl px-4 py-5 sm:px-6 sm:py-6" role="region" aria-label="Vault overview">
-      <div className="flex flex-wrap items-center gap-3 sm:justify-between">
-        <div className="flex items-center gap-3">
+    <Card className="surface-card space-y-4 rounded-3xl px-5 py-5 sm:px-6 sm:py-6" role="region" aria-label="Vault overview">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <BackButton onClick={onBack} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Vault overview</p>
-            <h1 className="mt-1 break-all text-[clamp(1.8rem,3.8vw,2.4rem)] font-semibold" title={vaultId}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Vault operations</p>
+            <h1 className="mt-1 break-all text-[clamp(1.55rem,3.1vw,2.05rem)] font-semibold leading-tight" title={vaultId}>
               {vaultShortName}
             </h1>
           </div>
         </div>
-        {badges.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {badges.map((badge) => (
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary-text">
+            {network}
+          </span>
+          {badges.map((badge) => (
+            <span
+              key={badge.label}
+              className={[
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                BADGE_STYLES[badge.tone],
+              ].join(" ")}
+            >
               <span
-                key={badge.label}
+                aria-hidden="true"
                 className={[
-                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
-                  BADGE_STYLES[badge.tone],
+                  "h-1.5 w-1.5 rounded-full",
+                  badge.tone === "warn" ? "bg-amber-500" : "bg-primary",
                 ].join(" ")}
-              >
-                <span
-                  aria-hidden="true"
-                  className={[
-                    "h-1.5 w-1.5 rounded-full",
-                    badge.tone === "warn" ? "bg-amber-500" : "bg-primary",
-                  ].join(" ")}
-                />
-                {badge.label}
-              </span>
-            ))}
-          </div>
-        )}
+              />
+              {badge.label}
+            </span>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <LabelValue
-          label={STRINGS.vaultIdLabel}
-          value={
-            <span className="inline-flex min-w-0 items-center gap-2">
+      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+        <OverviewCell label={STRINGS.vaultIdLabel}>
+          <div className="inline-flex min-w-0 items-center gap-2">
+            <Link
+              href={explorerAccountUrl(network, vaultId)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all font-mono text-sm underline decoration-dotted"
+              title={vaultId}
+              aria-label={`View vault ${vaultId} on explorer`}
+            >
+              {vaultId}
+            </Link>
+            <CopyButton value={vaultId} title="Copy vault ID" />
+          </div>
+        </OverviewCell>
+
+        <OverviewCell label={STRINGS.ownerLabel}>
+          {owner ? (
+            <span className="inline-flex min-w-0 items-center gap-2 break-all">
               <Link
-                href={explorerAccountUrl(network, vaultId)}
+                href={explorerAccountUrl(network, owner)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="break-all font-mono underline decoration-dotted"
-                title={vaultId}
-                aria-label={`View vault ${vaultId} on explorer`}
+                className="font-mono text-sm underline decoration-dotted"
+                title={owner}
+                aria-label={`View owner ${owner} on explorer`}
               >
-                {vaultId}
+                {owner}
               </Link>
-              <CopyButton value={vaultId} title="Copy vault ID" />
+              <CopyButton value={owner} title="Copy owner ID" />
             </span>
-          }
-        />
-        {owner && (
-          <LabelValue
-            label={STRINGS.ownerLabel}
-            value={
-              <span className="inline-flex min-w-0 items-center gap-2 break-all">
-                <Link
-                  href={explorerAccountUrl(network, owner)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-mono underline decoration-dotted"
-                  title={owner}
-                  aria-label={`View owner ${owner} on explorer`}
-                >
-                  {owner}
-                </Link>
-                <CopyButton value={owner} title="Copy owner ID" />
-              </span>
-            }
-          />
-        )}
-      </div>
+          ) : (
+            <span className="text-sm text-secondary-text">—</span>
+          )}
+        </OverviewCell>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <LabelValue
-          label={STRINGS.contractBalanceLabel}
-          value={
-            <span className="inline-flex items-baseline gap-1 text-xl font-semibold text-foreground">
-              <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-                {vaultNearLoading ? "Loading…" : vaultNear}
-              </span>
-              <span className="text-sm text-secondary-text">{NATIVE_TOKEN}</span>
+        <OverviewCell label={STRINGS.contractBalanceLabel}>
+          <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
+            <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
+              {vaultNearLoading ? "Loading..." : vaultNear}
             </span>
-          }
-        />
-        {usdcDisplay !== null && usdcDisplay !== undefined && (
-          <LabelValue
-            label={STRINGS.usdcBalanceLabel}
-            value={
-              <span className="inline-flex items-baseline gap-1 text-xl font-semibold text-foreground">
-                <span className="break-all" title={`${usdcDisplay} USDC`}>
-                  {vaultUsdcLoading ? "Loading…" : usdcDisplay}
-                </span>
-                <span className="text-sm text-secondary-text">USDC</span>
+            <span className="text-xs text-secondary-text">{NATIVE_TOKEN}</span>
+          </span>
+        </OverviewCell>
+
+        <OverviewCell label={STRINGS.usdcBalanceLabel}>
+          {usdcDisplay !== null && usdcDisplay !== undefined ? (
+            <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
+              <span className="break-all" title={`${usdcDisplay} USDC`}>
+                {vaultUsdcLoading ? "Loading..." : usdcDisplay}
               </span>
-            }
-          />
-        )}
+              <span className="text-xs text-secondary-text">USDC</span>
+            </span>
+          ) : (
+            <span className="text-sm text-secondary-text">—</span>
+          )}
+        </OverviewCell>
       </div>
     </Card>
+  );
+}
+
+function OverviewCell({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-secondary-text">{label}</p>
+      <div className="mt-1 min-h-[24px]">{children}</div>
+    </div>
   );
 }

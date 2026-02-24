@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import React, { useMemo } from "react";
+import Link from "next/link";
 import { AccountSummary } from "../components/AccountSummary";
 import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
@@ -14,19 +13,13 @@ import { useUserVaults } from "@/hooks/useUserVaults";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
+import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { useRouteAccess } from "@/app/hooks/useRouteAccess";
 
 export default function Dashboard() {
-  const { signedAccountId } = useWalletSelector();
-  const router = useRouter();
+  const { signedAccountId, blocked } = useRouteAccess("authOnly");
 
   const [showCreate, setShowCreate] = React.useState(false);
-
-  // If user signs out (no account), redirect to landing
-  useEffect(() => {
-    if (!signedAccountId) {
-      router.replace("/");
-    }
-  }, [signedAccountId, router]);
 
   // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
   const activeNetwork = getActiveNetwork();
@@ -63,65 +56,129 @@ export default function Dashboard() {
 
   const tabCopy =
     tab === "positions"
-      ? "Monitor every position you’ve funded, from repayment progress to liquidation status, without leaving the dashboard."
-      : "Publish requests, manage collateral actions, and track health for each vault you operate.";
+      ? "Track every funded vault, from repayment progress to liquidation risk."
+      : "Create vaults, open requests, and keep collateral actions under control.";
+  const activeTabLabel = tab === "positions" ? "Lender positions" : "Owner vaults";
 
-  if (!signedAccountId) {
+  if (blocked || !signedAccountId) {
     return null;
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background pb-28">
+    <div className="relative min-h-screen overflow-hidden bg-background pb-24">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[60vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.18),transparent_65%)]"
+        className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_67%)]"
       />
-      <Container className="relative space-y-8 pt-14 sm:space-y-10 sm:pt-[4.5rem]">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.58fr),minmax(280px,0.42fr)]">
-          <header className="surface-card rounded-3xl px-6 py-6 shadow-[0_16px_52px_-30px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-3xl space-y-4">
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-primary">
-                  <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
-                  Dashboard overview
-                </div>
-                <div className="space-y-2">
-                  <h1 className="text-[clamp(1.85rem,3.6vw,2.45rem)] font-semibold leading-[1.15] text-foreground">
-                    Operate your NEAR credit line
-                  </h1>
-                  <p className="max-w-xl text-sm leading-relaxed text-secondary-text">
-                    Keep your vaults funded, track lending activity, and act on liquidation tasks from one streamlined console.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-wide text-secondary-text">
-                  <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono text-[11px] text-secondary-text">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
-                    {shortAccount}
-                  </span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>Network: {networkLabel}</span>
-                </div>
+      <Container className="relative space-y-5 pt-8 sm:pt-10 lg:pt-12">
+        <header className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
+          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
+                Dashboard operations
               </div>
-              <div className="flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 sm:p-5">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <HeaderStat label="Vaults you own" value={totalVaults} />
-                  <HeaderStat label="Active lending positions" value={totalPositions} />
-                </div>
-                <p className="text-xs leading-relaxed text-secondary-text">
-                  Manage existing vaults or open new ones in the operations hub below.
+              <div className="space-y-2">
+                <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] text-foreground">
+                  Control vaults and lender positions
+                </h1>
+                <p className="max-w-2xl text-sm leading-relaxed text-secondary-text sm:text-base">
+                  Execute borrower and lender workflows from one compact console.
                 </p>
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                  onClick={() => setShowCreate(true)}
-                  disabled={!signedAccountId}
-                >
-                  Create new vault
-                </Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-secondary-text">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono normal-case text-xs">
+                  {shortAccount}
+                </span>
+                <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
+                  Network {networkLabel}
+                </span>
+                <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
+                  Active {activeTabLabel}
+                </span>
               </div>
             </div>
-          </header>
+
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[260px]">
+              <Button
+                variant="primary"
+                size="md"
+                className="w-full"
+                onClick={() => setShowCreate(true)}
+                disabled={!signedAccountId}
+              >
+                Create new vault
+              </Button>
+              <Link href={APP_ROUTES.discover.href} className="w-full">
+                <Button variant="secondary" size="md" className="w-full">
+                  Browse open requests
+                </Button>
+              </Link>
+              <Link href="/docs/guides/opening-liquidity-request" className="w-full">
+                <Button variant="secondary" size="sm" className="w-full">
+                  Borrower guide
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            <HeaderStat label="Vaults owned" value={totalVaults} />
+            <HeaderStat label="Lender positions" value={totalPositions} />
+            <HeaderStat label="Active view" value={tab === "positions" ? "Positions" : "Vaults"} />
+          </div>
+        </header>
+
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.06fr),minmax(300px,0.94fr)]">
+          <section className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Workspace</p>
+                  <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Manage positions</h2>
+                  <p className="text-sm leading-relaxed text-secondary-text">{tabCopy}</p>
+                </div>
+                <div className="w-full sm:w-auto sm:min-w-[330px]">
+                  <SegmentedToggle
+                    value={tab}
+                    onChange={setTab}
+                    options={[
+                      { id: "vaults", label: `Vaults (${totalVaults})` },
+                      { id: "positions", label: `Positions (${totalPositions})` },
+                    ]}
+                    ariaLabel="Dashboard sections"
+                    variant="primary"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-[color:var(--border)] pt-4">
+                <div
+                  id="vaults-panel"
+                  role="tabpanel"
+                  aria-labelledby="vaults-trigger"
+                  hidden={tab !== "vaults"}
+                >
+                  <UserVaults
+                    owner={signedAccountId}
+                    factoryId={factoryId}
+                    onCreate={() => setShowCreate(true)}
+                    headerMode="toolsOnly"
+                  />
+                </div>
+                <div
+                  id="positions-panel"
+                  role="tabpanel"
+                  aria-labelledby="positions-trigger"
+                  hidden={tab !== "positions"}
+                >
+                  <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
+                </div>
+              </div>
+            </div>
+          </section>
+
           <AccountSummary
             near={balances.near}
             usdc={balances.usdc}
@@ -129,53 +186,6 @@ export default function Dashboard() {
             onRefreshBalances={refetchBalances}
           />
         </div>
-        <section className="surface-card rounded-3xl px-6 py-7 shadow-[0_18px_60px_-36px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8">
-          <div className="flex flex-col gap-6">
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Operations</p>
-              <h2 className="text-[clamp(1.7rem,2.8vw,2.1rem)] font-semibold text-foreground">
-                Manage your positions
-              </h2>
-              <p className="max-w-2xl text-base leading-relaxed text-secondary-text sm:text-sm">{tabCopy}</p>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <SegmentedToggle
-                value={tab}
-                onChange={setTab}
-                options={[
-                  { id: "vaults", label: `Vaults (${totalVaults})` },
-                  { id: "positions", label: `Positions (${totalPositions})` },
-                ]}
-                ariaLabel="Dashboard sections"
-                variant="primary"
-                className="w-full max-w-md"
-              />
-            </div>
-            <div className="space-y-6 border-t border-[color:var(--border)] pt-6">
-              <div
-                id="vaults-panel"
-                role="tabpanel"
-                aria-labelledby="vaults-trigger"
-                hidden={tab !== "vaults"}
-              >
-                <UserVaults
-                  owner={signedAccountId}
-                  factoryId={factoryId}
-                  onCreate={() => setShowCreate(true)}
-                  headerMode="toolsOnly"
-                />
-              </div>
-              <div
-                id="positions-panel"
-                role="tabpanel"
-                aria-labelledby="positions-trigger"
-                hidden={tab !== "positions"}
-              >
-                <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
-              </div>
-            </div>
-          </div>
-        </section>
       </Container>
       <CreateVaultDialog
         open={showCreate}
@@ -189,13 +199,11 @@ export default function Dashboard() {
   );
 }
 
-function HeaderStat({ label, value }: { label: string; value: number }) {
+function HeaderStat({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="flex min-h-[112px] flex-col justify-between rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4 sm:py-4">
-      <p className="text-[11px] font-medium uppercase tracking-wide text-secondary-text leading-[1.35]">
-        {label}
-      </p>
-      <p className="text-[1.75rem] font-semibold leading-none text-foreground">{value}</p>
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4">
+      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
+      <p className="mt-2 text-[1.35rem] font-semibold leading-none text-foreground">{value}</p>
     </div>
   );
 }

@@ -56,7 +56,7 @@ export function AcceptActionsPanel({
         onClick={onOpen}
         disabled={disabled}
         variant="primary"
-        size="md"
+        size="sm"
         className="gap-2"
         title={title}
         aria-busy={pending || balLoading ? true : undefined}

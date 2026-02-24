@@ -23,7 +23,7 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
   const countdownDisplay = formattedCountdown ?? "—";
 
   return (
-    <Card className="space-y-3" role="region" aria-label="Owner actions">
+    <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="region" aria-label="Owner actions">
       <div>
         <h3 className="text-sm font-semibold text-foreground">{STRINGS.ownerRepayNow}</h3>
         <p className="text-xs text-secondary-text">
@@ -71,7 +71,7 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
       )}
 
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Button type="button" onClick={onRepay} className="w-full gap-2 sm:w-auto">
+        <Button type="button" onClick={onRepay} size="sm" className="w-full gap-2 sm:w-auto">
           {STRINGS.ownerRepayNow}
         </Button>
         <Button
@@ -79,6 +79,7 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
           variant="secondary"
           onClick={onBeginLiquidation}
           disabled={!canStartLiquidation}
+          size="sm"
           className="w-full gap-2 sm:w-auto"
           title={hasCountdown ? startLiquidationInString(String(countdownDisplay)) : undefined}
         >

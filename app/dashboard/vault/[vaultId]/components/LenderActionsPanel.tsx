@@ -37,11 +37,12 @@ export function LenderActionsPanel({
 }: Props) {
   if (remainingMs !== null && remainingMs > 0) {
     return (
-      <Card className="space-y-3" role="status" aria-live="polite">
+      <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="status" aria-live="polite">
         <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
         <p className="text-sm text-secondary-text">{STRINGS.availableAfterExpiry}</p>
         <Button
           type="button"
+          size="sm"
           className="w-full justify-center gap-2"
           disabled
           aria-disabled
@@ -53,7 +54,7 @@ export function LenderActionsPanel({
   }
 
   return (
-    <Card className="space-y-3" aria-live="polite">
+    <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" aria-live="polite">
       <div>
         <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
         <p className="text-xs text-secondary-text">See what’s available to claim right now and how much is queued.</p>
@@ -100,6 +101,7 @@ export function LenderActionsPanel({
         type="button"
         onClick={onOpenProcess}
         disabled={processPending || !hasClaimableNow}
+        size="sm"
         className="w-full justify-center gap-2"
         aria-busy={processPending ? true : undefined}
         title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
