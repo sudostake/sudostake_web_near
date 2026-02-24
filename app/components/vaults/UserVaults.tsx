@@ -10,6 +10,7 @@ import { useUserVaults } from "@/hooks/useUserVaults";
 import { useUserVaultsSummaries } from "@/hooks/useUserVaultsSummaries";
 import { SectionHeader } from "@/app/components/ui/SectionHeader";
 import { Input } from "@/app/components/ui/Input";
+import { Button } from "@/app/components/ui/Button";
 
 export type UserVaultsProps = {
   owner: string;
@@ -29,6 +30,8 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
     const q = query.toLowerCase();
     return list.filter((id) => id.toLowerCase().includes(q));
   }, [data, query]);
+  const totalVaults = (data ?? []).length;
+  const hasQuery = query.trim().length > 0;
 
   if (error) return <ErrorMessage message={error} onRetry={refetch} />;
   if (loading || data === null) return <LoadingSpinner />;
@@ -45,8 +48,14 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
         placeholder="Search vaults"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        className="h-9"
         containerClassName="flex-1 min-w-0"
       />
+      {hasQuery && (
+        <Button type="button" variant="secondary" size="sm" onClick={() => setQuery("")} className="shrink-0">
+          Clear
+        </Button>
+      )}
       <CreateVaultButton className="shrink-0" onClick={onCreate} />
     </div>
   );
@@ -61,10 +70,17 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
           right={Controls}
         />
       ) : (
-        <div className="mt-3 flex justify-end sm:mt-2">{Controls}</div>
+        <div className="space-y-2">
+          <div className="flex justify-end sm:mt-1">{Controls}</div>
+          <p className="text-xs text-secondary-text">
+            Showing {filtered.length} of {totalVaults} vault{totalVaults === 1 ? "" : "s"}.
+          </p>
+        </div>
       )}
       {query && filtered.length === 0 ? (
-        <div className="mt-3 text-sm text-secondary-text">No vaults match “{query}”.</div>
+        <div className="mt-3 rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 text-sm text-secondary-text">
+          No vaults match &quot;{query}&quot;.
+        </div>
       ) : null}
       <div className="mt-3 sm:mt-4">
         <VaultList

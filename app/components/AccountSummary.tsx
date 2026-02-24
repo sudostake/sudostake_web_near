@@ -31,34 +31,35 @@ export function AccountSummary({
   const usdcShort = shortAmount(usdc.toDisplay(), 3);
   const [sendOpen, setSendOpen] = React.useState(false);
   const [recvOpen, setRecvOpen] = React.useState(false);
+  const isLoading = Boolean(loading);
 
   return (
     <Card
-      className={`surface-card h-full w-full rounded-3xl px-6 py-6 shadow-[0_16px_52px_-32px_rgba(15,23,42,0.55)] sm:px-8 sm:py-8 ${className}`}
+      className={`surface-card h-full w-full rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7 ${className}`}
     >
-      <HeaderWithActions />
-      <div className="mt-5 grid grid-cols-1 gap-5 sm:gap-6 md:grid-cols-2">
+      <HeaderWithActions loading={isLoading} onRefreshBalances={onRefreshBalances} />
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
         <BalanceStat
           label={`${near.symbol} balance`}
           valueDisplay={nearShort}
           valueFull={near.toDisplay()}
           symbol={near.symbol}
-          loading={Boolean(loading)}
+          loading={isLoading}
         />
         <BalanceStat
           label={usdcLabel}
           valueDisplay={usdcShort}
           valueFull={usdc.toDisplay()}
           symbol={usdc.symbol}
-          loading={Boolean(loading)}
+          loading={isLoading}
         />
       </div>
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end px-4 sm:px-5">
+      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
         <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button variant="secondary" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
+          <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
             Receive
           </Button>
-          <Button className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>
+          <Button size="sm" className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>
             Send
           </Button>
         </div>
@@ -75,13 +76,28 @@ export function AccountSummary({
   );
 }
 
-function HeaderWithActions() {
+function HeaderWithActions({
+  loading,
+  onRefreshBalances,
+}: {
+  loading: boolean;
+  onRefreshBalances?: () => void;
+}) {
   return (
-    <div className="flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-foreground">Liquid balances</h2>
-        <p className="text-sm text-secondary-text">Balances ready for deposits, transfers, or lender actions.</p>
+        <h2 className="text-lg font-semibold text-foreground">Liquid balances</h2>
+        <p className="text-sm text-secondary-text">Ready for deposits, transfers, and request funding.</p>
       </div>
+      <Button
+        type="button"
+        variant="secondary"
+        size="sm"
+        onClick={() => onRefreshBalances?.()}
+        disabled={!onRefreshBalances || loading}
+      >
+        {loading ? "Refreshing..." : "Refresh"}
+      </Button>
     </div>
   );
 }
@@ -100,11 +116,11 @@ function BalanceStat({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4 sm:p-5">
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4 sm:py-4">
       <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</div>
-      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-[2.15rem] font-semibold leading-none">
+      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-[1.7rem] font-semibold leading-none">
         {loading ? (
-          <div className="h-8 w-24 animate-pulse rounded-full bg-surface" aria-hidden="true" />
+          <div className="h-7 w-24 animate-pulse rounded-full bg-surface" aria-hidden="true" />
         ) : (
           <>
             <span className="break-all tabular-nums" title={`${valueFull} ${symbol}`}>
