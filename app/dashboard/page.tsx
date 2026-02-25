@@ -54,12 +54,6 @@ export default function Dashboard() {
     return `${signedAccountId.slice(0, 10)}…${signedAccountId.slice(-8)}`;
   }, [signedAccountId]);
 
-  const tabCopy =
-    tab === "positions"
-      ? "Track every funded vault, from repayment progress to liquidation risk."
-      : "Create vaults, open requests, and keep collateral actions under control.";
-  const activeTabLabel = tab === "positions" ? "Lender positions" : "Owner vaults";
-
   if (blocked || !signedAccountId) {
     return null;
   }
@@ -74,17 +68,10 @@ export default function Dashboard() {
         <header className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary/80 animate-pulse-soft" aria-hidden="true" />
-                Dashboard operations
-              </div>
               <div className="space-y-2">
                 <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] text-foreground">
-                  Control vaults and lender positions
+                  Dashboard
                 </h1>
-                <p className="max-w-2xl text-sm leading-relaxed text-secondary-text sm:text-base">
-                  Execute borrower and lender workflows from one compact console.
-                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-secondary-text">
                 <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono normal-case text-xs">
@@ -92,9 +79,6 @@ export default function Dashboard() {
                 </span>
                 <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
                   Network {networkLabel}
-                </span>
-                <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
-                  Active {activeTabLabel}
                 </span>
               </div>
             </div>
@@ -111,12 +95,7 @@ export default function Dashboard() {
               </Button>
               <Link href={APP_ROUTES.discover.href} className="w-full">
                 <Button variant="secondary" size="md" className="w-full">
-                  Browse open requests
-                </Button>
-              </Link>
-              <Link href="/docs/guides/opening-liquidity-request" className="w-full">
-                <Button variant="secondary" size="sm" className="w-full">
-                  Borrower guide
+                  Discover requests
                 </Button>
               </Link>
             </div>
@@ -134,9 +113,7 @@ export default function Dashboard() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Workspace</p>
-                  <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Manage positions</h2>
-                  <p className="text-sm leading-relaxed text-secondary-text">{tabCopy}</p>
+                  <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Workspace</h2>
                 </div>
                 <div className="w-full sm:w-auto sm:min-w-[330px]">
                   <SegmentedToggle

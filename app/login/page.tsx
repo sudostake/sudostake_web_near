@@ -35,38 +35,16 @@ export default function LoginPage() {
               />
               <div className="relative space-y-6">
                 <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Welcome back</p>
                   <h1 className="text-[clamp(2.15rem,4.2vw,2.7rem)] font-semibold leading-tight text-foreground">
-                    Connect your NEAR wallet to continue.
+                    Connect wallet
                   </h1>
-                  <p className="max-w-lg text-base leading-relaxed text-secondary-text sm:text-sm">
-                    Manage vaults, monitor lending positions, and request liquidity without giving up custody. Your wallet
-                    stays in control for every action.
-                  </p>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <Button size="lg" onClick={onConnect} className="w-full sm:w-auto">
                     Connect Wallet
                   </Button>
                   <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary/80">
-                    Browse requests first
-                  </Link>
-                </div>
-                <div className="grid gap-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-5 py-5">
-                  <h2 className="text-sm font-semibold text-foreground">Why your account stays secure</h2>
-                  <ul className="space-y-2 text-sm leading-relaxed text-secondary-text sm:text-sm">
-                    <li>Approve every transaction from your NEAR wallet—no custodial intermediaries.</li>
-                    <li>Smart contracts enforce terms on-chain, so draws and repayments follow the rules.</li>
-                    <li>Event history stays auditable for lenders and vault owners alike.</li>
-                  </ul>
-                  <Link
-                    href="/docs/features/authentication-signin-flow"
-                    className="inline-flex items-center gap-2 text-xs font-medium text-primary hover:text-primary/80"
-                  >
-                    Read how authentication works
-                    <span aria-hidden="true" className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-[0.6rem]">
-                      →
-                    </span>
+                    Discover
                   </Link>
                 </div>
               </div>
@@ -75,19 +53,6 @@ export default function LoginPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Supported wallets</h2>
               <div className="mt-4">
                 <WalletBadges />
-              </div>
-              <div className="mt-6 space-y-3 text-xs leading-relaxed text-secondary-text">
-                <p>
-                  We work with Wallet Selector providers like Bitte, Meteor, MyNearWallet, Nightly, and Ledger. More wallets
-                  can be added as the ecosystem grows.
-                </p>
-                <p>
-                  Need to install one?{" "}
-                  <Link href="https://near.org/wallets/" target="_blank" rel="noreferrer" className="font-medium text-primary underline">
-                    Explore wallet options
-                  </Link>
-                  .
-                </p>
               </div>
             </aside>
           </div>

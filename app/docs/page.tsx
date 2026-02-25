@@ -35,19 +35,16 @@ const FEATURED_LINKS = [
   {
     href: "/docs/playbook",
     title: "Start with the playbook",
-    description: "See the full borrower and lender flow in one page.",
   },
   {
     href: "/docs/guides/create-vault",
     title: "Borrower quickstart",
-    description: "Create a vault and open your first request.",
   },
   {
     href: "/docs/guides/fund-liquidity-request",
     title: "Lender quickstart",
-    description: "Find a request in Discover and fund it.",
   },
-] satisfies Array<{ href: string; title: string; description: string }>;
+] satisfies Array<{ href: string; title: string }>;
 
 export default function DocsIndex() {
   const sections = [
@@ -112,9 +109,6 @@ export default function DocsIndex() {
         <Card className="surface-card space-y-4 rounded-4xl px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
           <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">SudoStake docs</h1>
-          <p className="max-w-3xl text-base leading-relaxed text-secondary-text sm:text-sm">
-            Pick your path: borrower or lender. These docs map directly to what is currently available in the app.
-          </p>
         </Card>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURED_LINKS.map((link) => (
@@ -129,7 +123,7 @@ export default function DocsIndex() {
   );
 }
 
-function DocQuickLink({ href, title, description }: { href: string; title: string; description: string }) {
+function DocQuickLink({ href, title }: { href: string; title: string }) {
   return (
     <Link
       href={href}
@@ -144,7 +138,6 @@ function DocQuickLink({ href, title, description }: { href: string; title: strin
           →
         </span>
       </span>
-      <span className="mt-2 block text-sm leading-relaxed text-secondary-text">{description}</span>
     </Link>
   );
 }
