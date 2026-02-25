@@ -41,8 +41,8 @@ export function Accordion({ items }: Props) {
               aria-controls={panelId}
               onClick={() => setOpenId(isOpen ? null : it.id)}
             >
-              <span className="pixel-heading text-[0.54rem]">{it.question}</span>
-              <span aria-hidden="true" className="pixel-heading text-[0.58rem] text-secondary-text">
+              <span className="pixel-heading text-[0.62rem]">{it.question}</span>
+              <span aria-hidden="true" className="pixel-heading text-[0.66rem] text-secondary-text">
                 {isOpen ? "−" : "+"}
               </span>
             </button>

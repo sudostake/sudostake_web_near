@@ -112,7 +112,7 @@
     color: var(--foreground);
     font-family: var(--font-pixel-body), "Courier New", Courier, monospace;
     font-size: clamp(1.28rem, 1.95vw, 1.52rem);
-    line-height: 1.26;
+    line-height: 1.34;
     letter-spacing: 0.02em;
     -webkit-font-smoothing: none;
     text-rendering: optimizeSpeed;
@@ -221,7 +221,8 @@
     background: var(--surface-muted);
     padding: 0.15rem 0.45rem;
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-    font-size: 0.56rem;
+    font-size: 0.62rem;
+    line-height: 1.24;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
@@ -360,7 +361,7 @@
 
   .section-subtitle {
     font-size: clamp(1.2rem, 1.4vw, 1.4rem);
-    line-height: 1.24;
+    line-height: 1.32;
     color: var(--text-secondary);
     max-width: 42rem;
     letter-spacing: 0.02em;

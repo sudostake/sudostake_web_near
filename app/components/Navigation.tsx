@@ -101,7 +101,7 @@ function routeIcon(routeId: NavRoute["id"]) {
 
 function desktopLinkClass(active: boolean) {
   return [
-    "pixel-link inline-flex items-center rounded-app px-3 py-1.5 text-[0.54rem] transition",
+    "pixel-link inline-flex items-center rounded-app px-3 py-1.5 text-[0.62rem] transition",
     active
       ? "border-[color:var(--accent-primary)] bg-[color:var(--surface-muted)] text-[color:var(--accent-primary)]"
       : "text-[color:var(--text-secondary)] hover:text-[color:var(--accent-primary)]",
@@ -207,7 +207,7 @@ export function Navigation() {
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link
               href={brandHref}
-              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-[0.64rem] text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-[0.7rem]"
+              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-[0.72rem] text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-[0.78rem]"
             >
               <LogoMark
                 size={34}
@@ -218,7 +218,7 @@ export function Navigation() {
             </Link>
             {network && (
               <span
-                className="pixel-chip hidden px-2.5 py-0.5 text-[0.5rem] text-[color:var(--text-secondary)] md:inline"
+                className="pixel-chip hidden px-2.5 py-0.5 text-[0.58rem] text-[color:var(--text-secondary)] md:inline"
                 title="Active network"
               >
                 {network}
