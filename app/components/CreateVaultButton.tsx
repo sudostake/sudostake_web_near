@@ -21,7 +21,7 @@ export function CreateVaultButton({
       >
         <path d="M12 4.5a1 1 0 011 1V11h5.5a1 1 0 110 2H13v5.5a1 1 0 11-2 0V13H5.5a1 1 0 110-2H11V5.5a1 1 0 011-1z" />
       </svg>
-      <span className="whitespace-nowrap">Create New Vault</span>
+      <span className="whitespace-nowrap">Create vault</span>
     </Button>
   );
 }
