@@ -18,16 +18,18 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-full transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40";
+    "pixel-heading inline-flex items-center justify-center rounded-app border-2 border-[color:var(--panel-border)] transition-[transform,box-shadow,background-color,color,border-color] duration-150 [transition-timing-function:steps(2,end)] disabled:opacity-60 disabled:cursor-not-allowed focus-soft";
   const sizes: Record<Size, string> = {
-    sm: "px-2.5 h-8 text-sm",
-    md: "px-3 h-9 text-sm",
-    lg: "px-4 h-10 text-base",
+    sm: "h-8 px-2.5 text-[0.5rem] leading-none",
+    md: "h-9 px-3 text-[0.54rem] leading-none",
+    lg: "h-10 px-4 text-[0.58rem] leading-none",
   };
   const variants: Record<Variant, string> = {
     primary: "btn-primary",
-    secondary: "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]",
-    ghost: "hover:bg-foreground/10",
+    secondary:
+      "bg-[color:var(--surface)] text-[color:var(--text-primary)] shadow-[var(--pixel-shadow)] hover:border-[color:var(--accent-primary)] hover:bg-[color:var(--surface-muted)] hover:translate-y-[2px] hover:shadow-none",
+    ghost:
+      "border-transparent bg-transparent text-[color:var(--text-secondary)] shadow-none hover:border-[color:var(--accent-primary)] hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)]",
   };
   return (
     <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} {...rest}>

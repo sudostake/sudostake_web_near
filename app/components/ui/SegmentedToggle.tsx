@@ -46,9 +46,11 @@ export function SegmentedToggle({
 
   const isPrimary = variant === "primary";
   const thumbClasses = [
-    "absolute rounded-full pointer-events-none transition-all duration-200 ease-out",
+    "absolute rounded-app pointer-events-none transition-all duration-200 ease-out",
     thumbVert,
-    isPrimary ? "bg-primary shadow-sm" : "bg-surface shadow-sm ring-1 ring-foreground/10",
+    isPrimary
+      ? "bg-primary shadow-[var(--pixel-shadow)]"
+      : "bg-surface shadow-[var(--pixel-shadow)] ring-1 ring-foreground/10",
   ].join(" ");
   const selectedText = isPrimary ? "text-primary-text" : "text-foreground";
   const unselectedText = isPrimary ? "text-foreground" : "text-secondary-text";
@@ -76,7 +78,7 @@ export function SegmentedToggle({
   }
 
   const containerClasses = [
-    "relative inline-flex w-full select-none items-center overflow-hidden rounded-full border border-foreground/10 bg-surface-muted/60",
+    "relative inline-flex w-full select-none items-center overflow-hidden rounded-app border-2 border-[color:var(--panel-border)] bg-surface-muted/60",
     paddingClass,
     disabled ? "opacity-60 cursor-not-allowed" : "",
     className,
@@ -114,7 +116,7 @@ export function SegmentedToggle({
             aria-controls={`${o.id}-panel`}
             tabIndex={isSelected ? 0 : -1}
             className={[
-              "relative z-10 flex-1 rounded-full transition-colors",
+              "pixel-heading relative z-10 flex-1 rounded-app transition-colors",
               btnPad,
               textSize,
               isSelected ? `font-semibold ${selectedText}` : `font-medium ${unselectedText}`,

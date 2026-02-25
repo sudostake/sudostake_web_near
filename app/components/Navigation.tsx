@@ -101,19 +101,19 @@ function routeIcon(routeId: NavRoute["id"]) {
 
 function desktopLinkClass(active: boolean) {
   return [
-    "inline-flex items-center rounded-full px-3 py-1.5 text-sm font-medium transition",
+    "pixel-link inline-flex items-center rounded-app px-3 py-1.5 text-[0.54rem] transition",
     active
-      ? "bg-primary/10 text-primary"
+      ? "border-[color:var(--accent-primary)] bg-[color:var(--surface-muted)] text-[color:var(--accent-primary)]"
       : "text-[color:var(--text-secondary)] hover:text-[color:var(--accent-primary)]",
   ].join(" ");
 }
 
 function mobileLinkClass(active: boolean) {
   return [
-    "inline-flex h-9 w-9 items-center justify-center rounded-app border transition focus:outline-none focus:ring-1 focus:ring-primary/40",
+    "inline-flex h-9 w-9 items-center justify-center rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] transition focus-soft",
     active
-      ? "border-primary/35 bg-primary/10 text-primary"
-      : "border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]",
+      ? "border-[color:var(--accent-primary)] text-primary"
+      : "text-[color:var(--text-secondary)] hover:bg-[color:var(--surface-muted)]",
   ].join(" ");
 }
 
@@ -207,14 +207,18 @@ export function Navigation() {
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link
               href={brandHref}
-              className="inline-flex items-center gap-2.5 whitespace-nowrap text-lg font-bold text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-xl"
+              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-[0.64rem] text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-[0.7rem]"
             >
-              <LogoMark size={34} className="h-8 w-8 rounded-full sm:h-9 sm:w-9" ariaLabel="SudoStake home" />
+              <LogoMark
+                size={34}
+                className="h-8 w-8 border-2 border-[color:var(--panel-border)] bg-[color:var(--surface-muted)] p-1 sm:h-9 sm:w-9"
+                ariaLabel="SudoStake home"
+              />
               <span>SudoStake</span>
             </Link>
             {network && (
               <span
-                className="hidden rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2.5 py-0.5 text-xs text-[color:var(--text-secondary)] md:inline"
+                className="pixel-chip hidden px-2.5 py-0.5 text-[0.5rem] text-[color:var(--text-secondary)] md:inline"
                 title="Active network"
               >
                 {network}
@@ -279,7 +283,7 @@ export function Navigation() {
                   onClick={onConnect}
                   disabled={connecting}
                   aria-busy={connecting || undefined}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] text-[color:var(--text-secondary)] hover:bg-[color:var(--surface-muted)] focus-soft md:hidden"
                 >
                   <WalletIcon />
                   <span className="sr-only">Connect wallet</span>
@@ -299,7 +303,7 @@ export function Navigation() {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen || undefined}
                   onClick={() => setMenuOpen((open) => !open)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] text-[color:var(--text-secondary)] hover:bg-[color:var(--surface-muted)] focus-soft md:hidden"
                 >
                   <UserIcon />
                   <span className="sr-only">Account menu</span>
@@ -322,9 +326,12 @@ export function Navigation() {
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 z-50 mt-2 w-48 rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] py-1 shadow-lg"
+                    className="absolute right-0 z-50 mt-2 w-48 rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] py-1 shadow-[var(--pixel-shadow)]"
                   >
-                    <div className="border-b border-[color:var(--border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]/90" role="none">
+                    <div
+                      className="border-b-2 border-[color:var(--panel-border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]/90"
+                      role="none"
+                    >
                       <span className="block truncate font-mono" title={signedAccountId}>{signedAccountId}</span>
                     </div>
                     {AUTH_NAV_ROUTES.map((route) => {
@@ -337,7 +344,7 @@ export function Navigation() {
                           className={[
                             "block px-3 py-2 text-sm transition",
                             active
-                              ? "bg-primary/10 text-primary"
+                              ? "bg-[color:var(--surface-muted)] text-primary"
                               : "text-[color:var(--text-secondary)] hover:bg-[color:var(--surface-muted)] hover:text-foreground",
                           ].join(" ")}
                         >
@@ -345,7 +352,7 @@ export function Navigation() {
                         </Link>
                       );
                     })}
-                    <div className="my-1 border-t border-[color:var(--border)]" />
+                    <div className="my-1 border-t-2 border-[color:var(--panel-border)]" />
                     <Button
                       role="menuitem"
                       variant="ghost"

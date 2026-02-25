@@ -69,11 +69,11 @@ export function SocialStrip() {
 
   return (
     <section className="mt-28">
-      <div className="surface-card rounded-[28px] px-5 py-6 shadow-[0_18px_48px_-36px_rgba(15,23,42,0.55)] sm:px-10 sm:py-8">
+      <div className="surface-card pixel-card px-5 py-6 sm:px-10 sm:py-8">
         <div className="space-y-7">
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Ready</p>
-            <h2 className="text-[clamp(1.35rem,2.2vw,1.9rem)] font-semibold text-foreground">
+            <p className="pixel-heading text-[0.5rem] text-primary">Ready</p>
+            <h2 className="section-heading text-foreground">
               Take the next step now
             </h2>
             <p className="max-w-2xl text-base leading-relaxed text-secondary-text sm:text-sm">
@@ -90,8 +90,8 @@ export function SocialStrip() {
               </Button>
             </Link>
           </div>
-          <div className="space-y-3 border-t border-[color:var(--border)] pt-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Community and support</p>
+          <div className="space-y-3 border-t-2 border-[color:var(--panel-border)] pt-5">
+            <p className="pixel-heading text-[0.48rem] text-secondary-text">Community and support</p>
             <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {LINKS.map((link) => (
                 <li key={link.href}>
@@ -99,11 +99,11 @@ export function SocialStrip() {
                     href={link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group inline-flex w-full items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
+                    className="group inline-flex w-full items-center gap-2 border-2 border-[color:var(--panel-border)] bg-[color:var(--surface-muted)] px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
                   >
                     <span
                       aria-hidden="true"
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
+                      className="flex h-8 w-8 items-center justify-center border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
                     >
                       {link.icon}
                     </span>

@@ -19,7 +19,7 @@ export function Input({
 }: InputProps) {
   const hasSuffix = Boolean(suffix);
   const inputBase = [
-    "w-full rounded-full border bg-surface p-3 text-sm appearance-none focus-soft",
+    "w-full rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] p-3 text-sm appearance-none shadow-[var(--pixel-shadow)] focus-soft",
     hasSuffix ? "pr-12" : "",
   ].join(" ");
   const inputWrapperClass = ["relative", label ? "mt-1" : ""].join(" ");

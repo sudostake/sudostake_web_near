@@ -194,26 +194,17 @@ export function Hero() {
 
   return (
     <section className="relative mt-6 sm:mt-10">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-16 -top-18 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(15,118,110,0.24),transparent_72%)] blur-2xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-24 top-20 h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(15,23,42,0.12),transparent_70%)] blur-3xl"
-      />
-
       <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.12fr),minmax(320px,0.88fr)] lg:items-start">
-        <section className="surface-card rounded-[30px] px-6 py-6 shadow-[0_24px_72px_-52px_rgba(15,23,42,0.58)] sm:px-8 sm:py-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
-            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
+        <section className="surface-card pixel-card px-6 py-6 sm:px-8 sm:py-8">
+          <div className="pixel-chip inline-flex items-center gap-2 px-3 py-1 text-[0.5rem] text-primary">
+            <span aria-hidden="true" className="h-1.5 w-1.5 bg-primary/90 animate-pulse-soft" />
             Stake-backed liquidity on NEAR
           </div>
 
-          <h1 className="mt-4 text-[clamp(2rem,4.5vw,3rem)] font-semibold leading-[1.08] tracking-[-0.01em] text-foreground">
+          <h1 className="pixel-hero mt-4 text-[clamp(1rem,2.3vw,1.52rem)] text-foreground">
             Connect wallet. Pick a side. Execute.
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-secondary-text sm:text-base">
+          <p className="mt-3 max-w-2xl text-[1.14rem] leading-[1.2] text-secondary-text sm:text-[1.2rem]">
             Borrow USDC against staked NEAR or fund active requests with clear on-chain terms. No custody handoff.
           </p>
 
@@ -262,22 +253,22 @@ export function Hero() {
             {VALUE_POINTS.map((point) => (
               <p
                 key={point}
-                className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-2 text-center text-[11px] font-medium uppercase tracking-wide text-secondary-text"
+                className="pixel-chip justify-center px-3 py-2 text-center text-[0.48rem] text-secondary-text"
               >
                 {point}
               </p>
             ))}
           </div>
 
-          <div className="mt-7 border-t border-[color:var(--border)] pt-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Fast start</p>
+          <div className="mt-7 border-t-2 border-[color:var(--panel-border)] pt-6">
+            <p className="pixel-heading text-[0.5rem] text-primary/80">Fast start</p>
             <ol className="mt-3 grid gap-3 sm:grid-cols-3">
               {START_STEPS.map((step, index) => (
                 <li
                   key={step}
-                  className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 text-xs leading-relaxed text-secondary-text"
+                  className="surface-panel px-3 py-3 text-xs leading-relaxed text-secondary-text"
                 >
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">Step {index + 1}</p>
+                  <p className="pixel-heading text-[0.46rem] text-primary">Step {index + 1}</p>
                   <p className="mt-1">{step}</p>
                 </li>
               ))}
@@ -285,13 +276,13 @@ export function Hero() {
           </div>
         </section>
 
-        <aside className="surface-card rounded-[30px] px-5 py-6 shadow-[0_24px_72px_-52px_rgba(15,23,42,0.58)] sm:px-6 sm:py-7">
+        <aside className="surface-card pixel-card px-5 py-6 sm:px-6 sm:py-7">
           <header className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm font-semibold text-foreground">Live request board</p>
+              <p className="pixel-heading text-[0.54rem] text-foreground">Live request board</p>
               <p className="mt-1 text-xs text-secondary-text">Snapshot of active borrower demand.</p>
             </div>
-            <Link href={APP_ROUTES.discover.href} className="text-xs font-medium text-primary hover:text-primary/80">
+            <Link href={APP_ROUTES.discover.href} className="pixel-link text-[0.5rem] text-primary hover:text-primary/80">
               Open Discover
             </Link>
           </header>
@@ -307,7 +298,7 @@ export function Hero() {
               {displayedRequests.map((item, index) => (
                 <article
                   key={`${item.id}-${index}`}
-                  className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3"
+                  className="surface-panel px-4 py-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -326,7 +317,7 @@ export function Hero() {
                         {item.owner}
                       </span>
                     </p>
-                    <Link href={item.href} className="shrink-0 font-medium text-primary hover:text-primary/80">
+                    <Link href={item.href} className="pixel-link shrink-0 text-[0.48rem] text-primary hover:text-primary/80">
                       {showSampleRequest ? "View examples" : "Open vault"}
                     </Link>
                   </div>
@@ -334,7 +325,7 @@ export function Hero() {
               ))}
             </div>
           ) : (
-            <div className="mt-4 rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-5 text-sm text-secondary-text">
+            <div className="surface-panel mt-4 border-dashed px-4 py-5 text-sm text-secondary-text">
               {pendingLoading
                 ? "Loading the latest open requests..."
                 : "No open requests right now. Check Discover for updates."}
@@ -343,10 +334,10 @@ export function Hero() {
 
           <p className="mt-4 text-xs text-secondary-text">{requestPanelNote}</p>
           <div className="mt-4 flex items-center gap-4 text-xs font-medium text-secondary-text">
-            <Link href={APP_ROUTES.docs.href} className="hover:text-primary">
+            <Link href={APP_ROUTES.docs.href} className="pixel-link text-[0.48rem] hover:text-primary">
               Read docs
             </Link>
-            <Link href="/docs/features/authentication-signin-flow" className="hover:text-primary">
+            <Link href="/docs/features/authentication-signin-flow" className="pixel-link text-[0.48rem] hover:text-primary">
               Auth flow
             </Link>
           </div>
@@ -358,8 +349,8 @@ export function Hero() {
 
 function BoardMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-2.5 py-2">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
+    <div className="surface-panel px-2.5 py-2">
+      <p className="pixel-heading text-[0.46rem] text-secondary-text">{label}</p>
       <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
     </div>
   );

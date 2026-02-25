@@ -10,12 +10,8 @@ export default function Home() {
   if (blocked) return null;
 
   return (
-    <div className="relative min-h-screen overflow-hidden pb-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-36vh] h-[64vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.22),transparent_70%)]"
-      />
-      <main id="main" className="relative">
+    <div className="min-h-screen pb-20 text-[color:var(--text-primary)]">
+      <main id="main">
         <Container className="pt-8 sm:pt-10 lg:pt-12">
           <Hero />
         </Container>

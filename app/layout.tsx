@@ -1,13 +1,20 @@
-import type { Metadata } from "next";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import type { Metadata } from "next";
+import { Geist_Mono, Press_Start_2P, VT323 } from "next/font/google";
 import Providers from "./providers";
 import { Navigation } from "./components/Navigation";
 import { SkipLink } from "./components/SkipLink";
 import { Footer } from "./components/Footer";
 
-const jakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta-sans",
+const pixelDisplay = Press_Start_2P({
+  variable: "--font-pixel-display",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const pixelBody = VT323({
+  variable: "--font-pixel-body",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -40,7 +47,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${jakartaSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${pixelDisplay.variable} ${pixelBody.variable} ${geistMono.variable}`}>
         <Providers>
           <SkipLink />
           <Navigation />
