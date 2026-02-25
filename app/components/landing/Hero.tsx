@@ -47,18 +47,6 @@ const SAMPLE_REQUEST_PREVIEWS: RequestPreview[] = [
   },
 ];
 
-const START_STEPS = [
-  "Connect your NEAR wallet.",
-  "Choose borrow or lend flow.",
-  "Execute and monitor from dashboard.",
-];
-
-const VALUE_POINTS = [
-  "Non-custodial by design",
-  "On-chain terms and settlement",
-  "Real-time request discovery",
-];
-
 export function Hero() {
   const { signIn, walletSelector, signedAccountId } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
@@ -184,14 +172,6 @@ export function Hero() {
       setSlowConnect(false);
     });
   }, [signIn]);
-  const requestPanelNote = pendingLoading
-    ? "Refreshing live requests..."
-    : pendingError
-      ? "Live request feed is unavailable. Showing sample terms."
-      : hasLiveRequests
-        ? `Tracking ${totalOpenRequests} open request${totalOpenRequests === 1 ? "" : "s"} in real time.`
-        : "No open requests right now.";
-
   return (
     <section className="relative mt-6 sm:mt-10">
       <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.12fr),minmax(320px,0.88fr)] lg:items-start">
@@ -204,9 +184,6 @@ export function Hero() {
           <h1 className="pixel-hero mt-4 text-[clamp(1rem,2.3vw,1.52rem)] text-foreground">
             Connect wallet. Pick a side. Execute.
           </h1>
-          <p className="mt-3 max-w-2xl text-[1.14rem] leading-[1.24] text-secondary-text sm:text-[1.2rem]">
-            Borrow USDC against staked NEAR or fund active requests with clear on-chain terms. No custody handoff.
-          </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-3">
             <Button
@@ -248,42 +225,15 @@ export function Hero() {
               {slowConnect ? "Check your wallet to continue." : "Opening wallet..."}
             </p>
           )}
-
-          <div className="mt-6 grid gap-2 sm:grid-cols-3">
-            {VALUE_POINTS.map((point) => (
-              <p
-                key={point}
-                className="pixel-chip justify-center px-3 py-2 text-center text-[0.56rem] text-secondary-text"
-              >
-                {point}
-              </p>
-            ))}
-          </div>
-
-          <div className="mt-7 border-t-2 border-[color:var(--panel-border)] pt-6">
-            <p className="pixel-heading text-[0.58rem] text-primary/80">Fast start</p>
-            <ol className="mt-3 grid gap-3 sm:grid-cols-3">
-              {START_STEPS.map((step, index) => (
-                <li
-                  key={step}
-                  className="surface-panel px-3 py-3 text-xs leading-relaxed text-secondary-text"
-                >
-                  <p className="pixel-heading text-[0.58rem] text-primary">Step {index + 1}</p>
-                  <p className="mt-1">{step}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
         </section>
 
         <aside className="surface-card pixel-card px-5 py-6 sm:px-6 sm:py-7">
           <header className="flex items-start justify-between gap-3">
             <div>
               <p className="pixel-heading text-[0.62rem] text-foreground">Live request board</p>
-              <p className="mt-1 text-xs text-secondary-text">Snapshot of active borrower demand.</p>
             </div>
             <Link href={APP_ROUTES.discover.href} className="pixel-link text-[0.58rem] text-primary hover:text-primary/80">
-              Open Discover
+              Discover
             </Link>
           </header>
 
@@ -318,7 +268,7 @@ export function Hero() {
                       </span>
                     </p>
                     <Link href={item.href} className="pixel-link shrink-0 text-[0.56rem] text-primary hover:text-primary/80">
-                      {showSampleRequest ? "View examples" : "Open vault"}
+                      {showSampleRequest ? "Examples" : "Vault"}
                     </Link>
                   </div>
                 </article>
@@ -331,14 +281,12 @@ export function Hero() {
                 : "No open requests right now. Check Discover for updates."}
             </div>
           )}
-
-          <p className="mt-4 text-xs text-secondary-text">{requestPanelNote}</p>
           <div className="mt-4 flex items-center gap-4 text-xs font-medium text-secondary-text">
             <Link href={APP_ROUTES.docs.href} className="pixel-link text-[0.56rem] hover:text-primary">
-              Read docs
+              Docs
             </Link>
             <Link href="/docs/features/authentication-signin-flow" className="pixel-link text-[0.56rem] hover:text-primary">
-              Auth flow
+              Auth
             </Link>
           </div>
         </aside>

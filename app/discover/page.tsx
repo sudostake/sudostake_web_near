@@ -37,19 +37,15 @@ export default function DiscoverPage() {
           <header className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_62px_-44px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary/85">Discover</p>
                 <h1 className="text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-tight text-foreground">
-                  Open lending opportunities
+                  Lending requests
                 </h1>
-                <p className="max-w-2xl text-sm leading-relaxed text-secondary-text sm:text-base">
-                  Evaluate live borrower requests, filter terms in seconds, and open a vault to fund directly from your wallet.
-                </p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {signedAccountId ? (
                   <Link href={APP_ROUTES.dashboard.href}>
                     <Button size="sm" variant="secondary">
-                      Open dashboard
+                      Dashboard
                     </Button>
                   </Link>
                 ) : (
@@ -59,7 +55,7 @@ export default function DiscoverPage() {
                 )}
                 <Link href="/docs/guides/fund-liquidity-request">
                   <Button size="sm" variant="secondary">
-                    Funding guide
+                    Guide
                   </Button>
                 </Link>
               </div>
