@@ -86,8 +86,8 @@ function HeaderWithActions({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-foreground">Liquid balances</h2>
-        <p className="text-sm text-secondary-text">Ready for deposits, transfers, and request funding.</p>
+        <h2 className="text-lg font-semibold text-foreground">Wallet balances</h2>
+        <p className="text-sm text-secondary-text">Ready for transfers, deposits, and funding.</p>
       </div>
       <Button
         type="button"

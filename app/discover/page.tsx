@@ -38,26 +38,28 @@ export default function DiscoverPage() {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
                 <h1 className="text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-tight text-foreground">
-                  Lending requests
+                  Open requests
                 </h1>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                 {signedAccountId ? (
-                  <Link href={APP_ROUTES.dashboard.href}>
-                    <Button size="sm" variant="secondary">
+                  <Link href={APP_ROUTES.dashboard.href} className="w-full sm:w-auto">
+                    <Button size="sm" variant="secondary" className="w-full sm:w-auto">
                       Dashboard
                     </Button>
                   </Link>
                 ) : (
-                  <Button size="sm" variant="secondary" onClick={onConnect} disabled={connecting} aria-busy={connecting || undefined}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="w-full sm:w-auto"
+                    onClick={onConnect}
+                    disabled={connecting}
+                    aria-busy={connecting || undefined}
+                  >
                     {connecting ? "Opening wallet..." : "Connect wallet"}
                   </Button>
                 )}
-                <Link href="/docs/guides/fund-liquidity-request">
-                  <Button size="sm" variant="secondary">
-                    Guide
-                  </Button>
-                </Link>
               </div>
             </div>
           </header>

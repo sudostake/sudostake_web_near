@@ -285,7 +285,7 @@ export default function VaultPage() {
           />
           {!signedAccountId && (
             <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <h2 className="text-sm font-semibold text-primary/90">Connect wallet to execute vault actions</h2>
+              <h2 className="text-sm font-semibold text-primary/90">Connect wallet to continue</h2>
               <Button
                 onClick={() => {
                   if (connectingWallet) return;

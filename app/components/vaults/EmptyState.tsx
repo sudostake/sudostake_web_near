@@ -30,7 +30,7 @@ export function EmptyState({ owner, factoryId, onCreate }: EmptyStateProps) {
           No vaults found{owner ? ` for ${owner}` : ""}{factoryId ? ` on ${factoryId}` : ""}.
         </p>
         <p className="text-sm leading-relaxed text-secondary-text">
-          Create a vault to lock collateral and request liquidity when you’re ready.
+          Create a vault to lock collateral and request liquidity.
         </p>
       </div>
       {onCreate && (

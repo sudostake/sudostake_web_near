@@ -91,20 +91,20 @@ export default function Dashboard() {
                 onClick={() => setShowCreate(true)}
                 disabled={!signedAccountId}
               >
-                Create new vault
+                Create vault
               </Button>
               <Link href={APP_ROUTES.discover.href} className="w-full">
                 <Button variant="secondary" size="md" className="w-full">
-                  Discover requests
+                  Discover
                 </Button>
               </Link>
             </div>
           </div>
 
           <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <HeaderStat label="Vaults owned" value={totalVaults} />
-            <HeaderStat label="Lender positions" value={totalPositions} />
-            <HeaderStat label="Active view" value={tab === "positions" ? "Positions" : "Vaults"} />
+            <HeaderStat label="Vaults" value={totalVaults} />
+            <HeaderStat label="Positions" value={totalPositions} />
+            <HeaderStat label="View" value={tab === "positions" ? "Positions" : "Vaults"} />
           </div>
         </header>
 

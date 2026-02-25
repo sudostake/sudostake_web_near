@@ -36,12 +36,12 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
   if ((data ?? []).length === 0)
     return headerMode === "toolsOnly" ? (
       <div className="mt-4 rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4 text-sm text-secondary-text">
-        You have no active lending positions.
+        You have no active positions.
       </div>
     ) : (
       <div className="mt-6">
-        <SectionHeader title="Your lending positions" caption={<>0 positions</>} />
-        <div className="mt-3 text-sm text-secondary-text">You have no active lending positions.</div>
+        <SectionHeader title="Your positions" caption={<>0 positions</>} />
+        <div className="mt-3 text-sm text-secondary-text">You have no active positions.</div>
       </div>
     );
 
@@ -71,7 +71,7 @@ export function LenderPositions({ lender, factoryId, onVaultClick, headerMode = 
       {headerMode === "full" ? (
       <SectionHeader
         className="mt-8"
-        title="Your lending positions"
+        title="Your positions"
         caption={<>{(data ?? []).length} position{(data ?? []).length === 1 ? "" : "s"}</>}
         right={Controls}
       />

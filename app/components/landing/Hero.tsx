@@ -48,7 +48,7 @@ const SAMPLE_REQUEST_PREVIEWS: RequestPreview[] = [
 ];
 
 export function Hero() {
-  const { signIn, walletSelector, signedAccountId } = useWalletSelector();
+  const { signIn, walletSelector } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
   const [factoryId, setFactoryId] = React.useState<string | null>(null);
   React.useEffect(() => {
@@ -176,16 +176,11 @@ export function Hero() {
     <section className="relative mt-6 sm:mt-10">
       <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.12fr),minmax(320px,0.88fr)] lg:items-start">
         <section className="surface-card pixel-card px-6 py-6 sm:px-8 sm:py-8">
-          <div className="pixel-chip inline-flex items-center gap-2 px-3 py-1 text-[0.58rem] text-primary">
-            <span aria-hidden="true" className="h-1.5 w-1.5 bg-primary/90 animate-pulse-soft" />
-            Stake-backed liquidity on NEAR
-          </div>
-
-          <h1 className="pixel-hero mt-4 text-[clamp(1rem,2.3vw,1.52rem)] text-foreground">
-            Connect wallet. Pick a side. Execute.
+          <h1 className="pixel-hero text-[clamp(1rem,2.3vw,1.52rem)] text-foreground">
+            Manage vaults and fund requests.
           </h1>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <Button
               className="w-full"
               size="lg"
@@ -195,27 +190,9 @@ export function Hero() {
             >
               {connecting ? "Opening wallet..." : "Connect wallet"}
             </Button>
-            {signedAccountId ? (
-              <Link href={APP_ROUTES.dashboard.href} className="w-full">
-                <Button size="lg" variant="secondary" className="w-full">
-                  Borrow with vault
-                </Button>
-              </Link>
-            ) : (
-              <Button
-                size="lg"
-                variant="secondary"
-                className="w-full"
-                onClick={handleConnect}
-                disabled={connecting}
-                aria-busy={connecting || undefined}
-              >
-                {connecting ? "Opening wallet..." : "Connect to borrow"}
-              </Button>
-            )}
             <Link href={APP_ROUTES.discover.href} className="w-full">
               <Button size="lg" variant="secondary" className="w-full">
-                Lend in Discover
+                Discover
               </Button>
             </Link>
           </div>
@@ -281,14 +258,6 @@ export function Hero() {
                 : "No open requests right now. Check Discover for updates."}
             </div>
           )}
-          <div className="mt-4 flex items-center gap-4 text-xs font-medium text-secondary-text">
-            <Link href={APP_ROUTES.docs.href} className="pixel-link text-[0.56rem] hover:text-primary">
-              Docs
-            </Link>
-            <Link href="/docs/features/authentication-signin-flow" className="pixel-link text-[0.56rem] hover:text-primary">
-              Auth
-            </Link>
-          </div>
         </aside>
       </div>
     </section>
