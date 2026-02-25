@@ -7,7 +7,7 @@ type Props = React.PropsWithChildren<{
 }> & React.HTMLAttributes<HTMLDivElement>;
 
 export function Card({ children, className = "", ...rest }: Props) {
-  const base = "rounded-2xl border bg-surface text-foreground p-5 sm:p-6 shadow-sm";
+  const base = "surface-card pixel-card rounded-app bg-surface p-5 text-foreground sm:p-6";
   return (
     <div className={`${base} ${className}`} {...rest}>
       {children}

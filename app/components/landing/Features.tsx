@@ -62,23 +62,23 @@ export function Features() {
 
   return (
     <section className="mt-28">
-      <div className="surface-card rounded-4xl p-6 shadow-[0_20px_72px_-48px_rgba(15,23,42,0.6)] backdrop-blur-sm sm:p-10">
+      <div className="surface-card pixel-card p-6 sm:p-10">
         <div className="space-y-8">
           <div className="max-w-2xl space-y-3">
-            <h2 className="text-[clamp(1.45rem,2.3vw,2rem)] font-semibold text-foreground">Choose your next action</h2>
+            <h2 className="section-heading text-foreground">Choose your next action</h2>
             <p className="text-base leading-relaxed text-secondary-text sm:text-sm">
               Pick the path that matches what you want to do right now and jump straight into the flow.
             </p>
           </div>
           <div className="grid gap-5 lg:grid-cols-2">
             {paths.map((path) => (
-              <div key={path.title} className="rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-foreground">{path.title}</h3>
+              <div key={path.title} className="surface-panel p-6">
+                <h3 className="pixel-heading text-[0.56rem] text-foreground">{path.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-secondary-text">{path.summary}</p>
                 <ul className="mt-4 space-y-2 text-sm text-secondary-text">
                   {path.steps.map((step) => (
                     <li key={step} className="flex items-start gap-2">
-                      <span aria-hidden="true" className="mt-1 inline-flex h-1.5 w-1.5 rounded-full bg-primary/80" />
+                      <span aria-hidden="true" className="mt-1 inline-flex h-1.5 w-1.5 bg-primary/80" />
                       <span>{step}</span>
                     </li>
                   ))}
@@ -107,11 +107,11 @@ export function Features() {
               </div>
             ))}
           </div>
-          <Link href={APP_ROUTES.docs.href} className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80">
+          <Link href={APP_ROUTES.docs.href} className="pixel-link inline-flex items-center gap-2 text-[0.5rem] text-primary hover:text-primary/80">
             Need details first? Read docs
             <span
               aria-hidden="true"
-              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-[0.65rem]"
+              className="inline-flex h-5 w-5 items-center justify-center border-2 border-primary/30 bg-primary/10 text-[0.58rem]"
             >
               →
             </span>

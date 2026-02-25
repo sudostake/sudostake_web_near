@@ -35,8 +35,8 @@ export function Select({
   ...rest
 }: SelectProps) {
   const base = [
-    "w-full rounded border bg-background text-foreground",
-    "h-9 px-2 pr-8",
+    "w-full rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] text-[color:var(--text-primary)]",
+    "h-9 px-2.5 pr-8 shadow-[var(--pixel-shadow)]",
     "appearance-none focus-soft",
     "disabled:opacity-60 disabled:cursor-not-allowed",
   ].join(" ");

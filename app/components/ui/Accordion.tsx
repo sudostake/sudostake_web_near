@@ -15,11 +15,12 @@ type Props = {
 export function Accordion({ items }: Props) {
   const [openId, setOpenId] = React.useState<string | null>(null);
   const containerClassName = [
-    "rounded-2xl",
-    "border",
-    "border-[color:var(--border)]",
+    "rounded-app",
+    "pixel-card",
+    "border-2",
+    "border-[color:var(--panel-border)]",
     "bg-[color:var(--surface)]",
-    "shadow-[0_20px_60px_-44px_rgba(15,23,42,0.35)]",
+    "shadow-[var(--pixel-shadow)]",
     "overflow-hidden",
     "divide-y",
     "divide-(color:--color-border)",
@@ -34,14 +35,14 @@ export function Accordion({ items }: Props) {
           <div key={it.id} className="transition-colors">
             <button
               type="button"
-              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left sm:px-6 sm:py-5"
+              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left text-[color:var(--text-primary)] sm:px-6 sm:py-5"
               id={triggerId}
               aria-expanded={isOpen}
               aria-controls={panelId}
               onClick={() => setOpenId(isOpen ? null : it.id)}
             >
-              <span className="font-medium">{it.question}</span>
-              <span aria-hidden="true" className="text-secondary-text">
+              <span className="pixel-heading text-[0.54rem]">{it.question}</span>
+              <span aria-hidden="true" className="pixel-heading text-[0.58rem] text-secondary-text">
                 {isOpen ? "−" : "+"}
               </span>
             </button>
@@ -50,7 +51,7 @@ export function Accordion({ items }: Props) {
               role="region"
               aria-labelledby={triggerId}
               hidden={!isOpen}
-              className="mt-2 px-5 pb-5 sm:mt-3 sm:px-6 text-sm leading-relaxed text-secondary-text"
+              className="mt-2 px-5 pb-5 text-sm leading-relaxed text-secondary-text sm:mt-3 sm:px-6"
             >
               {it.answer}
             </div>

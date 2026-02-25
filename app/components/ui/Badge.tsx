@@ -11,13 +11,14 @@ type Props = React.PropsWithChildren<{
 }>;
 
 export function Badge({ variant = "neutral", className = "", title, children }: Props) {
-  const base = "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium";
+  const base =
+    "pixel-heading inline-flex items-center gap-1 rounded-app border-2 border-[color:var(--panel-border)] px-2.5 py-1 text-[0.5rem] leading-none";
   const styles: Record<Variant, string> = {
-    neutral: "bg-foreground/5 text-secondary-text",
-    info: "bg-primary/15 text-primary",
-    warn: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-100",
-    danger: "bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-100",
-    success: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-100",
+    neutral: "bg-[color:var(--surface-muted)] text-[color:var(--text-secondary)]",
+    info: "bg-[color:var(--accent-strong)] text-[color:var(--accent-primary)]",
+    warn: "bg-[color:var(--surface-muted)] text-amber-600 dark:text-amber-300",
+    danger: "bg-[color:var(--surface-muted)] text-red-600 dark:text-red-300",
+    success: "bg-[color:var(--surface-muted)] text-emerald-600 dark:text-emerald-300",
   };
   return (
     <span className={`${base} ${styles[variant]} ${className}`} title={title}>
