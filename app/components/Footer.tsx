@@ -16,7 +16,7 @@ export function Footer() {
         <div className="flex items-center gap-2.5">
           <LogoMark
             size={28}
-            className="h-7 w-7 border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] p-1"
+            className="h-7 w-7"
             ariaLabel="SudoStake mark"
           />
           <span className="pixel-heading text-[0.58rem]">© {new Date().getFullYear()} SudoStake - non-custodial vaults</span>

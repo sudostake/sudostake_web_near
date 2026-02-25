@@ -2,16 +2,21 @@
 
 :root {
   color-scheme: light dark;
-  --background: #e7efe0;
-  --background-strong: #dbe6d2;
-  --foreground: #263225;
-  --surface: #f2f7ec;
-  --surface-muted: #e3edd9;
+  /* Neutral base with theme-ready accent controls. */
+  --theme-accent-h: 220;
+  --theme-accent-s: 12%;
+  --theme-accent-l: 38%;
+  --theme-accent-l-hover: 32%;
+  --background: #eceff3;
+  --background-strong: #dfe5ec;
+  --foreground: #1f2937;
+  --surface: #f7f9fc;
+  --surface-muted: #e9eef4;
   --surface-glass: var(--surface);
-  --primary: #4a6b45;
-  --primary-text: #f1f8ea;
-  --secondary-text: #40513d;
-  --border: #5e725a;
+  --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
+  --primary-text: #f8fafc;
+  --secondary-text: #475569;
+  --border: #64748b;
   --radius-sm: 0;
   --radius-md: 0;
   --radius-lg: 0;
@@ -27,9 +32,9 @@
   --text-secondary: var(--secondary-text);
   --text-tertiary: color-mix(in oklab, var(--secondary-text) 82%, transparent);
   --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
-  --shadow-soft-color: rgba(22, 35, 14, 0.42);
+  --shadow-soft-color: rgba(15, 23, 42, 0.36);
   --accent-primary: var(--primary);
-  --accent-primary-hover: #3f5f3a;
+  --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
   --accent-strong: color-mix(in oklab, var(--primary) 30%, transparent);
   --pixel-size: 4px;
   --pixel-shadow: 0 var(--pixel-size) 0 color-mix(in oklab, var(--foreground) 70%, black 30%);
@@ -54,25 +59,29 @@
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --background: #1a221a;
-    --background-strong: #202a20;
-    --foreground: #dbe7d4;
-    --surface: #263126;
-    --surface-muted: #2d3a2d;
+    --theme-accent-h: 220;
+    --theme-accent-s: 16%;
+    --theme-accent-l: 72%;
+    --theme-accent-l-hover: 66%;
+    --background: #0f141c;
+    --background-strong: #151b24;
+    --foreground: #e2e8f0;
+    --surface: #1b2330;
+    --surface-muted: #232d3b;
     --surface-glass: var(--surface);
-    --primary: #8caf86;
-    --primary-text: #182216;
-    --secondary-text: #b8c9b2;
-    --border: #6f8a6a;
+    --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
+    --primary-text: #0f141c;
+    --secondary-text: #c0cad8;
+    --border: #7a8aa0;
     --surface-primary: var(--surface);
     --border-soft: var(--border);
     --text-primary: var(--foreground);
     --text-secondary: var(--secondary-text);
     --text-tertiary: color-mix(in oklab, var(--secondary-text) 84%, transparent);
     --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
-    --shadow-soft-color: rgba(5, 10, 3, 0.64);
+    --shadow-soft-color: rgba(0, 0, 0, 0.56);
     --accent-primary: var(--primary);
-    --accent-primary-hover: #83a77d;
+    --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
     --accent-strong: color-mix(in oklab, var(--primary) 34%, transparent);
     --panel-bg: var(--surface);
     --panel-border: var(--border);
@@ -119,6 +128,12 @@
   }
 
   img {
+    image-rendering: auto;
+  }
+
+  /* Opt-in pixel treatment only for assets that explicitly need it. */
+  .img-pixelated,
+  img[data-rendering="pixelated"] {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }

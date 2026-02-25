@@ -211,7 +211,7 @@ export function Navigation() {
             >
               <LogoMark
                 size={34}
-                className="h-8 w-8 border-2 border-[color:var(--panel-border)] bg-[color:var(--surface-muted)] p-1 sm:h-9 sm:w-9"
+                className="h-8 w-8 sm:h-9 sm:w-9"
                 ariaLabel="SudoStake home"
               />
               <span>SudoStake</span>
