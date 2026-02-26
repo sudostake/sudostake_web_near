@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import QRCode from "qrcode";
+import Image from "next/image";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { Button } from "@/app/components/ui/Button";
 import { getActiveNetwork } from "@/utils/networks";
@@ -23,6 +25,7 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
   const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
   const [kind, setKind] = useState<TokenKind>(usdcId ? "USDC" : "NEAR");
   const [showToken, setShowToken] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -42,6 +45,31 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
       // Ignore errors writing to localStorage (e.g., storage is unavailable)
     }
   }, [kind]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!open || !signedAccountId) {
+      setQrDataUrl(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    QRCode.toDataURL(signedAccountId, {
+      width: 220,
+      margin: 1,
+    })
+      .then((url: string) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setQrDataUrl(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, signedAccountId]);
 
   return (
     <Modal
@@ -72,6 +100,23 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
               <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
               {signedAccountId && <CopyButton value={signedAccountId} title="Copy account" />}
             </div>
+            <div className="mt-3">
+              <div className="text-xs text-secondary-text mb-1">Scan QR</div>
+              <div className="inline-flex items-center justify-center rounded border bg-background p-2">
+                {qrDataUrl ? (
+                  <Image
+                    src={qrDataUrl}
+                    alt={`QR code for ${signedAccountId ?? "account"}`}
+                    className="h-36 w-36"
+                    width={144}
+                    height={144}
+                    unoptimized
+                  />
+                ) : (
+                  <div className="h-36 w-36 animate-pulse rounded bg-surface" aria-hidden="true" />
+                )}
+              </div>
+            </div>
             <div className="mt-2 text-xs text-secondary-text">Share your account to receive NEAR.</div>
             <div className="mt-3 text-right">
               <CopyButton
@@ -89,6 +134,23 @@ export function ReceiveValueDialog({ open, onClose }: Props) {
                 <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
                   <div className="truncate" title={signedAccountId ?? undefined}>{signedAccountId ?? "—"}</div>
                   {signedAccountId && <CopyButton value={signedAccountId} title="Copy receiver" />}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-secondary-text mb-1">Scan QR</div>
+                <div className="inline-flex items-center justify-center rounded border bg-background p-2">
+                  {qrDataUrl ? (
+                    <Image
+                      src={qrDataUrl}
+                      alt={`QR code for ${signedAccountId ?? "account"}`}
+                      className="h-36 w-36"
+                      width={144}
+                      height={144}
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="h-36 w-36 animate-pulse rounded bg-surface" aria-hidden="true" />
+                  )}
                 </div>
               </div>
             </div>
