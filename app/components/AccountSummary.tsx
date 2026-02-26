@@ -9,6 +9,7 @@ import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
+import { AddValueDialog } from "@/app/components/dialogs/AddValueDialog";
 // (No asset toggle here; dialogs handle asset selection themselves)
 
 type AccountSummaryProps = {
@@ -31,6 +32,7 @@ export function AccountSummary({
   const usdcShort = shortAmount(usdc.toDisplay(), 3);
   const [sendOpen, setSendOpen] = React.useState(false);
   const [recvOpen, setRecvOpen] = React.useState(false);
+  const [addOpen, setAddOpen] = React.useState(false);
   const isLoading = Boolean(loading);
 
   return (
@@ -59,6 +61,9 @@ export function AccountSummary({
           <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
             Receive
           </Button>
+          <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => setAddOpen(true)}>
+            Add
+          </Button>
           <Button size="sm" className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>
             Send
           </Button>
@@ -72,6 +77,7 @@ export function AccountSummary({
         onSuccess={() => onRefreshBalances?.()}
       />
       <ReceiveValueDialog open={recvOpen} onClose={() => setRecvOpen(false)} />
+      <AddValueDialog open={addOpen} onClose={() => setAddOpen(false)} />
     </Card>
   );
 }
