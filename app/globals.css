@@ -215,7 +215,6 @@
     border-radius: 0 !important;
     box-shadow: var(--pixel-shadow);
     transition:
-      transform 130ms steps(2, end),
       box-shadow 130ms steps(2, end),
       border-color 130ms steps(2, end),
       color 130ms steps(2, end),
@@ -223,7 +222,6 @@
   }
 
   .pixel-card:hover {
-    transform: translateY(2px);
     box-shadow: 0 2px 0 color-mix(in oklab, var(--foreground) 72%, black 28%);
     border-color: var(--accent-primary);
   }
