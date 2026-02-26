@@ -21,10 +21,10 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   const baseCardClasses =
     "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5";
   const interactiveCardClasses = [
-    "transition-all duration-200",
-    "hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
-    "group-hover:-translate-y-0.5 group-hover:border-primary/40 group-hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
-    "group-focus-visible:-translate-y-0.5 group-focus-visible:border-primary/50 group-focus-visible:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
+    "transition-[border-color,box-shadow,background-color,color] duration-200",
+    "hover:border-primary/40 hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
+    "group-hover:border-primary/40 group-hover:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
+    "group-focus-visible:border-primary/50 group-focus-visible:shadow-[0_18px_40px_-26px_rgba(15,118,110,0.4)]",
   ].join(" ");
 
   const stateFor = (id: string): VaultSummary["state"] | undefined => {

@@ -223,9 +223,11 @@ export function Hero() {
           {displayedRequests.length > 0 ? (
             <div className="mt-4 space-y-2">
               {displayedRequests.map((item, index) => (
-                <article
+                <Link
                   key={`${item.id}-${index}`}
-                  className="surface-panel px-4 py-3"
+                  href={item.href}
+                  className="group block surface-panel px-4 py-3 transition-[border-color,background-color,color,transform] duration-150 hover:border-primary/45 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  title={showSampleRequest ? `View ${item.id} example` : `Open ${item.id}`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -237,18 +239,15 @@ export function Hero() {
                       <p className="text-[11px] text-secondary-text">{item.term} term</p>
                     </div>
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
+                  <div className="mt-2 text-[11px]">
                     <p className="min-w-0 truncate text-secondary-text">
                       Owner:{" "}
                       <span className="font-mono text-foreground/90" title={item.owner}>
                         {item.owner}
                       </span>
                     </p>
-                    <Link href={item.href} className="pixel-link shrink-0 text-[0.56rem] text-primary hover:text-primary/80">
-                      {showSampleRequest ? "Examples" : "Vault"}
-                    </Link>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
           ) : (
