@@ -43,7 +43,7 @@ export function LiquidityRequestHeader(props: Props) {
   const title = headerTitle(props);
   const caption = headerCaption(props);
   return (
-    <div className="flex flex-col gap-3 border-b border-[color:var(--border)] pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-3">
         <SpinningTokenPair pauseOnHover />
         <div className="min-w-0">

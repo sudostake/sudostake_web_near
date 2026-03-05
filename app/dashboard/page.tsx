@@ -44,7 +44,6 @@ export default function Dashboard() {
 
   const totalVaults = userVaultIds?.length ?? 0;
   const totalPositions = lenderPositions?.length ?? 0;
-  const networkLabel = `${activeNetwork.charAt(0).toUpperCase()}${activeNetwork.slice(1)}`;
 
   const shortAccount = React.useMemo(() => {
     if (!signedAccountId) return "";
@@ -62,23 +61,13 @@ export default function Dashboard() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_67%)]"
       />
-      <Container className="relative space-y-5 pt-8 sm:pt-10 lg:pt-12">
+      <Container className="relative space-y-4 pt-8 sm:pt-10 lg:pt-12">
         <header className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] text-foreground">
-                  Dashboard
-                </h1>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-sm font-medium uppercase tracking-wide text-secondary-text">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono normal-case text-xs">
-                  {shortAccount}
-                </span>
-                <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
-                  Network {networkLabel}
-                </span>
-              </div>
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] tracking-tight text-foreground">
+                {shortAccount} · Liquidity Hub
+              </h1>
             </div>
 
             <div className="w-full sm:w-auto">
@@ -89,7 +78,7 @@ export default function Dashboard() {
                 onClick={() => setShowCreate(true)}
                 disabled={!signedAccountId}
               >
-                Create vault
+                New vault
               </Button>
             </div>
           </div>
@@ -98,7 +87,7 @@ export default function Dashboard() {
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.06fr),minmax(300px,0.94fr)]">
           <section className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Workspace</h2>
                 </div>
@@ -117,7 +106,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="min-h-[260px] pt-1">
                 <div
                   id="vaults-panel"
                   role="tabpanel"
