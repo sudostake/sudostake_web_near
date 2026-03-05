@@ -101,10 +101,10 @@ function routeIcon(routeId: NavRoute["id"]) {
 
 function desktopLinkClass(active: boolean) {
   return [
-    "inline-flex items-center px-2 py-1 text-[0.66rem] font-semibold uppercase tracking-[0.08em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+    "inline-flex items-center px-2 py-1 text-sm font-semibold uppercase tracking-[0.06em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
     active
       ? "text-[color:var(--accent-primary)] underline decoration-2 underline-offset-4 decoration-[color:var(--accent-primary)]"
-      : "text-[color:var(--text-primary)]/90 hover:text-[color:var(--accent-primary)] hover:underline hover:decoration-2 hover:underline-offset-4 hover:decoration-[color:var(--accent-primary)]",
+      : "text-[color:var(--text-primary)] hover:text-[color:var(--accent-primary)] hover:underline hover:decoration-2 hover:underline-offset-4 hover:decoration-[color:var(--accent-primary)]",
   ].join(" ");
 }
 
@@ -113,7 +113,7 @@ function mobileLinkClass(active: boolean) {
     "inline-flex h-9 w-9 items-center justify-center rounded-app transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
     active
       ? "bg-[color:var(--surface-muted)] text-[color:var(--accent-primary)]"
-      : "text-[color:var(--text-primary)]/85 hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)]",
+      : "text-[color:var(--text-primary)] hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)]",
   ].join(" ");
 }
 
@@ -207,7 +207,7 @@ export function Navigation() {
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link
               href={brandHref}
-              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-[0.72rem] text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] sm:text-[0.78rem]"
+              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-sm text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)]"
             >
               <LogoMark
                 size={34}
@@ -218,7 +218,7 @@ export function Navigation() {
             </Link>
             {network && (
               <span
-                className="pixel-chip hidden px-2.5 py-0.5 text-[0.58rem] text-[color:var(--text-secondary)] md:inline"
+                className="pixel-chip hidden px-2.5 py-0.5 text-xs text-[color:var(--text-secondary)] md:inline"
                 title="Active network"
               >
                 {network}
@@ -283,7 +283,7 @@ export function Navigation() {
                   onClick={onConnect}
                   disabled={connecting}
                   aria-busy={connecting || undefined}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app text-[color:var(--text-primary)]/85 transition-colors duration-150 hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app text-[color:var(--text-primary)] transition-colors duration-150 hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:hidden"
                 >
                   <WalletIcon />
                   <span className="sr-only">Connect wallet</span>
@@ -303,7 +303,7 @@ export function Navigation() {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen || undefined}
                   onClick={() => setMenuOpen((open) => !open)}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-app text-[color:var(--text-primary)]/85 transition-colors duration-150 hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:hidden"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-app text-[color:var(--text-primary)] transition-colors duration-150 hover:bg-[color:var(--surface-muted)] hover:text-[color:var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 md:hidden"
                 >
                   <UserIcon />
                   <span className="sr-only">Account menu</span>
@@ -329,7 +329,7 @@ export function Navigation() {
                     className="absolute right-0 z-50 mt-2 w-48 rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] py-1 shadow-[var(--pixel-shadow)]"
                   >
                     <div
-                      className="border-b-2 border-[color:var(--panel-border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]/90"
+                      className="border-b-2 border-[color:var(--panel-border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]"
                       role="none"
                     >
                       <span className="block truncate font-mono" title={signedAccountId}>{signedAccountId}</span>

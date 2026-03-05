@@ -47,7 +47,7 @@ export function LiquidityRequestHeader(props: Props) {
       <div className="flex min-w-0 items-center gap-3">
         <SpinningTokenPair pauseOnHover />
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Liquidity request</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">Liquidity request</p>
           <div className="mt-1 text-lg font-semibold leading-tight text-foreground">{title}</div>
           <div className="mt-1 text-sm text-secondary-text">{caption}</div>
         </div>

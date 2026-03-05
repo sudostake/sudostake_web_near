@@ -96,21 +96,21 @@ export function VaultHeader({
         <div className="flex min-w-0 items-center gap-3">
           <BackButton onClick={onBack} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">Vault operations</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault operations</p>
             <h1 className="mt-1 break-all text-[clamp(1.55rem,3.1vw,2.05rem)] font-semibold leading-tight" title={vaultId}>
               {vaultShortName}
             </h1>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-          <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary-text">
+          <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-sm font-semibold uppercase tracking-wide text-secondary-text">
             {network}
           </span>
           {badges.map((badge) => (
             <span
               key={badge.label}
               className={[
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-semibold uppercase tracking-wide",
                 BADGE_STYLES[badge.tone],
               ].join(" ")}
             >
@@ -193,7 +193,7 @@ export function VaultHeader({
 function OverviewCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-secondary-text">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</p>
       <div className="mt-1 min-h-[24px]">{children}</div>
     </div>
   );

@@ -43,7 +43,7 @@ export default function LoginPage() {
                   <Button size="lg" onClick={onConnect} className="w-full sm:w-auto">
                     Connect Wallet
                   </Button>
-                  <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary/80">
+                  <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary">
                     Discover
                   </Link>
                 </div>

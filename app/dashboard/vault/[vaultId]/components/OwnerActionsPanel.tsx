@@ -61,10 +61,10 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
           </p>
           {expiryLabel && (
             <div className="pt-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-secondary-text">
+              <span className="text-xs font-semibold uppercase tracking-wide text-secondary-text">
                 {STRINGS.ownerExactExpiryLabel}
               </span>
-              <div className={`text-xs ${hasExpired ? "text-amber-800" : "text-foreground/80"}`}>{expiryLabel}</div>
+              <div className={`text-xs ${hasExpired ? "text-amber-800" : "text-foreground"}`}>{expiryLabel}</div>
             </div>
           )}
         </div>

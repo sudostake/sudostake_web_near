@@ -9,13 +9,13 @@
   --theme-accent-l-hover: 32%;
   --background: #eceff3;
   --background-strong: #dfe5ec;
-  --foreground: #1f2937;
+  --foreground: #111827;
   --surface: #f7f9fc;
   --surface-muted: #e9eef4;
   --surface-glass: var(--surface);
   --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
   --primary-text: #f8fafc;
-  --secondary-text: #475569;
+  --secondary-text: #26384f;
   --border: #64748b;
   --radius-sm: 0;
   --radius-md: 0;
@@ -30,8 +30,8 @@
   --border-strong: var(--border);
   --text-primary: var(--foreground);
   --text-secondary: var(--secondary-text);
-  --text-tertiary: color-mix(in oklab, var(--secondary-text) 82%, transparent);
-  --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
+  --text-tertiary: color-mix(in oklab, var(--secondary-text) 90%, transparent);
+  --text-muted: color-mix(in oklab, var(--secondary-text) 76%, transparent);
   --shadow-soft-color: rgba(15, 23, 42, 0.36);
   --accent-primary: var(--primary);
   --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
@@ -52,8 +52,16 @@
   --color-accent-primary: var(--accent-primary);
   --color-accent-primary-hover: var(--accent-primary-hover);
   --color-accent-strong: var(--accent-strong);
-  --font-sans: var(--font-pixel-body);
+  --font-sans: var(--font-ui-sans);
   --font-mono: var(--font-geist-mono);
+  --text-xs: 0.82rem;
+  --text-sm: 0.93rem;
+  --text-base: 1rem;
+  --text-lg: 1.08rem;
+  --text-xs--line-height: 1.4;
+  --text-sm--line-height: 1.45;
+  --text-base--line-height: 1.55;
+  --text-lg--line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -65,20 +73,20 @@
     --theme-accent-l-hover: 66%;
     --background: #0f141c;
     --background-strong: #151b24;
-    --foreground: #e2e8f0;
+    --foreground: #f2f6ff;
     --surface: #1b2330;
     --surface-muted: #232d3b;
     --surface-glass: var(--surface);
     --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
     --primary-text: #0f141c;
-    --secondary-text: #c0cad8;
+    --secondary-text: #e2eaf8;
     --border: #7a8aa0;
     --surface-primary: var(--surface);
     --border-soft: var(--border);
     --text-primary: var(--foreground);
     --text-secondary: var(--secondary-text);
-    --text-tertiary: color-mix(in oklab, var(--secondary-text) 84%, transparent);
-    --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
+    --text-tertiary: color-mix(in oklab, var(--secondary-text) 92%, transparent);
+    --text-muted: color-mix(in oklab, var(--secondary-text) 78%, transparent);
     --shadow-soft-color: rgba(0, 0, 0, 0.56);
     --accent-primary: var(--primary);
     --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
@@ -108,23 +116,38 @@
     background:
       linear-gradient(
           90deg,
-          color-mix(in oklab, var(--background-strong) 76%, transparent) 1px,
+          color-mix(in oklab, var(--background-strong) 52%, transparent) 1px,
           transparent 1px
         )
         0 0 / 10px 10px,
       linear-gradient(
-          color-mix(in oklab, var(--background-strong) 76%, transparent) 1px,
+          color-mix(in oklab, var(--background-strong) 52%, transparent) 1px,
           transparent 1px
         )
         0 0 / 10px 10px,
       linear-gradient(180deg, var(--background), var(--background-strong));
     color: var(--foreground);
-    font-family: var(--font-pixel-body), "Courier New", Courier, monospace;
-    font-size: clamp(1.28rem, 1.95vw, 1.52rem);
-    line-height: 1.34;
-    letter-spacing: 0.02em;
-    -webkit-font-smoothing: none;
-    text-rendering: optimizeSpeed;
+    font-family: var(--font-ui-sans), "Trebuchet MS", "Segoe UI", sans-serif;
+    font-size: clamp(1rem, 0.96rem + 0.28vw, 1.08rem);
+    line-height: 1.58;
+    letter-spacing: 0.008em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  p,
+  li,
+  dt,
+  dd {
+    line-height: 1.6;
   }
 
   img {
@@ -206,8 +229,8 @@
   .pixel-heading {
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.45;
+    letter-spacing: 0.045em;
+    line-height: 1.35;
   }
 
   .pixel-card {
@@ -234,9 +257,9 @@
     background: var(--surface-muted);
     padding: 0.15rem 0.45rem;
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-    font-size: 0.62rem;
-    line-height: 1.24;
-    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
@@ -365,10 +388,10 @@
 
   .section-heading {
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-    font-size: clamp(0.98rem, 1.5vw, 1.28rem);
+    font-size: clamp(1.02rem, 1.6vw, 1.3rem);
     font-weight: 400;
-    letter-spacing: 0.06em;
-    line-height: 1.5;
+    letter-spacing: 0.045em;
+    line-height: 1.42;
     text-transform: uppercase;
   }
 
@@ -560,7 +583,8 @@
 h1,
 h2,
 h3 {
-  font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-family: var(--font-ui-sans), "Trebuchet MS", "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-transform: none;
 }

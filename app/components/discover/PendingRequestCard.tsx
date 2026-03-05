@@ -71,7 +71,7 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
                 </p>
                 <p className="mt-1 text-xs text-secondary-text">
                   Owner{" "}
-                  <span className="font-mono text-foreground/90" title={item.owner ?? "Unknown owner"}>
+                  <span className="font-mono text-foreground" title={item.owner ?? "Unknown owner"}>
                     {ownerLabel}
                   </span>
                 </p>
@@ -90,7 +90,7 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
             <MetricItem label="Collateral" value={`${collateralNear} NEAR`} />
           </div>
 
-          <span className="inline-flex text-xs font-medium text-primary transition group-hover:text-primary/80">View details</span>
+          <span className="inline-flex text-xs font-medium text-primary transition group-hover:text-primary">View details</span>
         </div>
       </Card>
     </Link>
@@ -100,7 +100,7 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
 function MetricItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-secondary-text">{label}</p>
       <p className="mt-0.5 truncate text-sm font-semibold text-foreground" title={value}>{value}</p>
     </div>
   );

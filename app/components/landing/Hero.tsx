@@ -207,9 +207,9 @@ export function Hero() {
         <aside className="surface-card pixel-card px-5 py-6 sm:px-6 sm:py-7">
           <header className="flex items-start justify-between gap-3">
             <div>
-              <p className="pixel-heading text-[0.62rem] text-foreground">Live request board</p>
+              <p className="pixel-heading text-sm text-foreground">Live request board</p>
             </div>
-            <Link href={APP_ROUTES.discover.href} className="pixel-link text-[0.58rem] text-primary hover:text-primary/80">
+            <Link href={APP_ROUTES.discover.href} className="pixel-link text-xs text-primary hover:text-primary">
               Discover
             </Link>
           </header>
@@ -232,17 +232,17 @@ export function Hero() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground">{item.amount}</p>
-                      <p className="mt-0.5 text-[11px] text-secondary-text">{item.collateral} collateral</p>
+                      <p className="mt-0.5 text-sm text-secondary-text">{item.collateral} collateral</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-foreground">{item.apr}</p>
-                      <p className="text-[11px] text-secondary-text">{item.term} term</p>
+                      <p className="text-sm text-secondary-text">{item.term} term</p>
                     </div>
                   </div>
-                  <div className="mt-2 text-[11px]">
+                  <div className="mt-2 text-sm">
                     <p className="min-w-0 truncate text-secondary-text">
                       Owner:{" "}
-                      <span className="font-mono text-foreground/90" title={item.owner}>
+                      <span className="font-mono text-foreground" title={item.owner}>
                         {item.owner}
                       </span>
                     </p>
@@ -266,7 +266,7 @@ export function Hero() {
 function BoardMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="surface-panel px-2.5 py-2">
-      <p className="pixel-heading text-[0.58rem] text-secondary-text">{label}</p>
+      <p className="pixel-heading text-xs text-secondary-text">{label}</p>
       <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
     </div>
   );

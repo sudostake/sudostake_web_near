@@ -125,7 +125,7 @@ export function DelegationsCard({
       {error && (
         <div className="rounded-xl border border-red-200/60 bg-red-50/90 px-4 py-3 text-sm text-red-700" role="alert">
           Failed to load delegations
-          <div className="mt-1 text-xs opacity-80">{error}</div>
+          <div className="mt-1 text-xs">{error}</div>
         </div>
       )}
 

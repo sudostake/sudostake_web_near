@@ -73,7 +73,7 @@ export default function Dashboard() {
                   Dashboard
                 </h1>
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-secondary-text">
+              <div className="flex flex-wrap items-center gap-2 text-sm font-medium uppercase tracking-wide text-secondary-text">
                 <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono normal-case text-xs">
                   {shortAccount}
                 </span>
@@ -179,7 +179,7 @@ export default function Dashboard() {
 function HeaderStat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-secondary-text">{label}</p>
       <p className="mt-2 text-[1.35rem] font-semibold leading-none text-foreground">{value}</p>
     </div>
   );

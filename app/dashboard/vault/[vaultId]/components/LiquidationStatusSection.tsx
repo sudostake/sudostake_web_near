@@ -91,7 +91,7 @@ function LiquidationPayoutCard({
               <div className="flex items-center gap-2 min-w-0">
                 <svg
                   aria-hidden="true"
-                  className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary/90" : "text-foreground/40"}`}
+                  className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/55"}`}
                   viewBox="0 0 16 16"
                   fill="currentColor"
                 >
@@ -105,7 +105,7 @@ function LiquidationPayoutCard({
                   <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                 )}
               </div>
-              <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/60"}`}>
+              <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/75"}`}>
                 {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
               </span>
             </li>
@@ -114,7 +114,7 @@ function LiquidationPayoutCard({
                 <div className="flex items-center gap-2 min-w-0">
                   <svg
                     aria-hidden="true"
-                    className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary/90" : "text-foreground/40"}`}
+                    className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/55"}`}
                     viewBox="0 0 16 16"
                     fill="none"
                     stroke="currentColor"
@@ -130,7 +130,7 @@ function LiquidationPayoutCard({
                     <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
                   )}
                 </div>
-                <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/60"}`}>
+                <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/75"}`}>
                   {maturedTotalLabel} NEAR
                 </span>
               </li>

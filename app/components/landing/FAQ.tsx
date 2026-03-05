@@ -111,7 +111,7 @@ export function LandingFAQ() {
                 className="group surface-panel px-5 py-5 text-sm transition hover:border-primary/30 hover:bg-[color:var(--surface-muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 sm:px-6"
               >
                 <span className="flex items-start justify-between gap-3">
-                  <span className="pixel-heading text-[0.62rem] text-foreground">{link.title}</span>
+                  <span className="pixel-heading text-sm text-foreground">{link.title}</span>
                   <span
                     aria-hidden="true"
                     className="text-base text-secondary-text transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1"

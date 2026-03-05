@@ -20,9 +20,9 @@ export function Button({
   const base =
     "pixel-heading inline-flex items-center justify-center rounded-app border-2 border-[color:var(--panel-border)] transition-[transform,box-shadow,background-color,color,border-color] duration-150 [transition-timing-function:steps(2,end)] disabled:opacity-60 disabled:cursor-not-allowed focus-soft";
   const sizes: Record<Size, string> = {
-    sm: "h-8 px-2.5 text-[0.58rem] leading-none",
-    md: "h-9 px-3 text-[0.62rem] leading-none",
-    lg: "h-10 px-4 text-[0.66rem] leading-none",
+    sm: "h-9 px-3 text-xs leading-tight",
+    md: "h-10 px-3.5 text-sm leading-tight",
+    lg: "h-11 px-4 text-sm leading-tight",
   };
   const variants: Record<Variant, string> = {
     primary: "btn-primary",
