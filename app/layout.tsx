@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist_Mono, Press_Start_2P, VT323 } from "next/font/google";
+import { Geist_Mono, IBM_Plex_Sans, Press_Start_2P } from "next/font/google";
 import Providers from "./providers";
 import { Navigation } from "./components/Navigation";
 import { SkipLink } from "./components/SkipLink";
@@ -12,10 +12,11 @@ const pixelDisplay = Press_Start_2P({
   subsets: ["latin"],
 });
 
-const pixelBody = VT323({
-  variable: "--font-pixel-body",
-  weight: "400",
+const uiSans = IBM_Plex_Sans({
+  variable: "--font-ui-sans",
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -47,7 +48,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${pixelDisplay.variable} ${pixelBody.variable} ${geistMono.variable}`}>
+      <body className={`${pixelDisplay.variable} ${uiSans.variable} ${geistMono.variable}`}>
         <Providers>
           <SkipLink />
           <Navigation />

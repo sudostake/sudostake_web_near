@@ -9,17 +9,17 @@
   --theme-accent-l-hover: 32%;
   --background: #eceff3;
   --background-strong: #dfe5ec;
-  --foreground: #1f2937;
+  --foreground: #111827;
   --surface: #f7f9fc;
   --surface-muted: #e9eef4;
   --surface-glass: var(--surface);
   --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
   --primary-text: #f8fafc;
-  --secondary-text: #475569;
+  --secondary-text: #26384f;
   --border: #64748b;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
+  --radius-sm: 0.45rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
   --panel-bg: var(--surface);
   --panel-border: var(--border);
   --hero-panel-from: var(--surface);
@@ -30,15 +30,19 @@
   --border-strong: var(--border);
   --text-primary: var(--foreground);
   --text-secondary: var(--secondary-text);
-  --text-tertiary: color-mix(in oklab, var(--secondary-text) 82%, transparent);
-  --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
+  --text-tertiary: color-mix(in oklab, var(--secondary-text) 90%, transparent);
+  --text-muted: color-mix(in oklab, var(--secondary-text) 76%, transparent);
   --shadow-soft-color: rgba(15, 23, 42, 0.36);
   --accent-primary: var(--primary);
   --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
   --accent-strong: color-mix(in oklab, var(--primary) 30%, transparent);
-  --pixel-size: 4px;
-  --pixel-shadow: 0 var(--pixel-size) 0 color-mix(in oklab, var(--foreground) 70%, black 30%);
-  --pixel-shadow-lg: 0 calc(var(--pixel-size) * 2) 0 color-mix(in oklab, var(--foreground) 74%, black 26%);
+  --pixel-size: 1px;
+  --pixel-shadow:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),
+    0 10px 20px -18px var(--shadow-soft-color);
+  --pixel-shadow-lg:
+    0 0 0 1px color-mix(in oklab, var(--foreground) 12%, transparent),
+    0 16px 28px -24px var(--shadow-soft-color);
 }
 
 @theme inline {
@@ -52,8 +56,16 @@
   --color-accent-primary: var(--accent-primary);
   --color-accent-primary-hover: var(--accent-primary-hover);
   --color-accent-strong: var(--accent-strong);
-  --font-sans: var(--font-pixel-body);
+  --font-sans: var(--font-ui-sans);
   --font-mono: var(--font-geist-mono);
+  --text-xs: 0.82rem;
+  --text-sm: 0.93rem;
+  --text-base: 1rem;
+  --text-lg: 1.08rem;
+  --text-xs--line-height: 1.4;
+  --text-sm--line-height: 1.45;
+  --text-base--line-height: 1.55;
+  --text-lg--line-height: 1.5;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -65,20 +77,20 @@
     --theme-accent-l-hover: 66%;
     --background: #0f141c;
     --background-strong: #151b24;
-    --foreground: #e2e8f0;
+    --foreground: #f2f6ff;
     --surface: #1b2330;
     --surface-muted: #232d3b;
     --surface-glass: var(--surface);
     --primary: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l));
     --primary-text: #0f141c;
-    --secondary-text: #c0cad8;
+    --secondary-text: #e2eaf8;
     --border: #7a8aa0;
     --surface-primary: var(--surface);
     --border-soft: var(--border);
     --text-primary: var(--foreground);
     --text-secondary: var(--secondary-text);
-    --text-tertiary: color-mix(in oklab, var(--secondary-text) 84%, transparent);
-    --text-muted: color-mix(in oklab, var(--secondary-text) 62%, transparent);
+    --text-tertiary: color-mix(in oklab, var(--secondary-text) 92%, transparent);
+    --text-muted: color-mix(in oklab, var(--secondary-text) 78%, transparent);
     --shadow-soft-color: rgba(0, 0, 0, 0.56);
     --accent-primary: var(--primary);
     --accent-primary-hover: hsl(var(--theme-accent-h) var(--theme-accent-s) var(--theme-accent-l-hover));
@@ -88,8 +100,12 @@
     --hero-panel-from: var(--surface);
     --hero-panel-to: var(--surface);
     --surface-card-bg: var(--surface);
-    --pixel-shadow: 0 var(--pixel-size) 0 color-mix(in oklab, var(--background) 72%, black 28%);
-    --pixel-shadow-lg: 0 calc(var(--pixel-size) * 2) 0 color-mix(in oklab, var(--background) 64%, black 36%);
+    --pixel-shadow:
+      0 0 0 1px color-mix(in oklab, var(--foreground) 14%, transparent),
+      0 12px 24px -20px var(--shadow-soft-color);
+    --pixel-shadow-lg:
+      0 0 0 1px color-mix(in oklab, var(--foreground) 16%, transparent),
+      0 18px 34px -26px var(--shadow-soft-color);
   }
 }
 
@@ -108,23 +124,38 @@
     background:
       linear-gradient(
           90deg,
-          color-mix(in oklab, var(--background-strong) 76%, transparent) 1px,
+          color-mix(in oklab, var(--background-strong) 52%, transparent) 1px,
           transparent 1px
         )
         0 0 / 10px 10px,
       linear-gradient(
-          color-mix(in oklab, var(--background-strong) 76%, transparent) 1px,
+          color-mix(in oklab, var(--background-strong) 52%, transparent) 1px,
           transparent 1px
         )
         0 0 / 10px 10px,
       linear-gradient(180deg, var(--background), var(--background-strong));
     color: var(--foreground);
-    font-family: var(--font-pixel-body), "Courier New", Courier, monospace;
-    font-size: clamp(1.28rem, 1.95vw, 1.52rem);
-    line-height: 1.34;
-    letter-spacing: 0.02em;
-    -webkit-font-smoothing: none;
-    text-rendering: optimizeSpeed;
+    font-family: var(--font-ui-sans), "Trebuchet MS", "Segoe UI", sans-serif;
+    font-size: clamp(1rem, 0.96rem + 0.28vw, 1.08rem);
+    line-height: 1.58;
+    letter-spacing: 0.008em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  p,
+  li,
+  dt,
+  dd {
+    line-height: 1.6;
   }
 
   img {
@@ -152,10 +183,6 @@
     outline-offset: 2px;
   }
 
-  /* Force hard edges app-wide for the pixel treatment. */
-  [class*="rounded"] {
-    border-radius: 0 !important;
-  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -206,52 +233,52 @@
   .pixel-heading {
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    line-height: 1.45;
+    letter-spacing: 0.045em;
+    line-height: 1.35;
   }
 
   .pixel-card {
-    border: 2px solid var(--panel-border);
-    border-radius: 0 !important;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius-lg) !important;
     box-shadow: var(--pixel-shadow);
     transition:
-      box-shadow 130ms steps(2, end),
-      border-color 130ms steps(2, end),
-      color 130ms steps(2, end),
-      background-color 130ms steps(2, end);
+      box-shadow 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      background-color 160ms ease;
   }
 
   .pixel-card:hover {
-    box-shadow: 0 2px 0 color-mix(in oklab, var(--foreground) 72%, black 28%);
+    box-shadow: var(--pixel-shadow-lg);
     border-color: var(--accent-primary);
   }
 
   .pixel-chip {
     display: inline-flex;
     align-items: center;
-    border: 2px solid var(--panel-border);
-    border-radius: 0 !important;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px !important;
     background: var(--surface-muted);
     padding: 0.15rem 0.45rem;
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-    font-size: 0.62rem;
-    line-height: 1.24;
-    letter-spacing: 0.05em;
+    font-size: 0.7rem;
+    line-height: 1.35;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
   }
 
   .pixel-link {
     display: inline-flex;
     align-items: center;
-    border-radius: 0 !important;
+    border-radius: var(--radius-md) !important;
     padding: 0.25rem 0.45rem;
-    border: 2px solid transparent;
+    border: 1px solid transparent;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     transition:
-      color 130ms steps(2, end),
-      background-color 130ms steps(2, end),
-      border-color 130ms steps(2, end);
+      color 140ms ease,
+      background-color 140ms ease,
+      border-color 140ms ease;
   }
 
   .pixel-link:hover {
@@ -268,26 +295,25 @@
   .btn-primary {
     background: var(--primary);
     color: var(--primary-text);
-    border: 2px solid var(--panel-border);
-    border-radius: 0 !important;
-    box-shadow: var(--pixel-shadow);
+    border: 1px solid color-mix(in oklab, var(--primary) 48%, var(--panel-border));
+    border-radius: var(--radius-md) !important;
+    box-shadow: none;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     transition:
-      transform 130ms steps(2, end),
-      box-shadow 130ms steps(2, end),
-      background-color 130ms steps(2, end);
+      box-shadow 140ms ease,
+      background-color 140ms ease,
+      border-color 140ms ease;
   }
 
   .btn-primary:hover {
     background: var(--accent-primary-hover);
     color: var(--primary-text);
-    transform: translateY(2px);
-    box-shadow: 0 2px 0 color-mix(in oklab, var(--foreground) 74%, black 26%);
+    border-color: color-mix(in oklab, var(--primary) 62%, var(--panel-border));
+    box-shadow: 0 6px 12px -12px color-mix(in oklab, var(--primary) 58%, black 42%);
   }
 
   .btn-primary:active {
-    transform: translateY(4px);
     box-shadow: none;
   }
 
@@ -298,77 +324,77 @@
 
   .focus-soft {
     transition:
-      border-color 130ms steps(2, end),
-      background-color 130ms steps(2, end),
-      color 130ms steps(2, end),
-      box-shadow 130ms steps(2, end);
+      border-color 140ms ease,
+      background-color 140ms ease,
+      color 140ms ease,
+      box-shadow 140ms ease;
   }
 
   .focus-soft:is(:focus, :focus-visible) {
     outline: none;
     border-color: var(--primary);
     background-color: color-mix(in oklab, var(--surface) 84%, var(--primary) 16%);
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--primary);
+    box-shadow: 0 0 0 1px var(--background), 0 0 0 3px color-mix(in oklab, var(--primary) 70%, transparent);
   }
 
   .hero-panel {
     background: var(--surface);
-    border: 2px solid var(--panel-border) !important;
-    border-radius: 0 !important;
+    border: 1px solid var(--panel-border) !important;
+    border-radius: var(--radius-lg) !important;
     box-shadow: var(--pixel-shadow-lg) !important;
   }
 
   .surface-panel {
     background: var(--panel-bg);
-    border: 2px solid var(--panel-border) !important;
-    border-radius: 0 !important;
+    border: 1px solid var(--panel-border) !important;
+    border-radius: var(--radius-lg) !important;
     box-shadow: var(--pixel-shadow) !important;
   }
 
   .surface-card {
     background: var(--surface-card-bg);
-    border: 2px solid var(--panel-border) !important;
-    border-radius: 0 !important;
+    border: 1px solid var(--panel-border) !important;
+    border-radius: var(--radius-lg) !important;
     box-shadow: var(--pixel-shadow) !important;
   }
 
   .nav-panel {
     background: var(--surface);
-    border-bottom: 2px solid var(--panel-border) !important;
+    border-bottom: 1px solid color-mix(in oklab, var(--panel-border) 88%, transparent) !important;
     border-radius: 0 !important;
-    box-shadow: 0 3px 0 color-mix(in oklab, var(--foreground) 72%, black 28%) !important;
+    box-shadow: 0 8px 20px -22px var(--shadow-soft-color) !important;
   }
 
   .footer-panel {
     background: var(--surface-muted);
-    border-top: 2px solid var(--panel-border) !important;
+    border-top: 1px solid color-mix(in oklab, var(--panel-border) 88%, transparent) !important;
     border-radius: 0 !important;
-    box-shadow: 0 -3px 0 color-mix(in oklab, var(--foreground) 72%, black 28%) !important;
+    box-shadow: 0 -8px 20px -22px var(--shadow-soft-color) !important;
   }
 }
 
 @layer utilities {
   .surface-panel {
-    border: 2px solid var(--border-soft);
+    border: 1px solid var(--border-soft);
     background: var(--surface);
     box-shadow: var(--pixel-shadow);
   }
 
   .section-shell {
-    border-radius: 0;
-    border: 2px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-strong);
     background: color-mix(in srgb, var(--surface-primary) 90%, transparent);
-    box-shadow: var(--pixel-shadow-lg);
+    box-shadow: var(--pixel-shadow);
     overflow: hidden;
     clip-path: none;
   }
 
   .section-heading {
     font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-    font-size: clamp(0.98rem, 1.5vw, 1.28rem);
+    font-size: clamp(1.02rem, 1.6vw, 1.3rem);
     font-weight: 400;
-    letter-spacing: 0.06em;
-    line-height: 1.5;
+    letter-spacing: 0.045em;
+    line-height: 1.42;
     text-transform: uppercase;
   }
 
@@ -445,11 +471,11 @@
   }
 
   .shadow-soft-elevated {
-    box-shadow: 0 10px 30px -32px var(--shadow-soft-color);
+    box-shadow: 0 14px 26px -24px var(--shadow-soft-color);
   }
 
   .shadow-card-subtle {
-    box-shadow: 0 8px 24px -30px var(--shadow-soft-color);
+    box-shadow: 0 10px 20px -18px var(--shadow-soft-color);
   }
 
 }
@@ -560,7 +586,8 @@
 h1,
 h2,
 h3 {
-  font-family: var(--font-pixel-display), "Courier New", Courier, monospace;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  font-family: var(--font-ui-sans), "Trebuchet MS", "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-transform: none;
 }

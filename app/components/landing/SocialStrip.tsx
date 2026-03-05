@@ -72,7 +72,7 @@ export function SocialStrip() {
       <div className="surface-card pixel-card px-5 py-6 sm:px-10 sm:py-8">
         <div className="space-y-7">
           <div className="space-y-3">
-            <p className="pixel-heading text-[0.58rem] text-primary">Ready</p>
+            <p className="pixel-heading text-xs text-primary">Ready</p>
             <h2 className="section-heading text-foreground">
               Take the next step now
             </h2>
@@ -90,8 +90,8 @@ export function SocialStrip() {
               </Button>
             </Link>
           </div>
-          <div className="space-y-3 border-t-2 border-[color:var(--panel-border)] pt-5">
-            <p className="pixel-heading text-[0.56rem] text-secondary-text">Community and support</p>
+          <div className="space-y-3 border-t border-[color:var(--panel-border)] pt-5">
+            <p className="pixel-heading text-xs text-secondary-text">Community and support</p>
             <ul className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               {LINKS.map((link) => (
                 <li key={link.href}>
@@ -99,11 +99,11 @@ export function SocialStrip() {
                     href={link.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="group inline-flex w-full items-center gap-2 border-2 border-[color:var(--panel-border)] bg-[color:var(--surface-muted)] px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
+                    className="group inline-flex w-full items-center gap-2 border border-[color:var(--panel-border)] bg-[color:var(--surface-muted)] px-4 py-2.5 text-sm text-secondary-text transition hover:border-primary/40 hover:text-primary sm:w-auto"
                   >
                     <span
                       aria-hidden="true"
-                      className="flex h-8 w-8 items-center justify-center border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
+                      className="flex h-8 w-8 items-center justify-center border border-[color:var(--panel-border)] bg-[color:var(--surface)] text-secondary-text transition group-hover:border-primary/40 group-hover:text-primary"
                     >
                       {link.icon}
                     </span>

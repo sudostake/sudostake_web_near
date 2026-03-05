@@ -12,7 +12,7 @@ type Props = React.PropsWithChildren<{
 
 export function Badge({ variant = "neutral", className = "", title, children }: Props) {
   const base =
-    "pixel-heading inline-flex items-center gap-1 rounded-app border-2 border-[color:var(--panel-border)] px-2.5 py-1 text-[0.58rem] leading-none";
+    "pixel-heading inline-flex items-center gap-1 rounded-app border border-[color:var(--panel-border)] px-2.5 py-1 text-xs leading-tight";
   const styles: Record<Variant, string> = {
     neutral: "bg-[color:var(--surface-muted)] text-[color:var(--text-secondary)]",
     info: "bg-[color:var(--accent-strong)] text-[color:var(--accent-primary)]",

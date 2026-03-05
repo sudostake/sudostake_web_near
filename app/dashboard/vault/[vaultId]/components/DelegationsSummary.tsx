@@ -31,7 +31,7 @@ function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
 }
 
 function statusPillClass(status: DelegationStatus | null): string {
-  const base = "text-[10px] uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
+  const base = "text-xs uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
   switch (status) {
     case DelegationStatus.Withdrawable:
       return `${base} bg-emerald-100 text-emerald-800 ring-emerald-300/50 dark:bg-emerald-800/50 dark:text-emerald-100 dark:ring-emerald-500/40`;
@@ -129,7 +129,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           )}
         </div>
         {showMore && entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
-          <div className="mt-1 text-xs text-secondary-text opacity-80">
+          <div className="mt-1 text-xs text-secondary-text">
             current epoch {entry.current_epoch} • unstaked epoch {entry.unstaked_at}
           </div>
         )}

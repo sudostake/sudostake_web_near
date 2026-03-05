@@ -26,10 +26,10 @@ export function AvailableBalanceCard({
       className="surface-card space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-xs font-semibold uppercase tracking-wide text-primary/80">
+        <span className="text-xs font-semibold uppercase tracking-wide text-primary">
           {STRINGS.availableBalanceTitle}
         </span>
-        {loading && <span className="text-[11px] text-secondary-text">Updating...</span>}
+        {loading && <span className="text-sm text-secondary-text">Updating...</span>}
       </div>
       <div className="flex items-baseline gap-2 text-[clamp(1.85rem,3.5vw,2.2rem)] font-semibold text-foreground">
         {loading ? (

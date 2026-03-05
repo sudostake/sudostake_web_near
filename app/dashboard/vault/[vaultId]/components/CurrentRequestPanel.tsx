@@ -83,7 +83,7 @@ function Field({
 }) {
   return (
     <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-secondary-text">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
       <div className={`${mono ? "font-mono" : "font-semibold"} mt-1 break-all text-foreground`}>{value}</div>
       {detail && <div className="text-xs text-secondary-text">{detail}</div>}
     </div>

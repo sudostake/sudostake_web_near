@@ -28,7 +28,7 @@ export default function LoginPage() {
       <Container className="relative pt-16 sm:pt-20 pb-20">
         <main id="main" className="mx-auto max-w-4xl">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr),minmax(260px,320px)]">
-            <section className="surface-card relative overflow-hidden rounded-4xl px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.68)] sm:px-8 sm:py-10">
+            <section className="surface-card relative overflow-hidden rounded-4xl px-6 py-8 shadow-card-subtle sm:px-8 sm:py-10">
               <div
                 aria-hidden="true"
                 className="absolute -right-24 top-0 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(15,118,110,0.22),transparent_70%)] blur-2xl"
@@ -43,13 +43,13 @@ export default function LoginPage() {
                   <Button size="lg" onClick={onConnect} className="w-full sm:w-auto">
                     Connect Wallet
                   </Button>
-                  <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary/80">
+                  <Link href={APP_ROUTES.discover.href} className="text-sm font-medium text-primary hover:text-primary">
                     Discover
                   </Link>
                 </div>
               </div>
             </section>
-            <aside className="surface-card rounded-[28px] px-5 py-7 shadow-[0_24px_80px_-55px_rgba(15,23,42,0.6)] sm:px-6">
+            <aside className="surface-card rounded-[28px] px-5 py-7 shadow-card-subtle sm:px-6">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Supported wallets</h2>
               <div className="mt-4">
                 <WalletBadges />

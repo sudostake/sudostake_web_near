@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useMemo } from "react";
-import Link from "next/link";
 import { AccountSummary } from "../components/AccountSummary";
 import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
@@ -13,7 +12,6 @@ import { useUserVaults } from "@/hooks/useUserVaults";
 import { useLenderPositions } from "@/hooks/useLenderPositions";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
-import { APP_ROUTES } from "@/app/components/navigationRoutes";
 import { useRouteAccess } from "@/app/hooks/useRouteAccess";
 
 export default function Dashboard() {
@@ -46,7 +44,6 @@ export default function Dashboard() {
 
   const totalVaults = userVaultIds?.length ?? 0;
   const totalPositions = lenderPositions?.length ?? 0;
-  const networkLabel = `${activeNetwork.charAt(0).toUpperCase()}${activeNetwork.slice(1)}`;
 
   const shortAccount = React.useMemo(() => {
     if (!signedAccountId) return "";
@@ -64,54 +61,33 @@ export default function Dashboard() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_67%)]"
       />
-      <Container className="relative space-y-5 pt-8 sm:pt-10 lg:pt-12">
-        <header className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] text-foreground">
-                  Dashboard
-                </h1>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-secondary-text">
-                <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 font-mono normal-case text-xs">
-                  {shortAccount}
-                </span>
-                <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1">
-                  Network {networkLabel}
-                </span>
-              </div>
+      <Container className="relative space-y-4 pt-8 sm:pt-10 lg:pt-12">
+        <header className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] tracking-tight text-foreground">
+                {shortAccount} · Liquidity Hub
+              </h1>
             </div>
 
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[260px]">
+            <div className="w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="md"
-                className="w-full"
+                className="w-full sm:w-auto"
                 onClick={() => setShowCreate(true)}
                 disabled={!signedAccountId}
               >
-                Create vault
+                New vault
               </Button>
-              <Link href={APP_ROUTES.discover.href} className="w-full">
-                <Button variant="secondary" size="md" className="w-full">
-                  Discover
-                </Button>
-              </Link>
             </div>
-          </div>
-
-          <div className="mt-5 grid gap-2 sm:grid-cols-3">
-            <HeaderStat label="Vaults" value={totalVaults} />
-            <HeaderStat label="Positions" value={totalPositions} />
-            <HeaderStat label="View" value={tab === "positions" ? "Positions" : "Vaults"} />
           </div>
         </header>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1.06fr),minmax(300px,0.94fr)]">
-          <section className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
+          <section className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Workspace</h2>
                 </div>
@@ -130,7 +106,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="border-t border-[color:var(--border)] pt-4">
+              <div className="min-h-[260px] pt-1">
                 <div
                   id="vaults-panel"
                   role="tabpanel"
@@ -142,6 +118,7 @@ export default function Dashboard() {
                     factoryId={factoryId}
                     onCreate={() => setShowCreate(true)}
                     headerMode="toolsOnly"
+                    showCreateButton={false}
                   />
                 </div>
                 <div
@@ -172,15 +149,6 @@ export default function Dashboard() {
           refetchBalances();
         }}
       />
-    </div>
-  );
-}
-
-function HeaderStat({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4">
-      <p className="text-[10px] font-medium uppercase tracking-wide text-secondary-text">{label}</p>
-      <p className="mt-2 text-[1.35rem] font-semibold leading-none text-foreground">{value}</p>
     </div>
   );
 }

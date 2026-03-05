@@ -34,7 +34,7 @@ export default function DiscoverPage() {
       />
       <Container className="relative pt-8 sm:pt-10 lg:pt-12">
         <main id="main" className="space-y-5">
-          <header className="surface-card rounded-3xl px-5 py-6 shadow-[0_18px_62px_-44px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7">
+          <header className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
                 <h1 className="text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-tight text-foreground">

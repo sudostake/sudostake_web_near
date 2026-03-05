@@ -73,7 +73,7 @@ export function Features() {
           <div className="grid gap-5 lg:grid-cols-2">
             {paths.map((path) => (
               <div key={path.title} className="surface-panel p-6">
-                <h3 className="pixel-heading text-[0.64rem] text-foreground">{path.title}</h3>
+                <h3 className="pixel-heading text-xs text-foreground">{path.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-secondary-text">{path.summary}</p>
                 <ul className="mt-4 space-y-2 text-sm text-secondary-text">
                   {path.steps.map((step) => (
@@ -107,11 +107,11 @@ export function Features() {
               </div>
             ))}
           </div>
-          <Link href={APP_ROUTES.docs.href} className="pixel-link inline-flex items-center gap-2 text-[0.58rem] text-primary hover:text-primary/80">
+          <Link href={APP_ROUTES.docs.href} className="pixel-link inline-flex items-center gap-2 text-xs text-primary hover:text-primary">
             Need details first? Read docs
             <span
               aria-hidden="true"
-              className="inline-flex h-5 w-5 items-center justify-center border-2 border-primary/30 bg-primary/10 text-[0.66rem]"
+              className="inline-flex h-5 w-5 items-center justify-center border border-primary/30 bg-primary/10 text-sm"
             >
               →
             </span>

@@ -179,7 +179,7 @@ export default function VaultPage() {
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-[0_20px_72px_-50px_rgba(15,23,42,0.6)]"
+            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-card-subtle"
           >
             <div className="h-4 w-1/4 rounded-full bg-foreground/10" />
             <div className="mt-3 h-16 rounded-xl bg-foreground/5" />
@@ -225,7 +225,7 @@ export default function VaultPage() {
           {isOwner && (
             <Card className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5">
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary/85">Vault controls</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault controls</p>
                 <h2 className="text-lg font-semibold text-foreground">Manage vault funds</h2>
               </div>
               <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
@@ -285,7 +285,7 @@ export default function VaultPage() {
           />
           {!signedAccountId && (
             <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <h2 className="text-sm font-semibold text-primary/90">Connect wallet to continue</h2>
+              <h2 className="text-sm font-semibold text-primary">Connect wallet to continue</h2>
               <Button
                 onClick={() => {
                   if (connectingWallet) return;

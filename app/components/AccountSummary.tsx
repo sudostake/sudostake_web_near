@@ -37,7 +37,7 @@ export function AccountSummary({
 
   return (
     <Card
-      className={`surface-card h-full w-full rounded-3xl px-5 py-6 shadow-[0_18px_60px_-42px_rgba(15,23,42,0.55)] sm:px-6 sm:py-7 ${className}`}
+      className={`surface-card h-full w-full rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7 ${className}`}
     >
       <HeaderWithActions loading={isLoading} onRefreshBalances={onRefreshBalances} />
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">

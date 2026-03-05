@@ -23,7 +23,7 @@ export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
         <span className="font-semibold">Error:</span> {message}
       </p>
       {onRetry && (
-        <p className="text-xs font-medium uppercase tracking-wide text-red-600/70">
+        <p className="text-xs font-medium uppercase tracking-wide text-red-700">
           Retrying automatically…
         </p>
       )}
