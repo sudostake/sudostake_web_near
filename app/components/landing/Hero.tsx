@@ -175,7 +175,7 @@ export function Hero() {
   return (
     <section className="relative mt-6 sm:mt-10">
       <div className="relative grid gap-5 lg:grid-cols-[minmax(0,1.12fr),minmax(320px,0.88fr)] lg:items-start">
-        <section className="surface-card pixel-card px-6 py-6 sm:px-8 sm:py-8">
+        <section className="surface-card pixel-card min-w-0 px-6 py-6 sm:px-8 sm:py-8">
           <h1 className="pixel-hero text-[clamp(1rem,2.3vw,1.52rem)] text-foreground">
             Manage vaults and fund requests.
           </h1>
@@ -204,8 +204,8 @@ export function Hero() {
           )}
         </section>
 
-        <aside className="surface-card pixel-card px-5 py-6 sm:px-6 sm:py-7">
-          <header className="flex items-start justify-between gap-3">
+        <aside className="surface-card pixel-card min-w-0 px-4 py-5 min-[360px]:px-5 min-[360px]:py-6 sm:px-6 sm:py-7">
+          <header className="flex flex-col gap-2 min-[360px]:flex-row min-[360px]:items-start min-[360px]:justify-between">
             <div>
               <p className="pixel-heading text-sm text-foreground">Live request board</p>
             </div>
@@ -214,10 +214,10 @@ export function Hero() {
             </Link>
           </header>
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            <BoardMetric label="Open now" value={pendingLoading ? "..." : String(totalOpenRequests)} />
-            <BoardMetric label="Avg APR" value={pendingLoading ? "..." : averageApr} />
-            <BoardMetric label="Shortest term" value={pendingLoading ? "..." : shortestTerm} />
+          <div className="mt-4 flex flex-wrap gap-2">
+            <BoardSummaryPill label="Open" value={pendingLoading ? "..." : String(totalOpenRequests)} />
+            <BoardSummaryPill label="Avg APR" value={pendingLoading ? "..." : averageApr} />
+            <BoardSummaryPill label="Min term" value={pendingLoading ? "..." : shortestTerm} />
           </div>
 
           {displayedRequests.length > 0 ? (
@@ -226,21 +226,25 @@ export function Hero() {
                 <Link
                   key={`${item.id}-${index}`}
                   href={item.href}
-                  className="group block surface-panel px-4 py-3 transition-[border-color,background-color,color,transform] duration-150 hover:border-primary/45 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                  className="group block surface-panel px-3.5 py-3 transition-[border-color,background-color,color,transform] duration-150 hover:border-primary/45 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                   title={showSampleRequest ? `View ${item.id} example` : `Open ${item.id}`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{item.amount}</p>
-                      <p className="mt-0.5 text-sm text-secondary-text">{item.collateral} collateral</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-foreground">{item.apr}</p>
-                      <p className="text-sm text-secondary-text">{item.term} term</p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold text-foreground">{item.amount}</p>
+                    <p className="mt-1 break-words text-xs text-secondary-text">{item.collateral} collateral</p>
                   </div>
-                  <div className="mt-2 text-sm">
-                    <p className="min-w-0 truncate text-secondary-text">
+
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    <span className="rounded-full border border-[color:var(--panel-border)] bg-[color:var(--surface)] px-2.5 py-1 font-semibold text-foreground">
+                      {item.apr} APR
+                    </span>
+                    <span className="rounded-full border border-[color:var(--panel-border)] bg-transparent px-2.5 py-1 text-secondary-text">
+                      {item.term} term
+                    </span>
+                  </div>
+
+                  <div className="mt-2">
+                    <p className="min-w-0 truncate text-xs text-secondary-text">
                       Owner:{" "}
                       <span className="font-mono text-foreground" title={item.owner}>
                         {item.owner}
@@ -263,11 +267,11 @@ export function Hero() {
   );
 }
 
-function BoardMetric({ label, value }: { label: string; value: string }) {
+function BoardSummaryPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="surface-panel px-2.5 py-2">
-      <p className="pixel-heading text-xs text-secondary-text">{label}</p>
-      <p className="mt-1 truncate text-sm font-semibold text-foreground">{value}</p>
+    <div className="inline-flex min-w-0 items-center gap-2 rounded-full border border-[color:var(--panel-border)] bg-[color:var(--surface)] px-3 py-1.5 text-xs shadow-[var(--pixel-shadow)]">
+      <span className="whitespace-nowrap text-secondary-text">{label}</span>
+      <span className="min-w-0 break-words font-semibold text-foreground">{value}</span>
     </div>
   );
 }
