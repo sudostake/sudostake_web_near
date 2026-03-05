@@ -17,7 +17,7 @@ export function Accordion({ items }: Props) {
   const containerClassName = [
     "rounded-app",
     "pixel-card",
-    "border-2",
+    "border",
     "border-[color:var(--panel-border)]",
     "bg-[color:var(--surface)]",
     "shadow-[var(--pixel-shadow)]",

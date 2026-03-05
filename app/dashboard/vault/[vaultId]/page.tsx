@@ -179,7 +179,7 @@ export default function VaultPage() {
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-[0_20px_72px_-50px_rgba(15,23,42,0.6)]"
+            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-card-subtle"
           >
             <div className="h-4 w-1/4 rounded-full bg-foreground/10" />
             <div className="mt-3 h-16 rounded-xl bg-foreground/5" />

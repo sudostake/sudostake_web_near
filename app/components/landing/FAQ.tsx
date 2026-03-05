@@ -92,7 +92,7 @@ const FAQ_ITEMS: AccordionItem[] = [
 
 export function LandingFAQ() {
   return (
-    <section className="mt-28 border-t-2 border-[color:var(--panel-border)] pt-16">
+    <section className="mt-28 border-t border-[color:var(--panel-border)] pt-16">
       <div className="grid gap-12 lg:grid-cols-[minmax(0,0.95fr),minmax(280px,0.8fr)]">
         <div className="space-y-8">
           <div className="max-w-2xl space-y-3">

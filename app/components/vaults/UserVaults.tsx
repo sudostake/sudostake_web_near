@@ -18,9 +18,17 @@ export type UserVaultsProps = {
   onVaultClick?: (vaultId: string) => void;
   onCreate?: () => void;
   headerMode?: "full" | "toolsOnly"; // toolsOnly renders just the controls (search + create)
+  showCreateButton?: boolean;
 };
 
-export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMode = "full" }: UserVaultsProps) {
+export function UserVaults({
+  owner,
+  factoryId,
+  onVaultClick,
+  onCreate,
+  headerMode = "full",
+  showCreateButton = true,
+}: UserVaultsProps) {
   const { data, loading, error, refetch } = useUserVaults(owner, factoryId);
   const { data: summaries } = useUserVaultsSummaries(owner, factoryId);
   const [query, setQuery] = React.useState("");
@@ -56,7 +64,7 @@ export function UserVaults({ owner, factoryId, onVaultClick, onCreate, headerMod
           Clear
         </Button>
       )}
-      <CreateVaultButton className="shrink-0" onClick={onCreate} />
+      {showCreateButton && <CreateVaultButton className="shrink-0" onClick={onCreate} />}
     </div>
   );
 

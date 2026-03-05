@@ -106,7 +106,7 @@ export default function DocsIndex() {
         className="pointer-events-none absolute inset-x-0 top-[-30vh] h-[58vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_65%)]"
       />
       <Container className="relative pt-16 sm:pt-20 space-y-8">
-        <Card className="surface-card space-y-4 rounded-4xl px-6 py-8 shadow-[0_24px_90px_-55px_rgba(15,23,42,0.65)] sm:px-8 sm:py-10">
+        <Card className="surface-card space-y-4 rounded-4xl px-6 py-8 shadow-card-subtle sm:px-8 sm:py-10">
           <p className="text-xs font-semibold uppercase tracking-wide text-primary">Documentation</p>
           <h1 className="text-[clamp(2rem,4vw,2.6rem)] font-semibold">SudoStake docs</h1>
         </Card>
@@ -115,7 +115,7 @@ export default function DocsIndex() {
             <DocQuickLink key={link.href} {...link} />
           ))}
         </div>
-        <Card className="surface-card space-y-6 rounded-[28px] px-6 py-6 shadow-[0_22px_80px_-55px_rgba(15,23,42,0.6)]">
+        <Card className="surface-card space-y-6 rounded-[28px] px-6 py-6 shadow-card-subtle">
           <DocsIndexClient sections={sections} />
         </Card>
       </Container>

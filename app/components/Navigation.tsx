@@ -326,10 +326,10 @@ export function Navigation() {
                 {menuOpen && (
                   <div
                     role="menu"
-                    className="absolute right-0 z-50 mt-2 w-48 rounded-app border-2 border-[color:var(--panel-border)] bg-[color:var(--surface)] py-1 shadow-[var(--pixel-shadow)]"
+                    className="absolute right-0 z-50 mt-2 w-48 rounded-app border border-[color:var(--panel-border)] bg-[color:var(--surface)] py-1 shadow-[var(--pixel-shadow)]"
                   >
                     <div
-                      className="border-b-2 border-[color:var(--panel-border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]"
+                      className="border-b border-[color:var(--panel-border)] px-3 py-2 text-xs text-[color:var(--text-secondary)]"
                       role="none"
                     >
                       <span className="block truncate font-mono" title={signedAccountId}>{signedAccountId}</span>
@@ -352,7 +352,7 @@ export function Navigation() {
                         </Link>
                       );
                     })}
-                    <div className="my-1 border-t-2 border-[color:var(--panel-border)]" />
+                    <div className="my-1 border-t border-[color:var(--panel-border)]" />
                     <Button
                       role="menuitem"
                       variant="ghost"

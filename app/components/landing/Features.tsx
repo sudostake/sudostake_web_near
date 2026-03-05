@@ -111,7 +111,7 @@ export function Features() {
             Need details first? Read docs
             <span
               aria-hidden="true"
-              className="inline-flex h-5 w-5 items-center justify-center border-2 border-primary/30 bg-primary/10 text-sm"
+              className="inline-flex h-5 w-5 items-center justify-center border border-primary/30 bg-primary/10 text-sm"
             >
               →
             </span>

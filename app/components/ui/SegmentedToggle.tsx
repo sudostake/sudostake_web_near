@@ -78,7 +78,7 @@ export function SegmentedToggle({
   }
 
   const containerClasses = [
-    "relative inline-flex w-full select-none items-center overflow-hidden rounded-app border-2 border-[color:var(--panel-border)] bg-surface-muted/60",
+    "relative inline-flex w-full select-none items-center overflow-hidden rounded-app border border-[color:var(--panel-border)] bg-surface-muted/60",
     paddingClass,
     disabled ? "opacity-60 cursor-not-allowed" : "",
     className,

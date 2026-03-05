@@ -354,7 +354,7 @@ function renderCalloutOrQuote(raw: string) {
     .split(/\n{2,}/)
     .map((part) => `<p class="text-sm leading-6">${formatInline(part)}</p>`)
     .join("");
-  return `<blockquote class="border-l-2 border-foreground/20 pl-4 italic">${paragraphs}</blockquote>`;
+  return `<blockquote class="border-l border-foreground/20 pl-4 italic">${paragraphs}</blockquote>`;
 }
 
 const CALLOUT_STYLES: Record<string, { label: string; wrapper: string; titleClass: string }> = {
