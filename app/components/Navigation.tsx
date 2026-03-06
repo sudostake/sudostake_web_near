@@ -203,18 +203,18 @@ export function Navigation() {
         className="nav-panel fixed left-0 right-0 top-0"
         style={{ zIndex: "var(--z-nav, 50)" }}
       >
-        <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1.5 px-5 py-2 sm:flex-nowrap sm:justify-between sm:px-6 sm:py-2.5 lg:px-8">
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+        <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 px-3 py-2 min-[360px]:px-4 sm:px-6 sm:py-2.5 md:flex md:flex-nowrap md:items-center lg:px-8">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-4 md:flex-1">
             <Link
               href={brandHref}
-              className="pixel-heading inline-flex items-center gap-2.5 whitespace-nowrap text-sm text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)]"
+              className="pixel-heading inline-flex min-w-0 items-center gap-2 text-sm text-[color:var(--text-primary)] transition hover:text-[color:var(--accent-primary)] min-[360px]:gap-2.5"
             >
               <LogoMark
                 size={34}
                 className="h-8 w-8 sm:h-9 sm:w-9"
                 ariaLabel="SudoStake home"
               />
-              <span>SudoStake</span>
+              <span className="truncate">SudoStake</span>
             </Link>
             {network && (
               <span
@@ -226,55 +226,7 @@ export function Navigation() {
             )}
           </div>
 
-          <div className="hidden items-center gap-1 md:flex">
-            {routes.map((route) => {
-              const active = isRouteActive(pathname, route);
-              if (!signedAccountId && route.id === "login") {
-                return (
-                  <button
-                    key={route.id}
-                    type="button"
-                    className={desktopLinkClass(active)}
-                    onClick={onConnect}
-                    disabled={connecting}
-                    aria-busy={connecting || undefined}
-                  >
-                    {connecting ? "Opening wallet..." : route.label}
-                  </button>
-                );
-              }
-              return (
-                <Link
-                  key={route.id}
-                  href={route.href}
-                  className={desktopLinkClass(active)}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {route.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          <div className="ml-auto flex items-center gap-2 sm:justify-end">
-            <div className="flex items-center gap-1 md:hidden">
-              {mobileRoutes.map((route) => {
-                const active = isRouteActive(pathname, route);
-                return (
-                  <Link
-                    key={route.id}
-                    href={route.href}
-                    aria-label={route.label}
-                    aria-current={active ? "page" : undefined}
-                    className={mobileLinkClass(active)}
-                  >
-                    {routeIcon(route.id)}
-                    <span className="sr-only">{route.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-
+          <div className="flex items-center justify-self-end gap-2 md:order-3 md:ml-auto md:justify-end">
             {!signedAccountId && (
               <>
                 <button
@@ -367,6 +319,54 @@ export function Navigation() {
                 )}
               </div>
             )}
+          </div>
+
+          <div className="col-span-2 flex items-center justify-center gap-1 md:hidden">
+            {mobileRoutes.map((route) => {
+              const active = isRouteActive(pathname, route);
+              return (
+                <Link
+                  key={route.id}
+                  href={route.href}
+                  aria-label={route.label}
+                  aria-current={active ? "page" : undefined}
+                  className={mobileLinkClass(active)}
+                >
+                  {routeIcon(route.id)}
+                  <span className="sr-only">{route.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="hidden items-center gap-1 md:order-2 md:flex">
+            {routes.map((route) => {
+              const active = isRouteActive(pathname, route);
+              if (!signedAccountId && route.id === "login") {
+                return (
+                  <button
+                    key={route.id}
+                    type="button"
+                    className={desktopLinkClass(active)}
+                    onClick={onConnect}
+                    disabled={connecting}
+                    aria-busy={connecting || undefined}
+                  >
+                    {connecting ? "Opening wallet..." : route.label}
+                  </button>
+                );
+              }
+              return (
+                <Link
+                  key={route.id}
+                  href={route.href}
+                  className={desktopLinkClass(active)}
+                  aria-current={active ? "page" : undefined}
+                >
+                  {route.label}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </nav>

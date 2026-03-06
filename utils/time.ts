@@ -68,3 +68,28 @@ export function formatDurationFromSeconds(totalSeconds: number): string {
     return `${totalSeconds}s`;
   }
 }
+
+/**
+ * Formats a duration into plain language for explanatory UI.
+ * Examples: 90061 -> "1 day 1 hour", 5400 -> "1 hour 30 minutes"
+ */
+export function formatDurationWords(totalSeconds: number): string {
+  try {
+    const s = Math.max(0, Math.floor(totalSeconds));
+    const days = Math.floor(s / SECONDS_PER_DAY);
+    const afterDays = s % SECONDS_PER_DAY;
+    const hours = Math.floor(afterDays / SECONDS_PER_HOUR);
+    const afterHours = afterDays % SECONDS_PER_HOUR;
+    const minutes = Math.floor(afterHours / 60);
+    const seconds = afterHours % 60;
+    const parts: string[] = [];
+    if (days > 0) parts.push(`${days} ${dayLabel(days)}`);
+    if (hours > 0) parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
+    if (minutes > 0 && days === 0) parts.push(`${minutes} ${minutes === 1 ? "minute" : "minutes"}`);
+    if (seconds > 0 && days === 0 && hours === 0) parts.push(`${seconds} ${seconds === 1 ? "second" : "seconds"}`);
+    if (parts.length === 0) return "0 seconds";
+    return parts.slice(0, 2).join(" ");
+  } catch {
+    return `${totalSeconds} seconds`;
+  }
+}
