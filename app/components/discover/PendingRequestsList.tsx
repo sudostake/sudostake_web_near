@@ -36,9 +36,9 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
   }, [data, network]);
 
   const showingText = useMemo(() => {
-    if (loading) return "Loading open requests...";
+    if (loading) return "Loading opportunities to fund...";
     const count = availableRequests.length;
-    return `${count} open request${count === 1 ? "" : "s"}`;
+    return `${count} opportunit${count === 1 ? "y" : "ies"} to fund`;
   }, [loading, availableRequests.length]);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export function PendingRequestsList({ factoryId }: { factoryId: string }) {
 
       {!loading && availableRequests.length === 0 && (
         <div className="rounded-2xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface)] p-5 text-sm text-secondary-text">
-          No open requests right now. Check back shortly.
+          No opportunities to fund right now. Check back shortly.
         </div>
       )}
 

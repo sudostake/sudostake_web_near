@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { Card } from "@/app/components/ui/Card";
-import { VaultIcon } from "@/app/components/vaults/VaultIcon";
+import { Badge } from "@/app/components/ui/Badge";
 import Link from "next/link";
 import Big from "big.js";
 import { formatMinimalTokenAmount } from "@/utils/format";
@@ -10,7 +10,7 @@ import { getTokenConfigById } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
 import type { PendingRequest } from "@/utils/data/pending";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
-import { formatDurationFromSeconds } from "@/utils/time";
+import { formatDurationWords } from "@/utils/time";
 import { calculateApr } from "@/utils/finance";
 
 type Props = {
@@ -50,58 +50,77 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
     } catch { return "—"; }
   }, [lr, durationSeconds]);
   const ownerLabel = useMemo(() => {
-    if (!item.owner) return "Unknown owner";
+    if (!item.owner) return "Unknown borrower";
     if (item.owner.length <= 22) return item.owner;
     return `${item.owner.slice(0, 9)}…${item.owner.slice(-8)}`;
   }, [item.owner]);
 
+  const amountDisplay = `${amountLabel} ${symbol}`;
+  const repayDisplay = repayLabel === "—" ? "Unavailable" : `${repayLabel} ${symbol}`;
+  const durationDisplay = formatDurationWords(durationSeconds);
+  const collateralDisplay = `${collateralNear} NEAR`;
   const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
   if (!lr) return null;
 
   return (
-    <Link href={href} className="block focus:outline-none" aria-label={`View vault details for ${item.id}`}>
+    <Link
+      href={href}
+      className="block focus:outline-none"
+      aria-label={`Review opportunity to lend ${amountDisplay} and receive ${repayDisplay} back in ${durationDisplay}`}
+    >
       <Card className="group rounded-2xl p-4 transition-colors duration-150 hover:border-foreground/25 focus-visible:border-primary/40">
         <div className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
-              <VaultIcon id={item.id} size="md" />
-              <div className="min-w-0">
-                <p className="break-all text-sm font-semibold text-foreground" title={item.id}>
-                  {item.id}
-                </p>
-                <p className="mt-1 text-xs text-secondary-text">
-                  Owner{" "}
-                  <span className="font-mono text-foreground" title={item.owner ?? "Unknown owner"}>
-                    {ownerLabel}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 sm:shrink-0 sm:flex-col sm:items-end sm:gap-0 sm:text-right">
-              <p className="text-xs text-secondary-text">{symbol}</p>
-              <p className="text-sm font-semibold text-foreground">{aprLabel} APR</p>
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-lg font-semibold text-foreground">Lend {amountDisplay}</p>
+            <Badge variant={aprLabel === "—" ? "neutral" : "success"} className="justify-center">
+              {aprLabel === "—" ? "Return unavailable" : `${aprLabel} APR`}
+            </Badge>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-            <MetricItem label="Amount" value={`${amountLabel} ${symbol}`} />
-            <MetricItem label="Repay" value={`${repayLabel} ${symbol}`} />
-            <MetricItem label="Term" value={formatDurationFromSeconds(durationSeconds)} />
-            <MetricItem label="Collateral" value={`${collateralNear} NEAR`} />
+          <p className="text-sm text-secondary-text">Get {repayDisplay} back in {durationDisplay}</p>
+
+          <div className="space-y-1.5">
+            <DetailRow
+              label="Borrower"
+              value={ownerLabel}
+              title={item.owner ?? "Unknown borrower"}
+              mono
+            />
+            <DetailRow label="Collateral" value={collateralDisplay} />
           </div>
 
-          <span className="inline-flex text-xs font-medium text-primary transition group-hover:text-primary">View details</span>
+          <span className="inline-flex text-xs font-medium text-primary transition group-hover:text-primary">
+            Review opportunity
+          </span>
         </div>
       </Card>
     </Link>
   );
 }
 
-function MetricItem({ label, value }: { label: string; value: string }) {
+function DetailRow({
+  label,
+  value,
+  title,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  title?: string;
+  mono?: boolean;
+}) {
   return (
-    <div className="min-w-0">
-      <p className="text-xs font-medium uppercase tracking-wide text-secondary-text">{label}</p>
-      <p className="mt-0.5 truncate text-sm font-semibold text-foreground" title={value}>{value}</p>
-    </div>
+    <p className="text-sm text-secondary-text">
+      <span className="font-medium text-secondary-text">{label}</span>{" "}
+      <span
+        className={[
+          "text-foreground",
+          mono ? "break-all font-mono" : "break-words font-semibold",
+        ].join(" ")}
+        title={title ?? value}
+      >
+        {value}
+      </span>
+    </p>
   );
 }

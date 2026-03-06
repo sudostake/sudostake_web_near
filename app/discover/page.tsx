@@ -38,8 +38,11 @@ export default function DiscoverPage() {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-2">
                 <h1 className="text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-tight text-foreground">
-                  Open requests
+                  Open lending opportunities
                 </h1>
+                <p className="max-w-2xl text-sm text-secondary-text">
+                  See what you lend, what you get back, how long it takes, and what collateral backs each loan.
+                </p>
               </div>
               <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
                 {signedAccountId ? (
