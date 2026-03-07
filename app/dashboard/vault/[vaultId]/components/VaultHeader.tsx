@@ -8,6 +8,7 @@ import { CopyButton } from "@/app/components/ui/CopyButton";
 import { NATIVE_TOKEN } from "@/utils/constants";
 import { Card } from "@/app/components/ui/Card";
 import Link from "next/link";
+import { shortAmount } from "@/utils/format";
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -79,6 +80,8 @@ export function VaultHeader({
     console.warn("VaultHeader received a liquidation value that is not a boolean.", { liquidation });
   }
   const normalizedLiquidation = liquidation === true;
+  const compactNear = vaultNearLoading || vaultNear === "—" ? vaultNear : shortAmount(vaultNear, 6);
+  const compactUsdc = vaultUsdcLoading ? "Loading..." : usdcDisplay ? shortAmount(usdcDisplay, 2) : usdcDisplay;
 
   const badges: Array<{ label: string; tone: "primary" | "warn" }> = [];
   if (normalizedState) {
@@ -96,7 +99,7 @@ export function VaultHeader({
         <div className="flex min-w-0 items-center gap-3">
           <BackButton onClick={onBack} />
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault operations</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault</p>
             <h1 className="mt-1 break-all text-[clamp(1.55rem,3.1vw,2.05rem)] font-semibold leading-tight" title={vaultId}>
               {vaultShortName}
             </h1>
@@ -167,7 +170,7 @@ export function VaultHeader({
         <OverviewCell label={STRINGS.contractBalanceLabel}>
           <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
             <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
-              {vaultNearLoading ? "Loading..." : vaultNear}
+              {vaultNearLoading ? "Loading..." : compactNear}
             </span>
             <span className="text-xs text-secondary-text">{NATIVE_TOKEN}</span>
           </span>
@@ -177,7 +180,7 @@ export function VaultHeader({
           {usdcDisplay !== null && usdcDisplay !== undefined ? (
             <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
               <span className="break-all" title={`${usdcDisplay} USDC`}>
-                {vaultUsdcLoading ? "Loading..." : usdcDisplay}
+                {compactUsdc}
               </span>
               <span className="text-xs text-secondary-text">USDC</span>
             </span>

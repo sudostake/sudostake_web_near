@@ -6,6 +6,7 @@ import { explorerAccountUrl } from "@/utils/networks";
 import { Button } from "@/app/components/ui/Button";
 import { STRINGS, storageDepositString } from "@/utils/strings";
 import { Card } from "@/app/components/ui/Card";
+import { Badge } from "@/app/components/ui/Badge";
 
 type Props = {
   network: Network;
@@ -28,12 +29,17 @@ export function PotentialLenderRegistrationCard({
 }: Props) {
   if (lenderRegistered !== false) return null;
   return (
-    <Card className="space-y-3 border border-amber-400/40 bg-amber-50/70 text-amber-900" role="region" aria-label="Register account">
-      <p className="text-sm">
-        {STRINGS.mustRegisterAccountBeforeAccept}
-        {lenderMinDeposit && <> {storageDepositString(lenderMinDeposit)}</>}
-      </p>
-      <div className="flex flex-col gap-2 text-sm">
+    <Card className="space-y-3 rounded-2xl border border-amber-400/40 bg-amber-50/70 px-4 py-4 text-amber-900" role="region" aria-label="Register account">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold">Token storage</div>
+          <div className="text-xs">Register before funding</div>
+        </div>
+        <Badge variant="warn">
+          {lenderMinDeposit ? storageDepositString(lenderMinDeposit) : "Deposit required"}
+        </Badge>
+      </div>
+      <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
         <Button
           type="button"
           onClick={onRegister}
@@ -56,9 +62,6 @@ export function PotentialLenderRegistrationCard({
               {STRINGS.viewTokenOnExplorer}
             </a>
           )}
-          <a href="/docs/token-registration" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-            {STRINGS.learnMore}
-          </a>
         </div>
         {storagePending && (
           <div className="sr-only" role="status" aria-live="polite">

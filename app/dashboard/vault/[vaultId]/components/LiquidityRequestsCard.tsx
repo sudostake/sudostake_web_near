@@ -433,12 +433,6 @@ export function LiquidityRequestsCard({
         <VaultUsdcRegisteredNotice registered={vaultUsdcRegistered} />
       )}
 
-      {!hasOpenRequest && !isOwner && (
-        <div className="rounded-xl border border-dashed border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4 text-sm text-secondary-text">
-          No open liquidity request for this vault right now.
-        </div>
-      )}
-
       {content && (
         <LiquidityRequestContent
           content={content}

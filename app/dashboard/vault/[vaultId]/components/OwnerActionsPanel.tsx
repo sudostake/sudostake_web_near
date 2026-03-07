@@ -24,49 +24,24 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
 
   return (
     <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="region" aria-label="Owner actions">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">{STRINGS.ownerRepayNow}</h3>
-        <p className="text-xs text-secondary-text">
-          Repay the outstanding amount to unlock collateral and close the request.
-        </p>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-foreground">Owner actions</h3>
+        {(hasCountdown || hasExpired) && (
+          <Badge variant={hasExpired ? "warn" : "info"}>
+            {hasExpired ? STRINGS.ownerLoanTermEnded : countdownDisplay}
+          </Badge>
+        )}
       </div>
 
       {showTiming && (
         <div
-          className={`space-y-2 rounded-lg border px-3 py-3 text-xs ${
+          className={`rounded-lg border px-3 py-2 text-xs ${
             hasExpired ? "border-amber-200/60 bg-amber-50/80 text-amber-800" : "border-primary/20 bg-primary/5 text-secondary-text"
           }`}
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center justify-between gap-3">
-            <Badge variant={hasExpired ? "warn" : "info"}>
-              {hasExpired ? STRINGS.ownerLoanTermEnded : STRINGS.ownerLoanTermEndsSoon}
-            </Badge>
-            {(hasCountdown || hasExpired) && (
-              <span
-                className={`font-mono text-sm ${hasExpired ? "text-amber-800" : "text-primary"}`}
-                aria-label={
-                  hasExpired
-                    ? STRINGS.ownerLoanTermEnded
-                    : STRINGS.ownerLoanTermEndsIn(String(countdownDisplay))
-                }
-              >
-                {hasExpired ? STRINGS.ownerLoanTermEnded : countdownDisplay}
-              </span>
-            )}
-          </div>
-          <p className="text-xs">
-            {hasExpired ? STRINGS.expiredRepayWarning : STRINGS.ownerRepayCountdownHint}
-          </p>
-          {expiryLabel && (
-            <div className="pt-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-secondary-text">
-                {STRINGS.ownerExactExpiryLabel}
-              </span>
-              <div className={`text-xs ${hasExpired ? "text-amber-800" : "text-foreground"}`}>{expiryLabel}</div>
-            </div>
-          )}
+          {expiryLabel ? expiryLabel : hasExpired ? STRINGS.expiredRepayWarning : STRINGS.ownerRepayCountdownHint}
         </div>
       )}
 

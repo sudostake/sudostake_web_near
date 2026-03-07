@@ -33,7 +33,7 @@ import { ErrorMessage } from "@/app/components/vaults/ErrorMessage";
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
-
+import { VaultInsightsStrip } from "./components/VaultInsightsStrip";
 
 export default function VaultPage() {
   const router = useRouter();
@@ -56,8 +56,6 @@ export default function VaultPage() {
   const isOwner = role === "owner";
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
-  
-
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
     useAvailableBalance(vaultId);
 
@@ -179,6 +177,20 @@ export default function VaultPage() {
   }, []);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
+  const withdrawableValidators = useMemo(() => {
+    const entries = delegData?.summary ?? [];
+    let count = 0;
+    for (const entry of entries) {
+      try {
+        if (entry.can_withdraw && BigInt(entry.unstaked_balance.minimal || "0") > BigInt(0)) {
+          count += 1;
+        }
+      } catch {
+        // Ignore malformed balances when building the overview strip.
+      }
+    }
+    return count;
+  }, [delegData?.summary]);
   let Body: React.ReactNode;
   if (error) {
     Body = <ErrorMessage message={error} onRetry={refetch} />;
@@ -205,76 +217,98 @@ export default function VaultPage() {
       </div>
     );
   } else {
-    const supportGridClass = isOwner ? "grid gap-3 lg:grid-cols-2" : "space-y-3";
     Body = (
       <div className="space-y-4">
-        <LiquidityRequestsCard
-          vaultId={vaultId}
-          factoryId={factoryId}
-          vault={data}
-          delegations={delegData}
-          availableNear={availBalance}
+        <VaultInsightsStrip
           role={role}
-          isOwner={isOwner}
-          refetchVault={refetch}
-          refetchDelegations={refetchDeleg}
-          refetchAvailableBalance={refetchAvail}
-          onAfterAccept={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterRepay={() => {
-            refetchVaultUsdc();
-            refetchAvail();
-            refetchDeleg();
-          }}
-          onAfterTopUp={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterProcess={debouncedProcessRefresh}
+          state={data?.state}
+          liquidationActive={Boolean(data?.liquidation)}
+          signedAccountId={signedAccountId}
+          refundsCount={refundCount}
+          refundsLoading={refundsLoading}
+          validatorCount={delegData?.summary?.length ?? 0}
+          withdrawableCount={withdrawableValidators}
+          delegationsLoading={delegLoading}
+          delegationsError={delegError}
+          hasOpenRequest={Boolean(data?.liquidity_request)}
         />
 
-        <div className={supportGridClass}>
-          <AvailableBalanceCard
-            balance={availBalance}
-            loading={availLoading}
-          />
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.14fr),minmax(300px,0.86fr)] xl:items-start">
+          <div className="space-y-4">
+            <LiquidityRequestsCard
+              vaultId={vaultId}
+              factoryId={factoryId}
+              vault={data}
+              delegations={delegData}
+              availableNear={availBalance}
+              role={role}
+              isOwner={isOwner}
+              refetchVault={refetch}
+              refetchDelegations={refetchDeleg}
+              refetchAvailableBalance={refetchAvail}
+              onAfterAccept={() => {
+                refetchVaultUsdc();
+              }}
+              onAfterRepay={() => {
+                refetchVaultUsdc();
+                refetchAvail();
+                refetchDeleg();
+              }}
+              onAfterTopUp={() => {
+                refetchVaultUsdc();
+              }}
+              onAfterProcess={debouncedProcessRefresh}
+            />
 
-          {isOwner && (
-            <Card className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault controls</p>
-                <h2 className="text-lg font-semibold text-foreground">Manage vault funds</h2>
-              </div>
-              <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
-            </Card>
-          )}
+            {/* Delegations list & controls */}
+            <DelegationsActionsProvider
+              value={
+                isOwner
+                  ? {
+                      onDeposit: handleDeposit,
+                      onDelegate: handleDelegate,
+                      onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
+                      // Do not allow claiming unstaked during liquidation
+                      onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
+                    }
+                  : {}
+              }
+            >
+              <DelegationsCard
+                loading={delegLoading}
+                error={delegError}
+                summary={delegData?.summary}
+                availableBalance={availBalance}
+                availableLoading={availLoading}
+                refundsCount={refundCount}
+                refundsLoading={refundsLoading}
+                showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
+              />
+            </DelegationsActionsProvider>
+          </div>
+
+          <aside className="space-y-4 xl:sticky xl:top-24">
+            <AvailableBalanceCard
+              balance={availBalance}
+              loading={availLoading}
+              contractBalance={vaultNear}
+              state={data?.state}
+              liquidationActive={Boolean(data?.liquidation)}
+              refundsCount={refundCount ?? 0}
+              role={role}
+              actions={
+                isOwner ? (
+                  <ActionButtons
+                    onDeposit={handleDeposit}
+                    onWithdraw={handleWithdraw}
+                    onTransfer={handleTransfer}
+                    disabled={loading || Boolean(error)}
+                  />
+                ) : undefined
+              }
+            />
+          </aside>
         </div>
-
-        {/* Delegations list & controls */}
-        <DelegationsActionsProvider
-          value={
-            isOwner
-              ? {
-                  onDeposit: handleDeposit,
-                  onDelegate: handleDelegate,
-                  onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
-                  // Do not allow claiming unstaked during liquidation
-                  onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
-                }
-              : {}
-          }
-        >
-          <DelegationsCard
-            loading={delegLoading}
-            error={delegError}
-            summary={delegData?.summary}
-            availableBalance={availBalance}
-            availableLoading={availLoading}
-            refundsCount={refundCount}
-            refundsLoading={refundsLoading}
-            showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
-          />
-        </DelegationsActionsProvider>
       </div>
     );
   }
@@ -301,25 +335,27 @@ export default function VaultPage() {
             liquidation={Boolean(data?.liquidation)}
           />
           {!signedAccountId && (
-            <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <h2 className="text-sm font-semibold text-primary">Connect wallet to continue</h2>
-              <Button
-                onClick={() => {
-                  if (connectingWallet) return;
-                  setConnectingWallet(true);
-                  Promise.resolve(signIn())
-                    .catch((err) => {
-                      console.error("Wallet sign-in failed", err);
-                      showToast("Wallet connection failed. Please try again.", { variant: "error" });
-                    })
-                    .finally(() => setConnectingWallet(false));
-                }}
-                className="w-full sm:w-auto"
-                disabled={connectingWallet}
-                aria-busy={connectingWallet || undefined}
-              >
-                {connectingWallet ? "Opening wallet..." : "Connect wallet"}
-              </Button>
+            <Card className="rounded-3xl border border-primary/20 bg-[color:var(--surface)] px-4 py-3 sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm font-semibold text-foreground">Connect to act</div>
+                <Button
+                  onClick={() => {
+                    if (connectingWallet) return;
+                    setConnectingWallet(true);
+                    Promise.resolve(signIn())
+                      .catch((err) => {
+                        console.error("Wallet sign-in failed", err);
+                        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+                      })
+                      .finally(() => setConnectingWallet(false));
+                  }}
+                  className="w-full sm:w-auto"
+                  disabled={connectingWallet}
+                  aria-busy={connectingWallet || undefined}
+                >
+                  {connectingWallet ? "Opening wallet..." : "Connect wallet"}
+                </Button>
+              </div>
             </Card>
           )}
           {Body}

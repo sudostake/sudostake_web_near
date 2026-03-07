@@ -51,20 +51,20 @@ function OnboardingEmptyState({
   const available = Number.isNaN(parsed) ? 0 : parsed;
   const showDelegateCta = !availableLoading && available > 0 && Boolean(onDelegate);
   const showDepositCta = Boolean(onDeposit) && !showDelegateCta;
-  const helperMessage = React.useMemo(() => {
+  const statusLabel = React.useMemo(() => {
     const canAct = Boolean(onDelegate || onDeposit);
-    if (availableLoading && canAct) return "Checking your available balance...";
-    if (showDelegateCta) return "Delegate your available balance to validators to start earning rewards.";
-    if (showDepositCta) return "Deposit NEAR to your vault and then delegate to validators to start earning rewards.";
-    return "The owner can delegate to validators to start earning rewards.";
+    if (availableLoading && canAct) return "Checking balance";
+    if (showDelegateCta) return "Liquid NEAR ready";
+    if (showDepositCta) return "Deposit required";
+    return "Owner action required";
   }, [availableLoading, onDelegate, onDeposit, showDelegateCta, showDepositCta]);
   return (
-    <Card className="border border-dashed border-foreground/10 bg-surface-muted/60" role="region" aria-label="Delegation onboarding">
-      <div className="space-y-2">
-        <div className="text-sm font-semibold text-foreground">Get started with delegations</div>
-        <p className="text-sm text-secondary-text">
-          You do not have any delegations yet. {helperMessage}
-        </p>
+    <Card className="rounded-2xl border border-dashed border-foreground/10 bg-surface-muted/60 px-4 py-4" role="region" aria-label="Delegation onboarding">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="text-sm font-semibold text-foreground">No delegations</div>
+          <p className="text-xs text-secondary-text">{statusLabel}</p>
+        </div>
         {availableLoading && (onDelegate || onDeposit) ? (
           <div className="h-9 w-40 animate-pulse rounded-full bg-foreground/10" />
         ) : showDelegateCta ? (
@@ -73,7 +73,7 @@ function OnboardingEmptyState({
           </Button>
         ) : showDepositCta ? (
           <Button onClick={onDeposit} className="w-full justify-center gap-2 sm:w-auto">
-            Deposit to vault
+            Deposit
           </Button>
         ) : null}
       </div>
