@@ -20,7 +20,7 @@ import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
-import { useViewerRole } from "@/hooks/useViewerRole";
+import { getViewerRole } from "@/hooks/useViewerRole";
 import { useAccountFtBalance } from "@/hooks/useAccountFtBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
@@ -44,7 +44,16 @@ export default function VaultPage() {
   const [connectingWallet, setConnectingWallet] = useState(false);
 
   const { data, loading, error, refetch } = useVault(factoryId, vaultId);
-  const { isOwner } = useViewerRole(factoryId, vaultId);
+  const role = useMemo(
+    () =>
+      getViewerRole({
+        signedAccountId,
+        owner: data?.owner,
+        lender: data?.accepted_offer?.lender,
+      }),
+    [signedAccountId, data?.owner, data?.accepted_offer?.lender]
+  );
+  const isOwner = role === "owner";
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
   
@@ -202,6 +211,14 @@ export default function VaultPage() {
         <LiquidityRequestsCard
           vaultId={vaultId}
           factoryId={factoryId}
+          vault={data}
+          delegations={delegData}
+          availableNear={availBalance}
+          role={role}
+          isOwner={isOwner}
+          refetchVault={refetch}
+          refetchDelegations={refetchDeleg}
+          refetchAvailableBalance={refetchAvail}
           onAfterAccept={() => {
             refetchVaultUsdc();
           }}

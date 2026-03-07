@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { useVault } from "@/hooks/useVault";
-import { useViewerRole } from "@/hooks/useViewerRole";
+import type { ViewerRole } from "@/hooks/useViewerRole";
 import { getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import type { Network } from "@/utils/networks";
@@ -15,19 +14,20 @@ import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
 import { useFtBalance } from "@/hooks/useFtBalance";
-import { useAvailableBalance } from "@/hooks/useAvailableBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { tsToDate } from "@/utils/firestoreTimestamps";
 import { formatDurationShort } from "@/utils/time";
 import { sumMinimal } from "@/utils/amounts";
-import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import type { UseVaultDelegationsData } from "@/hooks/useVaultDelegations";
 import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Card } from "@/app/components/ui/Card";
+import { Balance } from "@/utils/balance";
+import type { VaultDocument } from "@/utils/types/vault_document";
 import { VaultUsdcRegisteredNotice } from "./VaultUsdcRegisteredNotice";
 import { OwnerVaultRegistrationCard } from "./OwnerVaultRegistrationCard";
 import { LiquidityRequestHeader } from "./LiquidityRequestHeader";
@@ -47,6 +47,14 @@ import {
 type Props = {
   vaultId: string;
   factoryId: string;
+  vault: VaultDocument | null;
+  delegations: UseVaultDelegationsData | null;
+  availableNear: Balance | null;
+  role: ViewerRole;
+  isOwner: boolean;
+  refetchVault: () => void;
+  refetchDelegations: () => void;
+  refetchAvailableBalance: () => void;
   onAfterAccept?: () => void;
   onAfterRepay?: () => void;
   onAfterTopUp?: () => void;
@@ -70,16 +78,27 @@ function formatTokenAmount(minimal: string, tokenId: string, network: Network): 
 
 // Unbonding progress UI is handled inside UnbondingList for clarity.
 
-export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAfterRepay, onAfterTopUp, onAfterProcess }: Props) {
+export function LiquidityRequestsCard({
+  vaultId,
+  factoryId,
+  vault,
+  delegations,
+  availableNear,
+  role,
+  isOwner,
+  refetchVault,
+  refetchDelegations,
+  refetchAvailableBalance,
+  onAfterAccept,
+  onAfterRepay,
+  onAfterTopUp,
+  onAfterProcess,
+}: Props) {
   const [openDialog, setOpenDialog] = useState(false);
   const [acceptOpen, setAcceptOpen] = useState(false);
   const [repayOpen, setRepayOpen] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const { data, refetch } = useVault(factoryId, vaultId);
-  const { data: delData, refetch: refetchDeleg } = useVaultDelegations(factoryId, vaultId);
-  const { balance: availableNear, refetch: refetchAvail } = useAvailableBalance(vaultId);
   const network = networkFromFactoryId(factoryId);
-  const { isOwner, role } = useViewerRole(factoryId, vaultId);
   const { acceptLiquidity, pending, error: acceptError } = useAcceptLiquidityRequest();
   const { cancelLiquidityRequest, pending: cancelPending, error: cancelError } = useCancelLiquidityRequest();
   const { indexVault } = useIndexVault();
@@ -93,7 +112,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   const [ownerMinDeposit, setOwnerMinDeposit] = React.useState<string | null>(null);
 
   const content = useMemo<LiquidityRequestContentData | null>(() => {
-    const req = data?.liquidity_request;
+    const req = vault?.liquidity_request;
     if (!req) return null;
     const amount = formatTokenAmount(req.amount, req.token, network);
     const interest = formatTokenAmount(req.interest, req.token, network);
@@ -101,7 +120,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     const durationDays = Math.max(1, Math.round((req.duration ?? 0) / SECONDS_PER_DAY));
     const totalDue = formatTokenAmount(sumMinimal(req.amount, req.interest), req.token, network);
     return { amount, interest, collateral, durationDays, token: req.token, amountRaw: req.amount, interestRaw: req.interest, totalDue };
-  }, [data, network]);
+  }, [vault, network]);
 
   // Lender balance check for the token of the current request
   const { balance: lenderTokenBal, loading: balLoading } = useFtBalance(content?.token);
@@ -125,13 +144,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   );
 
   // Expiry countdown for active loans
-  const acceptedAtDate = useMemo(() => tsToDate(data?.accepted_offer?.accepted_at as unknown), [data?.accepted_offer?.accepted_at]);
+  const acceptedAtDate = useMemo(() => tsToDate(vault?.accepted_offer?.accepted_at as unknown), [vault?.accepted_offer?.accepted_at]);
 
   const expiryDate = useMemo(() => {
-    if (!acceptedAtDate || !data?.liquidity_request?.duration) return null;
-    const ms = acceptedAtDate.getTime() + Number(data.liquidity_request.duration) * 1000;
+    if (!acceptedAtDate || !vault?.liquidity_request?.duration) return null;
+    const ms = acceptedAtDate.getTime() + Number(vault.liquidity_request.duration) * 1000;
     return new Date(ms);
-  }, [acceptedAtDate, data?.liquidity_request?.duration]);
+  }, [acceptedAtDate, vault?.liquidity_request?.duration]);
 
   const [remainingMs, setRemainingMs] = React.useState<number | null>(null);
   const prevRemainingRef = React.useRef<number | null>(null);
@@ -157,8 +176,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   React.useEffect(() => {
     if (
       role === "activeLender" &&
-      data?.state === "active" &&
-      !data?.liquidation &&
+      vault?.state === "active" &&
+      !vault?.liquidation &&
       remainingMs === 0 &&
       !postExpiryShown
     ) {
@@ -168,14 +187,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         setPostExpiryShown(true);
       }
     }
-  }, [remainingMs, role, data?.state, data?.liquidation, postExpiryShown]);
+  }, [remainingMs, role, vault?.state, vault?.liquidation, postExpiryShown]);
 
   // Open owner popup once when the timer reaches zero
   React.useEffect(() => {
     if (
       isOwner &&
-      data?.state === "active" &&
-      !data?.liquidation &&
+      vault?.state === "active" &&
+      !vault?.liquidation &&
       remainingMs === 0 &&
       !ownerPostExpiryShown
     ) {
@@ -185,28 +204,28 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         setOwnerPostExpiryShown(true);
       }
     }
-  }, [remainingMs, isOwner, data?.state, data?.liquidation, ownerPostExpiryShown]);
+  }, [remainingMs, isOwner, vault?.state, vault?.liquidation, ownerPostExpiryShown]);
 
   // Process claims (lender or owner)
   const { processClaims, pending: processPending, error: processError } = useProcessClaims();
   const { indexVault: indexAfterProcess } = useIndexVault();
-  const lenderId = data?.accepted_offer?.lender;
+  const lenderId = vault?.accepted_offer?.lender;
   const onBeginLiquidation = async () => {
     try {
       const { txHash } = await processClaims({ vault: vaultId });
       showToast(STRINGS.processClaimsSuccess, { variant: "success" });
       setPostExpiryOpen(false);
       // Update local views immediately
-      refetchAvail();
-      refetch();
-      refetchDeleg();
+      refetchAvailableBalance();
+      refetchVault();
+      refetchDelegations();
       onAfterProcess?.();
       // Kick off indexing; refetch again when done
       void indexAfterProcess({ factoryId, vault: vaultId, txHash })
         .then(() => {
-          refetchAvail();
-          refetch();
-          refetchDeleg();
+          refetchAvailableBalance();
+          refetchVault();
+          refetchDelegations();
           onAfterProcess?.();
         })
         .catch((e) => {
@@ -231,8 +250,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   );
 
   // Collateral/liquidation calculations (all in NEAR)
-  const collateralYocto = data?.liquidity_request?.collateral;
-  const liquidatedYocto = data?.liquidation?.liquidated;
+  const collateralYocto = vault?.liquidity_request?.collateral;
+  const liquidatedYocto = vault?.liquidation?.liquidated;
   const collateralLabel = useMemo(() => (collateralYocto ? safeFormatYoctoNear(collateralYocto, 5) : null), [collateralYocto]);
   const remainingYocto = useMemo(
     () => computeRemainingYocto(collateralYocto, liquidatedYocto),
@@ -244,12 +263,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   );
 
   const { maturedYocto, maturedTotalLabel } = useMemo(
-    () => computeMaturedTotals(delData?.summary),
-    [delData?.summary]
+    () => computeMaturedTotals(delegations?.summary),
+    [delegations?.summary]
   );
   const { unbondingYocto, unbondingTotalLabel, unbondingEntries, longestRemainingEpochs } = useMemo(
-    () => computeUnbondingTotals(delData?.summary, delData?.current_epoch ?? null),
-    [delData?.summary, delData?.current_epoch]
+    () => computeUnbondingTotals(delegations?.summary, delegations?.current_epoch ?? null),
+    [delegations?.summary, delegations?.current_epoch]
   );
   const { yocto: expectedImmediateYocto, label: expectedImmediateLabel } = useMemo(
     () => computeExpectedImmediate(availableNear?.minimal, remainingYocto),
@@ -265,14 +284,14 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   );
   const hasClaimableNow = useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
   const closesRepay = true;
-  const willBePartial = !hasClaimableNow || (Array.isArray(data?.unstake_entries) && data.unstake_entries.length > 0);
+  const willBePartial = !hasClaimableNow || (Array.isArray(vault?.unstake_entries) && vault.unstake_entries.length > 0);
 
   // longestRemainingEpochs is provided by computeUnbondingTotals
   const longestEtaMs = useMemo(() => (longestRemainingEpochs === null ? null : longestRemainingEpochs * AVERAGE_EPOCH_SECONDS * 1000), [longestRemainingEpochs]);
   const longestEtaLabel = useMemo(() => (longestEtaMs && longestEtaMs > 0 ? formatDurationShort(longestEtaMs) : null), [longestEtaMs]);
 
   const openDisabled = Boolean(
-    data?.state === "pending" || data?.state === "active" || !isOwner
+    vault?.state === "pending" || vault?.state === "active" || !isOwner
   );
   const hasOpenRequest = Boolean(content);
 
@@ -365,8 +384,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
     try {
       const { txHash } = await cancelLiquidityRequest({ vault: vaultId });
       await indexVault({ factoryId, vault: vaultId, txHash });
-      refetch();
-      refetchAvail();
+      refetchVault();
+      refetchAvailableBalance();
       showToast("Request cancelled", { variant: "success" });
     } catch (error) {
       console.error("Error cancelling liquidity request:", error);
@@ -374,9 +393,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
   };
 
   const onAccept = async () => {
-    if (!data?.liquidity_request) return;
+    if (!vault?.liquidity_request) return;
     try {
-      const { token, amount, interest, collateral, duration } = data.liquidity_request;
+      const { token, amount, interest, collateral, duration } = vault.liquidity_request;
       const { txHash } = await acceptLiquidity({
         vault: vaultId,
         token,
@@ -403,9 +422,9 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       <LiquidityRequestHeader
         hasOpenRequest={hasOpenRequest}
         isOwner={isOwner}
-        state={data?.state}
+        state={vault?.state}
         role={role}
-        lenderId={data?.accepted_offer?.lender}
+        lenderId={vault?.accepted_offer?.lender}
         openDisabled={openDisabled}
         onOpenRequest={() => setOpenDialog(true)}
       />
@@ -423,10 +442,10 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       {content && (
         <LiquidityRequestContent
           content={content}
-          state={data?.state}
+          state={vault?.state}
           role={role}
           isOwner={isOwner}
-          liquidationActive={Boolean(data?.liquidation)}
+          liquidationActive={Boolean(vault?.liquidation)}
           expiryDate={expiryDate}
           remainingMs={remainingMs}
           formattedCountdown={formattedCountdown}
@@ -463,13 +482,13 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       )}
 
       {/* Liquidation progress/status section */}
-      {data?.state === "active" && data?.liquidation && (
+      {vault?.state === "active" && vault?.liquidation && (
         <LiquidationStatusSection
           role={role}
           isOwner={isOwner}
           expiryDate={expiryDate}
           ownerLiquidationSummary={ownerLiquidationSummary}
-          liquidatedYocto={data.liquidation.liquidated}
+          liquidatedYocto={vault.liquidation.liquidated}
           remainingTargetLabel={remainingTargetLabel}
           collateralLabel={collateralLabel}
           claimableNowLabel={claimableNowLabel}
@@ -501,12 +520,12 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
       <LiquidityRequestDialogs
         isOwner={isOwner}
         role={role}
-        state={data?.state}
+        state={vault?.state}
         vaultId={vaultId}
         factoryId={factoryId}
         network={network}
         content={content}
-        liquidityRequest={data?.liquidity_request ?? null}
+        liquidityRequest={vault?.liquidity_request ?? null}
         openDialog={openDialog}
         onCloseOpenDialog={() => setOpenDialog(false)}
         acceptOpen={acceptOpen}
@@ -528,7 +547,7 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         closesRepay={closesRepay}
         willBePartial={willBePartial}
         canProcessNow={hasClaimableNow}
-        inProgress={Boolean(data?.liquidation)}
+        inProgress={Boolean(vault?.liquidation)}
         showLenderGratitude={role === "activeLender"}
         ownerPostExpiryOpen={ownerPostExpiryOpen}
         onCloseOwnerPostExpiry={() => setOwnerPostExpiryOpen(false)}
@@ -540,8 +559,8 @@ export function LiquidityRequestsCard({ vaultId, factoryId, onAfterAccept, onAft
         onCloseRepay={() => setRepayOpen(false)}
         onRepaySuccess={() => {
           onAfterRepay?.();
-          refetchAvail();
-          refetch();
+          refetchAvailableBalance();
+          refetchVault();
           setRepayOpen(false);
         }}
         onVaultTokenBalanceChange={() => {
