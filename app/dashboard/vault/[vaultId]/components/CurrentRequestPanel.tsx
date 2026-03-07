@@ -20,6 +20,7 @@ export function CurrentRequestPanel({
   countdownLabel,
   expiryLabel,
   expired = false,
+  flat = false,
 }: {
   content: CurrentRequestContent;
   active: boolean;
@@ -27,6 +28,7 @@ export function CurrentRequestPanel({
   countdownLabel?: string | null;
   expiryLabel?: string | null;
   expired?: boolean;
+  flat?: boolean;
 }) {
   const showExpiryField = Boolean(active && showTimeline && (expiryLabel || countdownLabel));
   const countdown = countdownLabel ?? null;
@@ -52,19 +54,23 @@ export function CurrentRequestPanel({
 
   return (
     <section
-      className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      className={
+        flat
+          ? "space-y-6"
+          : "space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      }
       role="region"
       aria-label={STRINGS.currentRequestTitle}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{STRINGS.currentRequestTitle}</p>
-      <div className="grid gap-2 md:grid-cols-3">
+      {!flat && <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{STRINGS.currentRequestTitle}</p>}
+      <div className={flat ? "grid gap-x-6 gap-y-4 md:grid-cols-3" : "grid gap-2 md:grid-cols-3"}>
         {leadFields.map((field) => (
-          <Field key={field.label} label={field.label} value={field.value} mono highlight={field.highlight} />
+          <Field key={field.label} label={field.label} value={field.value} mono highlight={field.highlight} flat={flat} />
         ))}
       </div>
-      <div className="grid gap-2 text-sm sm:grid-cols-3">
+      <div className={flat ? "grid gap-x-6 gap-y-4 text-sm sm:grid-cols-3" : "grid gap-2 text-sm sm:grid-cols-3"}>
         {detailFields.map((field) => (
-          <Field key={field.label} label={field.label} value={field.value} mono={field.mono ?? true} />
+          <Field key={field.label} label={field.label} value={field.value} mono={field.mono ?? true} flat={flat} />
         ))}
       </div>
     </section>
@@ -76,12 +82,31 @@ function Field({
   value,
   mono = false,
   highlight = false,
+  flat = false,
 }: {
   label: string;
   value: string;
   mono?: boolean;
   highlight?: boolean;
+  flat?: boolean;
 }) {
+  if (flat) {
+    return (
+      <div>
+        <div className="text-xs uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+        <div
+          className={[
+            mono ? "font-mono" : "font-semibold",
+            highlight ? "text-lg" : "",
+            "mt-1 break-all text-foreground",
+          ].join(" ")}
+        >
+          {value}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={[

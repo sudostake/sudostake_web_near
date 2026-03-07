@@ -23,7 +23,7 @@ function ValueRow({
   );
 }
 
-function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
+function SummaryItem({ entry, flat = false }: { entry: DelegationSummaryEntry; flat?: boolean }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
   const stakedDisplay = `${entry.staked_balance.toDisplay()} ${entry.staked_balance.symbol}`;
   const unstakedDisplay = `${entry.unstaked_balance.toDisplay()} ${entry.unstaked_balance.symbol}`;
@@ -40,7 +40,11 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
 
   return (
     <li
-      className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4"
+      className={
+        flat
+          ? "py-4 first:pt-0 last:pb-0"
+          : "rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4"
+      }
       key={entry.validator}
     >
       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -48,7 +52,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
           href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
           target="_blank"
           rel="noopener noreferrer"
-          className="break-all font-mono text-sm underline"
+          className="break-all font-mono text-sm transition-colors hover:text-primary"
           title={entry.validator}
           aria-label={`View validator ${entry.validator} on explorer`}
         >
@@ -64,7 +68,7 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
       </div>
 
       {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
-        <div className="mt-4 border-t border-foreground/10 pt-3">
+        <div className={flat ? "mt-4 pt-1" : "mt-4 border-t border-foreground/10 pt-3"}>
           <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
             {canClaim && (
               <button
@@ -111,12 +115,18 @@ function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   );
 }
 
-export function DelegationsSummary({ entries }: { entries: DelegationSummaryEntry[] }) {
+export function DelegationsSummary({
+  entries,
+  flat = false,
+}: {
+  entries: DelegationSummaryEntry[];
+  flat?: boolean;
+}) {
   return (
-    <div className="space-y-2" aria-label="Delegations summary">
-      <ul className="space-y-2">
+    <div className={flat ? "" : "space-y-2"} aria-label="Delegations summary">
+      <ul className={flat ? "space-y-4" : "space-y-2"}>
         {entries.map((entry) => (
-          <SummaryItem key={entry.validator} entry={entry} />
+          <SummaryItem key={entry.validator} entry={entry} flat={flat} />
         ))}
       </ul>
     </div>

@@ -203,6 +203,22 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   }, [amount, durationSeconds, hasValidAmount, hasValidInterestToken, interestToken]);
 
   const showCollateralError = hasCollateralInput && !isCollateralWithinMax;
+  const isReviewStep = currentStep === STEP_ITEMS.length - 1;
+  const currentStepTitle = STEP_ITEMS[currentStep];
+  const isSubmitStepValid =
+    hasToken &&
+    hasValidAmount &&
+    hasValidDuration &&
+    hasValidInterestToken &&
+    isCollateralStepValid &&
+    !checkingRegistration &&
+    isRegistered;
+  const registrationStatus = checkingRegistration
+    ? "Checking..."
+    : isRegistered
+      ? "Ready"
+      : "Registration required";
+  const storageDepositAmount = minStorageDeposit ? utils.format.formatNearAmount(minStorageDeposit) : null;
 
   const resetForm = () => {
     setCurrentStep(0);
@@ -274,7 +290,7 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
           ? hasValidInterestToken
           : currentStep === 3
             ? isCollateralStepValid
-            : hasToken && hasValidAmount && hasValidDuration && hasValidInterestToken && isCollateralStepValid && isRegistered;
+            : isSubmitStepValid;
 
   const handlePrimaryAction = () => {
     if (currentStep < STEP_ITEMS.length - 1) {
@@ -285,13 +301,15 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   };
 
   const primaryLabel =
-    currentStep === STEP_ITEMS.length - 1
+    isReviewStep
       ? pending
         ? "Submitting..."
-        : !isRegistered
-          ? "Register vault first"
+        : checkingRegistration
+          ? "Checking..."
           : "Submit request"
-      : "Next";
+      : currentStep === STEP_ITEMS.length - 2
+        ? "Review"
+        : "Continue";
 
   return (
     <Modal
@@ -328,26 +346,18 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
           <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">
             Step {currentStep + 1} of {STEP_ITEMS.length}
           </div>
-          <div className="text-sm text-secondary-text">
-            {tokenSymbol} request on {network}
-          </div>
+          <h4 className="text-xl font-semibold text-foreground">{currentStepTitle}</h4>
         </div>
 
         {currentStep === 0 && (
           <section className="space-y-4">
-            <div>
-              <h4 className="text-2xl font-semibold text-foreground">How much {tokenSymbol} do you want to borrow?</h4>
-              <p className="mt-2 text-sm leading-6 text-secondary-text">
-                This is the amount a lender will send into the vault if they accept your request.
-              </p>
-            </div>
             {!hasToken && (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
                 A default loan token is not configured for this network yet.
               </div>
             )}
             <Input
-              label={`Borrow amount (${tokenSymbol})`}
+              label="Amount"
               type="number"
               min={0}
               step="any"
@@ -355,7 +365,6 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               placeholder="0.0"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
-              hint="Example: 100 means the vault receives 100 USDC when funded."
               suffix={tokenSymbol}
             />
           </section>
@@ -363,14 +372,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
 
         {currentStep === 1 && (
           <section className="space-y-4">
-            <div>
-              <h4 className="text-2xl font-semibold text-foreground">How many days should the loan stay open?</h4>
-              <p className="mt-2 text-sm leading-6 text-secondary-text">
-                This is the repayment window after a lender accepts the request.
-              </p>
-            </div>
             <Input
-              label="Repayment window"
+              label="Days"
               type="number"
               min={1}
               step={1}
@@ -378,7 +381,6 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               placeholder="7"
               value={durationDays}
               onChange={(event) => setDurationDays(event.target.value)}
-              hint="Use a whole number of days. Common choices are 7, 14, or 30."
               suffix="days"
             />
           </section>
@@ -386,14 +388,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
 
         {currentStep === 2 && (
           <section className="space-y-4">
-            <div>
-              <h4 className="text-2xl font-semibold text-foreground">How much should the lender earn?</h4>
-              <p className="mt-2 text-sm leading-6 text-secondary-text">
-                This fee is added on top of the borrowed amount and paid back when the loan is repaid on time.
-              </p>
-            </div>
             <Input
-              label={`Lender fee (${tokenSymbol})`}
+              label="Fee"
               type="number"
               min={0}
               step="any"
@@ -401,15 +397,18 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               placeholder="0.0"
               value={interestToken}
               onChange={(event) => setInterestToken(event.target.value)}
-              hint="Set this to 0 if you want a zero-interest request."
               suffix={tokenSymbol}
             />
-            <div className="space-y-1 text-sm text-secondary-text">
-              <div>
-                Total repayment: <span className="font-semibold text-foreground">{totalRepayment === "—" ? "—" : `${totalRepayment} ${tokenSymbol}`}</span>
+            <div className="rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)] px-4 py-3 text-sm">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-secondary-text">Repayment</span>
+                <span className="font-semibold text-foreground">
+                  {totalRepayment === "—" ? "—" : `${totalRepayment} ${tokenSymbol}`}
+                </span>
               </div>
-              <div>
-                Estimated APR: <span className="font-semibold text-foreground">{estimatedApr}</span>
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <span className="text-secondary-text">APR</span>
+                <span className="font-semibold text-foreground">{estimatedApr}</span>
               </div>
             </div>
           </section>
@@ -417,14 +416,9 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
 
         {currentStep === 3 && (
           <section className="space-y-4">
-            <div>
-              <h4 className="text-2xl font-semibold text-foreground">How much NEAR should secure the request?</h4>
-              <p className="mt-2 text-sm leading-6 text-secondary-text">
-                Only delegated NEAR can be used as collateral for this request.
-              </p>
-            </div>
-            <div className="text-sm text-secondary-text">
-              Available delegated balance: <span className="font-semibold text-foreground">{displayMaxCollateralNear} NEAR</span>
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)] px-4 py-3 text-sm">
+              <span className="text-secondary-text">Available</span>
+              <span className="font-semibold text-foreground">{displayMaxCollateralNear} NEAR</span>
             </div>
             {hasDelegatedCollateral && (
               <div>
@@ -434,12 +428,12 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
                   size="sm"
                   onClick={() => setCollateralNear(maxCollateralNear)}
                 >
-                  Use all staked NEAR
+                  Use max
                 </Button>
               </div>
             )}
             <Input
-              label="Collateral amount"
+              label="NEAR collateral"
               type="number"
               min={0}
               step="any"
@@ -447,21 +441,16 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               placeholder="0.0"
               value={collateralNear}
               onChange={(event) => clampCollateral(event.target.value)}
-              hint={
-                hasDelegatedCollateral
-                  ? `You can use up to ${displayMaxCollateralNear} NEAR.`
-                  : "Delegate NEAR first, then return to this step."
-              }
               suffix="NEAR"
             />
             {showCollateralError && (
               <div className="rounded-2xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">
-                The collateral amount cannot be higher than the delegated NEAR in this vault.
+                Collateral exceeds delegated NEAR.
               </div>
             )}
             {!hasDelegatedCollateral && (
               <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
-                Delegate NEAR from this vault first, then open the request.
+                Delegate NEAR before continuing.
               </div>
             )}
           </section>
@@ -469,12 +458,6 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
 
         {currentStep === 4 && (
           <section className="space-y-4">
-            <div>
-              <h4 className="text-2xl font-semibold text-foreground">Review the request</h4>
-              <p className="mt-2 text-sm leading-6 text-secondary-text">
-                If everything looks right, submit and confirm it in your wallet.
-              </p>
-            </div>
             <div className="divide-y divide-[color:var(--panel-border)] rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)]">
               <ReviewRow label="Borrow amount" value={hasValidAmount ? `${amount} ${tokenSymbol}` : "—"} />
               <ReviewRow label="Repayment window" value={hasValidDuration ? formatDays(Number(durationDays)) : "—"} />
@@ -482,21 +465,20 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
               <ReviewRow label="Total repayment" value={totalRepayment === "—" ? "—" : `${totalRepayment} ${tokenSymbol}`} />
               <ReviewRow label="Estimated APR" value={estimatedApr} />
               <ReviewRow label="Collateral" value={hasValidCollateral ? `${collateralNear} NEAR` : "—"} />
+              <ReviewRow label="Vault status" value={registrationStatus} />
             </div>
 
-            <div className="space-y-3 rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)] p-4">
-              <div className="text-sm font-semibold text-foreground">Vault readiness</div>
-              <div className="mt-3 text-sm leading-6 text-secondary-text">
-                {checkingRegistration
-                  ? `Checking whether ${vaultId} can receive ${tokenSymbol}.`
-                  : isRegistered
-                    ? `This vault is ready to receive ${tokenSymbol}.`
-                    : `Register the vault first with a one-time storage deposit.`}
-                {!isRegistered && minStorageDeposit && (
-                  <> Required storage deposit: {utils.format.formatNearAmount(minStorageDeposit)} NEAR.</>
-                )}
-              </div>
-              {!isRegistered && (
+            {!isRegistered && (
+              <div className="space-y-3 rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)] p-4">
+                <div className="text-sm text-secondary-text">
+                  Register this vault to receive {tokenSymbol}.
+                  {storageDepositAmount && (
+                    <>
+                      {" "}
+                      One-time deposit: <span className="font-semibold text-foreground">{storageDepositAmount} NEAR</span>.
+                    </>
+                  )}
+                </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit}>
                     {regPending ? "Registering..." : "Register vault"}
@@ -507,8 +489,8 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
                     </div>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </section>
         )}
 
