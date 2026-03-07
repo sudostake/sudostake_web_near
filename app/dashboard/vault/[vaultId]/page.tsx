@@ -33,7 +33,6 @@ import { ErrorMessage } from "@/app/components/vaults/ErrorMessage";
 import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
-import { VaultInsightsStrip } from "./components/VaultInsightsStrip";
 
 export default function VaultPage() {
   const router = useRouter();
@@ -177,20 +176,6 @@ export default function VaultPage() {
   }, []);
 
   const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
-  const withdrawableValidators = useMemo(() => {
-    const entries = delegData?.summary ?? [];
-    let count = 0;
-    for (const entry of entries) {
-      try {
-        if (entry.can_withdraw && BigInt(entry.unstaked_balance.minimal || "0") > BigInt(0)) {
-          count += 1;
-        }
-      } catch {
-        // Ignore malformed balances when building the overview strip.
-      }
-    }
-    return count;
-  }, [delegData?.summary]);
   let Body: React.ReactNode;
   if (error) {
     Body = <ErrorMessage message={error} onRetry={refetch} />;
@@ -219,96 +204,69 @@ export default function VaultPage() {
   } else {
     Body = (
       <div className="space-y-4">
-        <VaultInsightsStrip
-          role={role}
-          state={data?.state}
-          liquidationActive={Boolean(data?.liquidation)}
-          signedAccountId={signedAccountId}
-          refundsCount={refundCount}
-          refundsLoading={refundsLoading}
-          validatorCount={delegData?.summary?.length ?? 0}
-          withdrawableCount={withdrawableValidators}
-          delegationsLoading={delegLoading}
-          delegationsError={delegError}
-          hasOpenRequest={Boolean(data?.liquidity_request)}
+        <AvailableBalanceCard
+          balance={availBalance}
+          loading={availLoading}
+          actions={
+            isOwner ? (
+              <ActionButtons
+                onDeposit={handleDeposit}
+                onWithdraw={handleWithdraw}
+                onTransfer={handleTransfer}
+                disabled={loading || Boolean(error)}
+              />
+            ) : undefined
+          }
         />
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.14fr),minmax(300px,0.86fr)] xl:items-start">
-          <div className="space-y-4">
-            <LiquidityRequestsCard
-              vaultId={vaultId}
-              factoryId={factoryId}
-              vault={data}
-              delegations={delegData}
-              availableNear={availBalance}
-              role={role}
-              isOwner={isOwner}
-              refetchVault={refetch}
-              refetchDelegations={refetchDeleg}
-              refetchAvailableBalance={refetchAvail}
-              onAfterAccept={() => {
-                refetchVaultUsdc();
-              }}
-              onAfterRepay={() => {
-                refetchVaultUsdc();
-                refetchAvail();
-                refetchDeleg();
-              }}
-              onAfterTopUp={() => {
-                refetchVaultUsdc();
-              }}
-              onAfterProcess={debouncedProcessRefresh}
-            />
+        <DelegationsActionsProvider
+          value={
+            isOwner
+              ? {
+                  onDeposit: handleDeposit,
+                  onDelegate: handleDelegate,
+                  onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
+                  onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
+                }
+              : {}
+          }
+        >
+          <DelegationsCard
+            loading={delegLoading}
+            error={delegError}
+            summary={delegData?.summary}
+            availableBalance={availBalance}
+            availableLoading={availLoading}
+            refundsCount={refundCount}
+            refundsLoading={refundsLoading}
+            showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
+          />
+        </DelegationsActionsProvider>
 
-            {/* Delegations list & controls */}
-            <DelegationsActionsProvider
-              value={
-                isOwner
-                  ? {
-                      onDeposit: handleDeposit,
-                      onDelegate: handleDelegate,
-                      onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
-                      // Do not allow claiming unstaked during liquidation
-                      onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
-                    }
-                  : {}
-              }
-            >
-              <DelegationsCard
-                loading={delegLoading}
-                error={delegError}
-                summary={delegData?.summary}
-                availableBalance={availBalance}
-                availableLoading={availLoading}
-                refundsCount={refundCount}
-                refundsLoading={refundsLoading}
-                showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
-              />
-            </DelegationsActionsProvider>
-          </div>
-
-          <aside className="space-y-4 xl:sticky xl:top-24">
-            <AvailableBalanceCard
-              balance={availBalance}
-              loading={availLoading}
-              contractBalance={vaultNear}
-              state={data?.state}
-              liquidationActive={Boolean(data?.liquidation)}
-              refundsCount={refundCount ?? 0}
-              role={role}
-              actions={
-                isOwner ? (
-                  <ActionButtons
-                    onDeposit={handleDeposit}
-                    onWithdraw={handleWithdraw}
-                    onTransfer={handleTransfer}
-                    disabled={loading || Boolean(error)}
-                  />
-                ) : undefined
-              }
-            />
-          </aside>
-        </div>
+        <LiquidityRequestsCard
+          vaultId={vaultId}
+          factoryId={factoryId}
+          vault={data}
+          delegations={delegData}
+          availableNear={availBalance}
+          role={role}
+          isOwner={isOwner}
+          refetchVault={refetch}
+          refetchDelegations={refetchDeleg}
+          refetchAvailableBalance={refetchAvail}
+          onAfterAccept={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterRepay={() => {
+            refetchVaultUsdc();
+            refetchAvail();
+            refetchDeleg();
+          }}
+          onAfterTopUp={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterProcess={debouncedProcessRefresh}
+        />
       </div>
     );
   }
