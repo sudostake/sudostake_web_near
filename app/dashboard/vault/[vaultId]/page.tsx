@@ -1,406 +1,666 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { getActiveFactoryId } from "@/utils/networks";
-import { useVault } from "@/hooks/useVault";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { useAvailableBalance } from "@/hooks/useAvailableBalance";
+import React from "react";
+import { useParams } from "next/navigation";
+import { Container } from "@/app/components/layout/Container";
+import { Button } from "@/app/components/ui/Button";
+import { Card } from "@/app/components/ui/Card";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
-import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
-import { ClaimUnstakedDialog } from "@/app/components/dialogs/ClaimUnstakedDialog";
+import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
-import { TransferOwnershipDialog } from "@/app/components/dialogs/TransferOwnershipDialog";
-import { AvailableBalanceCard } from "./components/AvailableBalanceCard";
-import { ActionButtons } from "./components/ActionButtons";
-import { DelegationsCard } from "./components/DelegationsCard";
-import { LiquidityRequestsCard } from "./components/LiquidityRequestsCard";
+import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
+import { CurrentRequestPanel } from "./components/CurrentRequestPanel";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
+import { useIndexVault } from "@/hooks/useIndexVault";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
-import { Balance } from "@/utils/balance";
-import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
-import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
-import { getViewerRole } from "@/hooks/useViewerRole";
-import { useAccountFtBalance } from "@/hooks/useAccountFtBalance";
-import { getDefaultUsdcTokenId } from "@/utils/tokens";
-import { networkFromFactoryId } from "@/utils/api/rpcClient";
+import { callViewFunction } from "@/utils/api/rpcClient";
+import { formatMinimalTokenAmount } from "@/utils/format";
+import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
+import { NATIVE_DECIMALS, NATIVE_TOKEN, SECONDS_PER_DAY } from "@/utils/constants";
+import { getDefaultUsdcTokenId, getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
-import { STRINGS } from "@/utils/strings";
-import { useRefundEntries } from "@/hooks/useRefundEntries";
-import { Container } from "@/app/components/layout/Container";
-import { VaultHeader } from "./components/VaultHeader";
-import { ErrorMessage } from "@/app/components/vaults/ErrorMessage";
-import { Card } from "@/app/components/ui/Card";
-import { Button } from "@/app/components/ui/Button";
+import type { VaultViewState } from "@/utils/types/vault_view_state";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
+import { Balance } from "@/utils/balance";
+import { DelegationsSummary } from "./components/DelegationsSummary";
+import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
+import { sumMinimal } from "@/utils/amounts";
+import { STRINGS } from "@/utils/strings";
+
+type LiquidityRequestState = {
+  token: string;
+  amount: string;
+  interest: string;
+  collateral: string;
+  duration: number;
+} | null;
 
 export default function VaultPage() {
-  const router = useRouter();
-  const { vaultId } = useParams<{ vaultId: string }>();
-  const factoryId = useMemo(() => getActiveFactoryId(), []);
-  const network = useMemo(() => networkFromFactoryId(factoryId), [factoryId]);
+  const params = useParams<{ vaultId: string }>();
+  const vaultId = React.useMemo(() => {
+    const raw = params?.vaultId;
+    return Array.isArray(raw) ? raw[0] ?? "" : raw ?? "";
+  }, [params]);
+  const [owner, setOwner] = React.useState<string>("");
+  const [ownerLoading, setOwnerLoading] = React.useState(false);
+  const [availableNearRaw, setAvailableNearRaw] = React.useState("0");
+  const [availableNearBalance, setAvailableNearBalance] = React.useState<string>("");
+  const [availableNearLoading, setAvailableNearLoading] = React.useState(false);
+  const [availableUsdcBalance, setAvailableUsdcBalance] = React.useState<string>("");
+  const [availableUsdcLoading, setAvailableUsdcLoading] = React.useState(false);
+  const [depositOpen, setDepositOpen] = React.useState(false);
+  const [delegateOpen, setDelegateOpen] = React.useState(false);
+  const [requestOpen, setRequestOpen] = React.useState(false);
+  const [withdrawOpen, setWithdrawOpen] = React.useState(false);
+  const [undelegateOpen, setUndelegateOpen] = React.useState(false);
+  const [undelegateValidator, setUndelegateValidator] = React.useState("");
+  const [withdrawAsset, setWithdrawAsset] = React.useState<"NEAR" | "USDC">("NEAR");
+  const [connectingWallet, setConnectingWallet] = React.useState(false);
+  const [balanceVersion, setBalanceVersion] = React.useState(0);
+  const [vaultVersion, setVaultVersion] = React.useState(0);
+  const [vaultState, setVaultState] = React.useState<"idle" | "pending" | "active">("idle");
+  const [liquidityRequest, setLiquidityRequest] = React.useState<LiquidityRequestState>(null);
+  const [requestToken, setRequestToken] = React.useState<string | null>(null);
+  const [liquidationActive, setLiquidationActive] = React.useState(false);
+  const [refundCount, setRefundCount] = React.useState(0);
+  const [factoryId, setFactoryId] = React.useState<string>(() => getActiveFactoryId());
   const { signedAccountId, signIn } = useWalletSelector();
-  const [connectingWallet, setConnectingWallet] = useState(false);
-
-  const { data, loading, error, refetch } = useVault(factoryId, vaultId);
-  const role = useMemo(
-    () =>
-      getViewerRole({
-        signedAccountId,
-        owner: data?.owner,
-        lender: data?.accepted_offer?.lender,
-      }),
-    [signedAccountId, data?.owner, data?.accepted_offer?.lender]
+  const { cancelLiquidityRequest, pending: cancelPending, error: cancelError } = useCancelLiquidityRequest();
+  const { indexVault } = useIndexVault();
+  const { balance: nearBalance, loading: nearBalanceLoading, refetch: refetchNearBalance } = useAccountBalance(vaultId);
+  const {
+    data: delegationData,
+    loading: delegationsLoading,
+    error: delegationsError,
+    refetch: refetchDelegations,
+  } = useVaultDelegations(factoryId, vaultId);
+  const availableNearBalanceValue = React.useMemo(
+    () => new Balance(availableNearRaw || "0", NATIVE_DECIMALS, NATIVE_TOKEN),
+    [availableNearRaw]
   );
-  const isOwner = role === "owner";
-  const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
-    useAccountBalance(vaultId);
-  const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
-    useAvailableBalance(vaultId);
+  const delegationEntries = delegationData?.summary ?? [];
+  const undelegateBalance = React.useMemo(
+    () =>
+      delegationEntries.find((entry) => entry.validator === undelegateValidator)?.staked_balance ??
+      new Balance("0", NATIVE_DECIMALS, NATIVE_TOKEN),
+    [delegationEntries, undelegateValidator]
+  );
+  const liquidityRequestContent = React.useMemo(() => {
+    if (!liquidityRequest) return null;
+    const network = getActiveNetwork();
+    const tokenConfig = getTokenConfigById(liquidityRequest.token, network);
+    const tokenDecimals = getTokenDecimals(liquidityRequest.token, network);
+    const tokenLabel = tokenConfig?.symbol ?? liquidityRequest.token;
+    const formatTokenAmount = (amount: string) =>
+      `${formatMinimalTokenAmount(amount, tokenDecimals)} ${tokenLabel}`;
 
-  const { count: refundCount, loading: refundsLoading, refetch: refetchRefunds } = useRefundEntries(vaultId);
+    return {
+      token: tokenLabel,
+      amount: formatTokenAmount(liquidityRequest.amount),
+      interest: formatTokenAmount(liquidityRequest.interest),
+      totalDue: formatTokenAmount(sumMinimal(liquidityRequest.amount, liquidityRequest.interest)),
+      collateral: `${formatMinimalTokenAmount(liquidityRequest.collateral, NATIVE_DECIMALS)} ${NATIVE_TOKEN}`,
+      durationDays: Math.max(1, Math.round(liquidityRequest.duration / SECONDS_PER_DAY)),
+    };
+  }, [liquidityRequest]);
 
-  // Vault USDC balance for display when funded
-  const usdcId = useMemo(() => getDefaultUsdcTokenId(network), [network]);
-  const { balance: vaultUsdc, loading: vaultUsdcLoading, refetch: refetchVaultUsdc } = useAccountFtBalance(vaultId, usdcId, "USDC");
   React.useEffect(() => {
-    // When accepted_offer changes (after indexing), refetch USDC balance
-    if (!usdcId) return;
-    if (data?.accepted_offer) {
-      refetchVaultUsdc();
-    }
-  }, [data?.accepted_offer, refetchVaultUsdc, usdcId]);
+    setFactoryId(getActiveFactoryId());
+  }, []);
 
-  const [depositOpen, setDepositOpen] = useState(false);
-  const [withdrawOpen, setWithdrawOpen] = useState(false);
-  const [delegateOpen, setDelegateOpen] = useState(false);
-  const [delegateValidator, setDelegateValidator] = useState<string | null>(null);
-  const [undelegateOpen, setUndelegateOpen] = useState(false);
-  const [undelegateValidator, setUndelegateValidator] = useState<string | null>(null);
-  const [transferOpen, setTransferOpen] = useState(false);
-  const handleDeposit = () => setDepositOpen(true);
-  // Withdraw is now available in broader cases; dialog enforces precise rules per token.
-  const withdrawBlockReason = useMemo(() => {
-    // Optionally block if there are pending refunds; contract enforces this as well
-    if ((refundCount ?? 0) > 0) return STRINGS.pendingRefunds;
-    return null;
-  }, [refundCount]);
-
-  const handleWithdraw = () => {
-    if (withdrawBlockReason) {
-      showToast(withdrawBlockReason, { variant: "info" });
+  React.useEffect(() => {
+    if (!vaultId) {
+      setOwner("");
+      setOwnerLoading(false);
+      setVaultState("idle");
+      setLiquidityRequest(null);
+      setRequestToken(null);
+      setLiquidationActive(false);
       return;
     }
+
+    let cancelled = false;
+    setOwnerLoading(true);
+
+    callViewFunction<VaultViewState>(vaultId, "get_vault_state", {}, { network: getActiveNetwork() })
+      .then((state) => {
+        if (cancelled) return;
+        setOwner(typeof state?.owner === "string" ? state.owner : "");
+        setVaultState(state?.accepted_offer ? "active" : state?.liquidity_request ? "pending" : "idle");
+        setLiquidationActive(Boolean(state?.liquidation));
+        const request =
+          state?.liquidity_request &&
+          typeof state.liquidity_request === "object" &&
+          typeof state.liquidity_request.token === "string" &&
+          typeof state.liquidity_request.amount === "string" &&
+          typeof state.liquidity_request.interest === "string" &&
+          typeof state.liquidity_request.collateral === "string" &&
+          typeof state.liquidity_request.duration === "number"
+            ? {
+                token: state.liquidity_request.token,
+                amount: state.liquidity_request.amount,
+                interest: state.liquidity_request.interest,
+                collateral: state.liquidity_request.collateral,
+                duration: state.liquidity_request.duration,
+              }
+            : null;
+        setLiquidityRequest(request);
+        const token = request?.token ?? null;
+        setRequestToken(token);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to load vault owner", error);
+        setOwner("");
+        setVaultState("idle");
+        setLiquidityRequest(null);
+        setRequestToken(null);
+        setLiquidationActive(false);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setOwnerLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [vaultId, vaultVersion]);
+
+  React.useEffect(() => {
+    if (!vaultId) {
+      setRefundCount(0);
+      return;
+    }
+
+    let cancelled = false;
+
+    callViewFunction<unknown[]>(vaultId, "get_refund_entries", { account_id: null }, { network: getActiveNetwork() })
+      .then((entries) => {
+        if (cancelled) return;
+        setRefundCount(Array.isArray(entries) ? entries.length : 0);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to load vault refund entries", error);
+        setRefundCount(0);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [vaultId]);
+
+  React.useEffect(() => {
+    if (!vaultId) {
+      setAvailableNearRaw("0");
+      setAvailableNearBalance("");
+      setAvailableNearLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAvailableNearLoading(true);
+
+    callViewFunction<string>(vaultId, "view_available_balance", {}, { network: getActiveNetwork() })
+      .then((balance) => {
+        if (cancelled) return;
+        const raw = typeof balance === "string" ? balance : String(balance ?? "0");
+        setAvailableNearRaw(raw);
+        setAvailableNearBalance(formatMinimalTokenAmount(raw, NATIVE_DECIMALS));
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to load vault available balance", error);
+        setAvailableNearRaw("0");
+        setAvailableNearBalance("");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setAvailableNearLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [vaultId, balanceVersion]);
+
+  React.useEffect(() => {
+    if (!vaultId) {
+      setAvailableUsdcBalance("");
+      setAvailableUsdcLoading(false);
+      return;
+    }
+
+    const network = getActiveNetwork();
+    const usdcTokenId = getDefaultUsdcTokenId(network);
+    if (!usdcTokenId) {
+      setAvailableUsdcBalance("");
+      setAvailableUsdcLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAvailableUsdcLoading(true);
+
+    callViewFunction<string>(usdcTokenId, "ft_balance_of", { account_id: vaultId }, { network })
+      .then((balance) => {
+        if (cancelled) return;
+        const raw = typeof balance === "string" ? balance : String(balance ?? "0");
+        setAvailableUsdcBalance(formatMinimalTokenAmount(raw, getTokenDecimals(usdcTokenId, network)));
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Failed to load vault USDC balance", error);
+        setAvailableUsdcBalance("");
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setAvailableUsdcLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [vaultId, balanceVersion]);
+
+  const handleDepositSuccess = React.useCallback(() => {
+    refetchNearBalance();
+    setBalanceVersion((current) => current + 1);
+  }, [refetchNearBalance]);
+
+  const connectWallet = React.useCallback(() => {
+    if (connectingWallet) return;
+    setConnectingWallet(true);
+    Promise.resolve(signIn())
+      .catch((error) => {
+        console.error("Wallet sign-in failed", error);
+        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+      })
+      .finally(() => {
+        setConnectingWallet(false);
+      });
+  }, [connectingWallet, signIn]);
+
+  const handleDepositClick = React.useCallback(() => {
+    if (!vaultId) return;
+    if (signedAccountId) {
+      setDepositOpen(true);
+      return;
+    }
+    connectWallet();
+  }, [connectWallet, signedAccountId, vaultId]);
+
+  const handleWithdrawSuccess = React.useCallback(() => {
+    refetchNearBalance();
+    setBalanceVersion((current) => current + 1);
+  }, [refetchNearBalance]);
+
+  const handleRequestLiquiditySuccess = React.useCallback(() => {
+    setVaultVersion((current) => current + 1);
+  }, []);
+
+  const handleDelegateSuccess = React.useCallback(() => {
+    refetchNearBalance();
+    refetchDelegations();
+    setBalanceVersion((current) => current + 1);
+  }, [refetchDelegations, refetchNearBalance]);
+
+  const handleUndelegateSuccess = React.useCallback(() => {
+    refetchDelegations();
+    setVaultVersion((current) => current + 1);
+  }, [refetchDelegations]);
+
+  const canCurrentViewerWithdraw =
+    !ownerLoading && (!owner || !signedAccountId || signedAccountId === owner);
+  const delegateBlockedReason = liquidationActive
+    ? "Delegation is unavailable while liquidation is in progress."
+    : refundCount > 0
+      ? "Delegation is unavailable while refund entries are pending."
+      : null;
+
+  const handleWithdrawClick = React.useCallback((asset: "NEAR" | "USDC") => {
+    if (!vaultId) return;
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+    if (owner && signedAccountId !== owner) {
+      showToast(`Only the vault owner can withdraw ${asset}.`, { variant: "info" });
+      return;
+    }
+    setWithdrawAsset(asset);
     setWithdrawOpen(true);
-  };
-  const handleTransfer = () => {
-    setTransferOpen(true);
-  };
-  const handleDelegate = (validator?: string) => {
-    if (data?.liquidation) {
-      showToast(STRINGS.delegateDisabledLiquidation, { variant: "info" });
+  }, [connectWallet, owner, signedAccountId, vaultId]);
+
+  const handleDelegateClick = React.useCallback(() => {
+    if (!vaultId) return;
+    if (delegateBlockedReason) {
+      showToast(delegateBlockedReason, { variant: "info" });
       return;
     }
-    if ((refundCount ?? 0) > 0) {
-      showToast(STRINGS.delegateDisabledRefunds, { variant: "info" });
+    if (!signedAccountId) {
+      connectWallet();
       return;
     }
-    setDelegateValidator(validator ?? null);
+    if (owner && signedAccountId !== owner) {
+      showToast(`Only the vault owner can delegate ${NATIVE_TOKEN}.`, { variant: "info" });
+      return;
+    }
     setDelegateOpen(true);
-  };
-  const handleUndelegate = (validator: string) => {
-    if (data?.liquidation) {
+  }, [connectWallet, delegateBlockedReason, owner, signedAccountId, vaultId]);
+
+  const handleUndelegateClick = React.useCallback((validator: string) => {
+    if (!vaultId) return;
+    if (liquidationActive) {
       showToast(STRINGS.undelegateDisabledLiquidation, { variant: "info" });
       return;
     }
-    if (data?.state === "pending") {
+    if (vaultState === "pending") {
       showToast(STRINGS.undelegateDisabledPending, { variant: "info" });
+      return;
+    }
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+    if (owner && signedAccountId !== owner) {
+      showToast(`Only the vault owner can undelegate ${NATIVE_TOKEN}.`, { variant: "info" });
       return;
     }
     setUndelegateValidator(validator);
     setUndelegateOpen(true);
-  };
-  const resetDeposit = () => setDepositOpen(false);
-  const resetWithdraw = () => setWithdrawOpen(false);
-  const resetDelegate = () => {
-    setDelegateValidator(null);
-    setDelegateOpen(false);
-  };
-  const resetUndelegate = () => {
-    setUndelegateValidator(null);
-    setUndelegateOpen(false);
-  };
-  const [claimOpen, setClaimOpen] = useState(false);
-  const [claimValidator, setClaimValidator] = useState<string | null>(null);
-  const handleUnclaimUnstaked = (validator: string) => {
-    if (data?.liquidation) {
-      showToast(STRINGS.claimDisabledLiquidation, { variant: "info" });
+  }, [connectWallet, liquidationActive, owner, signedAccountId, vaultId, vaultState]);
+
+  const handleOpenRequestClick = React.useCallback(() => {
+    if (!vaultId) return;
+    if (vaultState !== "idle" || liquidityRequestContent) {
+      showToast("This vault already has a liquidity request.", { variant: "info" });
       return;
     }
-    setClaimValidator(validator);
-    setClaimOpen(true);
-  };
-  const resetClaim = () => {
-    setClaimValidator(null);
-    setClaimOpen(false);
-  };
-
-  // Delegations hook (refreshable on delegate)
-  const {
-    data: delegData,
-    loading: delegLoading,
-    error: delegError,
-    refetch: refetchDeleg,
-  } = useVaultDelegations(factoryId, vaultId);
-
-  // Debounced refresher for updates triggered by liquidation start/continue
-  const PROCESS_REFRESH_DEBOUNCE_MS = 400;
-  const processRefreshTimer = React.useRef<number | null>(null);
-  const debouncedProcessRefresh = React.useCallback(() => {
-    if (processRefreshTimer.current !== null) {
-      window.clearTimeout(processRefreshTimer.current);
+    if (!signedAccountId) {
+      connectWallet();
+      return;
     }
-    processRefreshTimer.current = window.setTimeout(() => {
-      refetchAvail();
-      refetchDeleg();
-      processRefreshTimer.current = null;
-    }, PROCESS_REFRESH_DEBOUNCE_MS);
-  }, [refetchAvail, refetchDeleg]);
-  React.useEffect(() => {
-    return () => {
-      if (processRefreshTimer.current !== null) {
-        window.clearTimeout(processRefreshTimer.current);
-        processRefreshTimer.current = null;
-      }
-    };
-  }, []);
+    if (owner && signedAccountId !== owner) {
+      showToast("Only the vault owner can open a liquidity request.", { variant: "info" });
+      return;
+    }
+    setRequestOpen(true);
+  }, [connectWallet, liquidityRequestContent, owner, signedAccountId, vaultId, vaultState]);
 
-  const vaultShortName = useMemo(() => (typeof vaultId === "string" ? vaultId.split(".")[0] : String(vaultId)), [vaultId]);
-  let Body: React.ReactNode;
-  if (error) {
-    Body = <ErrorMessage message={error} onRetry={refetch} />;
-  } else if (loading) {
-    Body = (
-      <div className="space-y-3" aria-live="polite" aria-busy="true">
-        {[0, 1].map((i) => (
-          <div
-            key={i}
-            className="surface-card animate-pulse rounded-2xl px-5 py-5 shadow-card-subtle"
-          >
-            <div className="h-4 w-1/4 rounded-full bg-foreground/10" />
-            <div className="mt-3 h-16 rounded-xl bg-foreground/5" />
-          </div>
-        ))}
-        <div className="grid gap-3 lg:grid-cols-2">
-          {[0, 1].map((i) => (
-            <div key={`secondary-${i}`} className="surface-card animate-pulse rounded-2xl px-5 py-5">
-              <div className="h-4 w-1/3 rounded-full bg-foreground/10" />
-              <div className="mt-3 h-14 rounded-xl bg-foreground/5" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  } else {
-    Body = (
-      <div className="space-y-4">
-        <AvailableBalanceCard
-          balance={availBalance}
-          loading={availLoading}
-          actions={
-            isOwner ? (
-              <ActionButtons
-                onDeposit={handleDeposit}
-                onWithdraw={handleWithdraw}
-                onTransfer={handleTransfer}
-                disabled={loading || Boolean(error)}
-              />
-            ) : undefined
-          }
-        />
+  const handleCancelRequest = React.useCallback(async () => {
+    if (!vaultId) return;
+    if (vaultState !== "pending") {
+      showToast("Only pending liquidity requests can be cancelled.", { variant: "info" });
+      return;
+    }
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+    if (owner && signedAccountId !== owner) {
+      showToast("Only the vault owner can cancel this liquidity request.", { variant: "info" });
+      return;
+    }
 
-        <DelegationsActionsProvider
-          value={
-            isOwner
-              ? {
-                  onDeposit: handleDeposit,
-                  onDelegate: handleDelegate,
-                  onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
-                  onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
-                }
-              : {}
-          }
-        >
-          <DelegationsCard
-            loading={delegLoading}
-            error={delegError}
-            summary={delegData?.summary}
-            availableBalance={availBalance}
-            availableLoading={availLoading}
-            refundsCount={refundCount}
-            refundsLoading={refundsLoading}
-            showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
-          />
-        </DelegationsActionsProvider>
-
-        <LiquidityRequestsCard
-          vaultId={vaultId}
-          factoryId={factoryId}
-          vault={data}
-          delegations={delegData}
-          availableNear={availBalance}
-          role={role}
-          isOwner={isOwner}
-          refetchVault={refetch}
-          refetchDelegations={refetchDeleg}
-          refetchAvailableBalance={refetchAvail}
-          onAfterAccept={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterRepay={() => {
-            refetchVaultUsdc();
-            refetchAvail();
-            refetchDeleg();
-          }}
-          onAfterTopUp={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterProcess={debouncedProcessRefresh}
-        />
-      </div>
-    );
-  }
+    try {
+      const { txHash } = await cancelLiquidityRequest({ vault: vaultId });
+      setVaultState("idle");
+      setLiquidityRequest(null);
+      setRequestToken(null);
+      refetchNearBalance();
+      setBalanceVersion((current) => current + 1);
+      setVaultVersion((current) => current + 1);
+      showToast("Request cancelled", { variant: "success" });
+      void indexVault({ factoryId, vault: vaultId, txHash }).catch((error) => {
+        console.error("Vault indexing after cancellation failed:", error);
+      });
+    } catch (error) {
+      console.error("Error cancelling liquidity request:", error);
+    }
+  }, [
+    cancelLiquidityRequest,
+    connectWallet,
+    factoryId,
+    indexVault,
+    owner,
+    refetchNearBalance,
+    signedAccountId,
+    vaultId,
+    vaultState,
+  ]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background pb-24">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_66%)]"
-      />
-      <main id="main" className="relative w-full" aria-busy={loading || undefined}>
-        <Container className="space-y-5 pt-8 sm:pt-10 lg:pt-12">
-          <VaultHeader
-            onBack={() => router.back()}
-            vaultId={String(vaultId)}
-            vaultShortName={vaultShortName}
-            network={network}
-            owner={data?.owner}
-            vaultNear={vaultNear}
-            vaultNearLoading={vaultNearLoading}
-            usdcDisplay={vaultUsdc?.toDisplay()}
-            vaultUsdcLoading={vaultUsdcLoading}
-            state={data?.state}
-            liquidation={Boolean(data?.liquidation)}
-          />
-          {!signedAccountId && (
-            <Card className="rounded-3xl border border-primary/20 bg-[color:var(--surface)] px-4 py-3 sm:px-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm font-semibold text-foreground">Connect to act</div>
-                <Button
-                  onClick={() => {
-                    if (connectingWallet) return;
-                    setConnectingWallet(true);
-                    Promise.resolve(signIn())
-                      .catch((err) => {
-                        console.error("Wallet sign-in failed", err);
-                        showToast("Wallet connection failed. Please try again.", { variant: "error" });
-                      })
-                      .finally(() => setConnectingWallet(false));
-                  }}
-                  className="w-full sm:w-auto"
-                  disabled={connectingWallet}
-                  aria-busy={connectingWallet || undefined}
-                >
-                  {connectingWallet ? "Opening wallet..." : "Connect wallet"}
-                </Button>
-              </div>
-            </Card>
+    <main id="main" className="min-h-screen bg-background">
+      <Container className="space-y-5 pt-8 sm:pt-10 lg:pt-12">
+        <div className="space-y-3">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Vault ID</div>
+            <h1 className="break-all font-mono text-lg text-foreground" title={vaultId}>
+              {vaultId || "Vault address unavailable"}
+            </h1>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Owner</div>
+            <p className="break-all font-mono text-lg text-foreground" title={owner || undefined}>
+              {ownerLoading ? "Loading owner..." : owner || "Owner unavailable"}
+            </p>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Total NEAR balance</div>
+            <p className="break-all font-mono text-lg text-foreground" title={nearBalance !== "—" ? `${nearBalance} NEAR` : undefined}>
+              {nearBalanceLoading ? "Loading balance..." : nearBalance === "—" ? "Balance unavailable" : `${nearBalance} NEAR`}
+            </p>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Available NEAR balance</div>
+            <p className="break-all font-mono text-lg text-foreground" title={availableNearBalance ? `${availableNearBalance} NEAR` : undefined}>
+              {availableNearLoading ? "Loading available balance..." : availableNearBalance ? `${availableNearBalance} NEAR` : "Available balance unavailable"}
+            </p>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Available USDC balance</div>
+            <p className="break-all font-mono text-lg text-foreground" title={availableUsdcBalance ? `${availableUsdcBalance} USDC` : undefined}>
+              {availableUsdcLoading ? "Loading USDC balance..." : availableUsdcBalance ? `${availableUsdcBalance} USDC` : "USDC balance unavailable"}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Button
+              onClick={handleDepositClick}
+              disabled={!vaultId || connectingWallet}
+              aria-busy={connectingWallet || undefined}
+            >
+              {signedAccountId ? `Deposit ${NATIVE_TOKEN}` : connectingWallet ? "Opening wallet..." : `Connect wallet to deposit ${NATIVE_TOKEN}`}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleDelegateClick}
+              disabled={!vaultId || connectingWallet || ownerLoading || !canCurrentViewerWithdraw || Boolean(delegateBlockedReason)}
+              aria-busy={connectingWallet || undefined}
+            >
+              {delegateBlockedReason
+                ? refundCount > 0
+                  ? "Delegation blocked by refunds"
+                  : "Delegation blocked by liquidation"
+                : !signedAccountId
+                  ? connectingWallet
+                    ? "Opening wallet..."
+                    : `Connect wallet to delegate ${NATIVE_TOKEN}`
+                  : ownerLoading
+                    ? "Checking owner..."
+                    : owner && signedAccountId !== owner
+                      ? `Only owner can delegate ${NATIVE_TOKEN}`
+                      : `Delegate ${NATIVE_TOKEN}`}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleWithdrawClick("NEAR")}
+              disabled={!vaultId || connectingWallet || ownerLoading || !canCurrentViewerWithdraw}
+              aria-busy={connectingWallet || undefined}
+            >
+              {!signedAccountId
+                ? connectingWallet
+                  ? "Opening wallet..."
+                  : `Connect wallet to withdraw ${NATIVE_TOKEN}`
+                : ownerLoading
+                  ? "Checking owner..."
+                  : owner && signedAccountId !== owner
+                    ? `Only owner can withdraw ${NATIVE_TOKEN}`
+                    : `Withdraw ${NATIVE_TOKEN}`}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => handleWithdrawClick("USDC")}
+              disabled={!vaultId || connectingWallet || ownerLoading || !canCurrentViewerWithdraw}
+              aria-busy={connectingWallet || undefined}
+            >
+              {!signedAccountId
+                ? connectingWallet
+                  ? "Opening wallet..."
+                  : "Connect wallet to withdraw USDC"
+                : ownerLoading
+                  ? "Checking owner..."
+                  : owner && signedAccountId !== owner
+                    ? "Only owner can withdraw USDC"
+                    : "Withdraw USDC"}
+            </Button>
+          </div>
+        </div>
+
+        <Card className="space-y-4 rounded-3xl px-5 py-5 sm:px-6">
+          <div className="space-y-1">
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Delegations</div>
+            <h2 className="text-lg font-semibold text-foreground">Delegations summary</h2>
+            {!delegationsLoading && !delegationsError && (
+              <p className="text-sm text-secondary-text">
+                {delegationEntries.length} validator{delegationEntries.length === 1 ? "" : "s"} tracked in this vault.
+              </p>
+            )}
+          </div>
+
+          {delegationsLoading ? (
+            <p className="text-sm text-secondary-text">Loading delegations...</p>
+          ) : delegationsError ? (
+            <p className="text-sm text-secondary-text" title={delegationsError}>
+              Delegation summary unavailable.
+            </p>
+          ) : delegationEntries.length > 0 ? (
+            <DelegationsActionsProvider value={{ onUndelegate: handleUndelegateClick }}>
+              <DelegationsSummary entries={delegationEntries} />
+            </DelegationsActionsProvider>
+          ) : (
+            <p className="text-sm text-secondary-text">No delegations yet.</p>
           )}
-          {Body}
-        </Container>
-        {isOwner && (
-          <>
-            <DepositDialog
-              open={depositOpen}
-              onClose={resetDeposit}
-              vaultId={vaultId}
-              symbol={NATIVE_TOKEN}
-              onSuccess={() => {
-                refetchVaultNear();
-                refetchAvail();
-                refetchVaultUsdc();
-              }}
+        </Card>
+
+        {liquidityRequestContent ? (
+          <div className="space-y-3">
+            <CurrentRequestPanel
+              content={liquidityRequestContent}
+              active={vaultState === "active"}
             />
-            <TransferOwnershipDialog
-              open={transferOpen}
-              onClose={() => setTransferOpen(false)}
-              vaultId={vaultId}
-              currentOwner={data?.owner ?? null}
-              onSuccess={() => {
-                refetch();
-              }}
-            />
-            <WithdrawDialog
-              open={withdrawOpen}
-              onClose={resetWithdraw}
-              vaultId={vaultId}
-              state={data?.state as "idle" | "pending" | "active" | undefined}
-              requestToken={data?.liquidity_request?.token as string | undefined}
-              liquidationActive={Boolean(data?.liquidation)}
-              refundsCount={refundCount}
-              onSuccess={() => {
-                refetchVaultNear();
-                refetchAvail();
-                refetchVaultUsdc();
-                refetchRefunds();
-              }}
-            />
-            <DelegateDialog
-              open={delegateOpen}
-              onClose={resetDelegate}
-              vaultId={vaultId}
-              balance={availBalance}
-              loading={availLoading}
-              defaultValidator={delegateValidator ?? undefined}
-              onSuccess={() => {
-                refetchVaultNear();
-                refetchAvail();
-                refetchDeleg();
-              }}
-            />
-            <UndelegateDialog
-              open={undelegateOpen && Boolean(undelegateValidator)}
-              onClose={resetUndelegate}
-              vaultId={vaultId}
-              validator={undelegateValidator!}
-              balance={
-                new Balance(
-                  delegData?.summary?.find((e) => e.validator === undelegateValidator)
-                    ?.staked_balance.minimal ?? "0",
-                  NATIVE_DECIMALS,
-                  NATIVE_TOKEN
-                )
-              }
-              loading={delegLoading}
-              onSuccess={() => {
-                refetchAvail();
-                refetchDeleg();
-              }}
-            />
-            <ClaimUnstakedDialog
-              open={claimOpen}
-              onClose={resetClaim}
-              vaultId={vaultId}
-              validator={claimValidator ?? ""}
-              onSuccess={() => {
-                refetchVaultNear();
-                refetchAvail();
-                refetchDeleg();
-              }}
-            />
-          </>
+            {vaultState === "pending" && (
+              <div className="flex flex-col items-start gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleCancelRequest()}
+                  disabled={!vaultId || connectingWallet || ownerLoading || cancelPending}
+                  aria-busy={cancelPending || undefined}
+                >
+                  {!signedAccountId
+                    ? connectingWallet
+                      ? "Opening wallet..."
+                      : "Connect wallet to cancel request"
+                    : ownerLoading
+                      ? "Checking owner..."
+                      : owner && signedAccountId !== owner
+                        ? "Only owner can cancel request"
+                        : cancelPending
+                          ? "Cancelling..."
+                          : "Cancel request"}
+                </Button>
+                {cancelError && (
+                  <p className="text-sm text-secondary-text" role="alert">
+                    {cancelError}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <Card className="space-y-2 rounded-3xl px-5 py-5 sm:px-6">
+            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">Liquidity request</div>
+            <h2 className="text-lg font-semibold text-foreground">Liquidity request summary</h2>
+            <p className="text-sm text-secondary-text">No liquidity request yet.</p>
+            <div className="pt-2">
+              <Button
+                onClick={handleOpenRequestClick}
+                disabled={!vaultId || connectingWallet || ownerLoading}
+                aria-busy={connectingWallet || undefined}
+              >
+                {!signedAccountId
+                  ? connectingWallet
+                    ? "Opening wallet..."
+                    : "Connect wallet to open request"
+                  : ownerLoading
+                    ? "Checking owner..."
+                    : owner && signedAccountId !== owner
+                      ? "Only owner can open request"
+                      : "Open request"}
+              </Button>
+            </div>
+          </Card>
         )}
-      </main>
-    </div>
+      </Container>
+      <DepositDialog
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        vaultId={vaultId}
+        symbol={NATIVE_TOKEN}
+        onSuccess={handleDepositSuccess}
+      />
+      <RequestLiquidityDialog
+        open={requestOpen}
+        onClose={() => setRequestOpen(false)}
+        vaultId={vaultId}
+        onSuccess={handleRequestLiquiditySuccess}
+      />
+      <DelegateDialog
+        open={delegateOpen}
+        onClose={() => setDelegateOpen(false)}
+        vaultId={vaultId}
+        balance={availableNearBalanceValue}
+        loading={availableNearLoading}
+        onSuccess={handleDelegateSuccess}
+      />
+      <WithdrawDialog
+        open={withdrawOpen}
+        onClose={() => setWithdrawOpen(false)}
+        vaultId={vaultId}
+        state={vaultState}
+        requestToken={requestToken}
+        liquidationActive={liquidationActive}
+        refundsCount={refundCount}
+        allowedAssets={[withdrawAsset]}
+        onSuccess={handleWithdrawSuccess}
+      />
+      <UndelegateDialog
+        open={undelegateOpen}
+        onClose={() => setUndelegateOpen(false)}
+        vaultId={vaultId}
+        validator={undelegateValidator}
+        balance={undelegateBalance}
+        loading={delegationsLoading}
+        onSuccess={handleUndelegateSuccess}
+      />
+    </main>
   );
 }

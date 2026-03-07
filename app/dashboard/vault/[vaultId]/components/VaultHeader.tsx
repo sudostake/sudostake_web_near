@@ -36,7 +36,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 type Props = {
   onBack: () => void;
   vaultId: string;
-  vaultShortName: string;
+  vaultShortName?: string;
   network: Network;
   owner: string | null | undefined;
   vaultNear: string;
@@ -61,7 +61,6 @@ const BADGE_STYLES: Record<"primary" | "warn", string> = {
 export function VaultHeader({
   onBack,
   vaultId,
-  vaultShortName,
   network,
   owner,
   vaultNear,
@@ -101,7 +100,7 @@ export function VaultHeader({
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault</p>
             <h1 className="mt-1 break-all text-[clamp(1.55rem,3.1vw,2.05rem)] font-semibold leading-tight" title={vaultId}>
-              {vaultShortName}
+              {vaultId}
             </h1>
           </div>
         </div>

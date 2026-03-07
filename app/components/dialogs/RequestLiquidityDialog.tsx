@@ -1,18 +1,21 @@
 "use client";
 
+import Big from "big.js";
 import React, { useEffect, useMemo, useState } from "react";
+import { utils } from "near-api-js";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useRequestLiquidity } from "@/hooks/useRequestLiquidity";
 import { useIndexVault } from "@/hooks/useIndexVault";
-import { getActiveNetwork, getActiveFactoryId, explorerAccountUrl } from "@/utils/networks";
+import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
 import { getDefaultUsdcTokenId, getTokenConfigById } from "@/utils/tokens";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
-import { utils } from "near-api-js";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { Button } from "@/app/components/ui/Button";
 import { Input } from "@/app/components/ui/Input";
-import { CopyButton } from "@/app/components/ui/CopyButton";
-import { Badge } from "@/app/components/ui/Badge";
+import { SECONDS_PER_DAY } from "@/utils/constants";
+import { calculateApr } from "@/utils/finance";
+import { safeFormatYoctoNear } from "@/utils/formatNear";
+import { formatDays } from "@/utils/time";
 
 type Props = {
   open: boolean;
@@ -21,6 +24,47 @@ type Props = {
   onSuccess?: () => void;
 };
 
+const STEP_ITEMS = [
+  "Borrow amount",
+  "Repayment window",
+  "Lender fee",
+  "Collateral",
+  "Review",
+] as const;
+
+function isDecimalAmount(value: string, allowZero: boolean) {
+  const trimmed = value.trim();
+  if (!/^\d+(?:\.\d*)?$/.test(trimmed)) return false;
+  try {
+    const parsed = new Big(trimmed);
+    return allowZero ? parsed.gte(0) : parsed.gt(0);
+  } catch {
+    return false;
+  }
+}
+
+function isWholeDays(value: string) {
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return false;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) && parsed > 0;
+}
+
+function ReviewRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 px-4 py-3">
+      <div className="text-sm text-secondary-text">{label}</div>
+      <div className="text-right text-sm font-semibold text-foreground">{value}</div>
+    </div>
+  );
+}
+
 export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Props) {
   const { requestLiquidity, pending, error } = useRequestLiquidity();
   const { indexVault } = useIndexVault();
@@ -28,17 +72,21 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
   const network = getActiveNetwork();
   const { data: delegData, refetch: refetchDelegations } = useVaultDelegations(factoryId, vaultId);
   const { storageBalanceOf, storageBounds, registerStorage, pending: regPending, error: regError } = useFtStorage();
-  const [isRegistered, setIsRegistered] = useState<boolean>(true);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [amount, setAmount] = useState("");
+  const [interestToken, setInterestToken] = useState("0");
+  const [collateralNear, setCollateralNear] = useState("");
+  const [durationDays, setDurationDays] = useState("7");
+  const [isRegistered, setIsRegistered] = useState(true);
   const [minStorageDeposit, setMinStorageDeposit] = useState<string | null>(null);
   const [checkingRegistration, setCheckingRegistration] = useState(false);
 
-  // Compute max collateral from total staked balance across validators
   const maxCollateralYocto = useMemo(() => {
     const summary = delegData?.summary ?? [];
     let total = BigInt(0);
-    for (const s of summary) {
-      // Accumulate as BigInt and convert once at the end
-      total += BigInt(s.staked_balance.minimal ?? "0");
+    for (const item of summary) {
+      total += BigInt(item.staked_balance.minimal ?? "0");
     }
     return total.toString();
   }, [delegData]);
@@ -51,28 +99,24 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     }
   }, [maxCollateralYocto]);
 
-  const [amount, setAmount] = useState<string>("");
-  const [interestToken, setInterestToken] = useState<string>("");
-  const [collateralNear, setCollateralNear] = useState<string>("");
-  const [durationDays, setDurationDays] = useState<string>("7");
+  const displayMaxCollateralNear = useMemo(
+    () => safeFormatYoctoNear(maxCollateralYocto, 5),
+    [maxCollateralYocto]
+  );
 
   const token = useMemo(() => getDefaultUsdcTokenId(network) ?? "", [network]);
   const tokenConfig = useMemo(
     () => (token ? getTokenConfigById(token, network) : undefined),
-    [token, network]
+    [network, token]
   );
   const tokenSymbol = tokenConfig?.symbol ?? "FT";
-  const tokenName = tokenConfig?.name ?? "Token";
-  const tokenDecimals = tokenConfig?.decimals ?? 6;
 
-  // Ensure delegation data is fresh whenever the dialog is opened.
   useEffect(() => {
-    if (open) {
-      refetchDelegations();
-    }
+    if (!open) return;
+    setCurrentStep(0);
+    refetchDelegations();
   }, [open, refetchDelegations]);
 
-  // While the dialog is open, keep delegations in sync by refetching on window focus.
   useEffect(() => {
     if (!open) return;
     const onFocus = () => refetchDelegations();
@@ -82,20 +126,21 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     };
   }, [open, refetchDelegations]);
 
-  // Check FT storage registration for the vault on selected token
   useEffect(() => {
     let cancelled = false;
+
     async function check() {
       if (!token) {
         setIsRegistered(true);
         setMinStorageDeposit(null);
         return;
       }
+
       setCheckingRegistration(true);
       try {
-        const bal = await storageBalanceOf(token, vaultId);
+        const balance = await storageBalanceOf(token, vaultId);
         if (cancelled) return;
-        const registered = bal !== null;
+        const registered = balance !== null;
         setIsRegistered(registered);
         if (!registered) {
           const bounds = await storageBounds(token);
@@ -108,23 +153,21 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         if (!cancelled) setCheckingRegistration(false);
       }
     }
+
     void check();
     return () => {
       cancelled = true;
     };
-  }, [token, vaultId, storageBalanceOf, storageBounds]);
+  }, [storageBalanceOf, storageBounds, token, vaultId]);
 
-  const resetAndClose = () => {
-    setAmount("");
-    setCollateralNear("");
-    setDurationDays("7");
-    setInterestToken("");
-    onClose();
-  };
-
+  const hasToken = Boolean(token);
+  const hasDelegatedCollateral = maxCollateralYocto !== "0";
+  const hasValidAmount = isDecimalAmount(amount, false);
+  const hasValidInterestToken = isDecimalAmount(interestToken, true);
+  const hasValidCollateral = isDecimalAmount(collateralNear, false);
+  const hasValidDuration = isWholeDays(durationDays);
   const hasCollateralInput = collateralNear.trim().length > 0;
-  // Check strictly whether the provided collateral is within the staked max.
-  // Empty input is handled separately via hasCollateralInput.
+
   const isCollateralWithinMax = useMemo(() => {
     if (!hasCollateralInput) return true;
     try {
@@ -134,35 +177,59 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     } catch {
       return false;
     }
-  }, [hasCollateralInput, collateralNear, maxCollateralYocto]);
+  }, [collateralNear, hasCollateralInput, maxCollateralYocto]);
 
-  const hasToken = Boolean(token);
-  const hasValidAmount = Number(amount) > 0;
-  const hasValidInterestToken = Number(interestToken) >= 0;
-  const hasValidCollateral = Number(collateralNear) > 0;
-  const hasValidDuration = Number(durationDays) > 0;
-  const canSubmit = Boolean(
-    hasToken &&
-    hasValidAmount &&
-    hasValidInterestToken &&
-    hasValidCollateral &&
-    hasValidDuration &&
-    isCollateralWithinMax &&
-    isRegistered
-  );
+  const isCollateralStepValid = hasValidCollateral && isCollateralWithinMax && hasDelegatedCollateral;
+  const closeDisabled = pending || regPending;
+  const durationSeconds = hasValidDuration ? Number(durationDays) * SECONDS_PER_DAY : 0;
+
+  const totalRepayment = useMemo(() => {
+    if (!hasValidAmount || !hasValidInterestToken) return "—";
+    try {
+      return new Big(amount).plus(new Big(interestToken)).toString();
+    } catch {
+      return "—";
+    }
+  }, [amount, hasValidAmount, hasValidInterestToken, interestToken]);
+
+  const estimatedApr = useMemo(() => {
+    if (!hasValidAmount || !hasValidInterestToken || durationSeconds <= 0) return "—";
+    try {
+      const aprPct = calculateApr(interestToken, amount, durationSeconds).times(100);
+      return `${aprPct.round(2, 0).toString()}%`;
+    } catch {
+      return "—";
+    }
+  }, [amount, durationSeconds, hasValidAmount, hasValidInterestToken, interestToken]);
 
   const showCollateralError = hasCollateralInput && !isCollateralWithinMax;
 
+  const resetForm = () => {
+    setCurrentStep(0);
+    setAmount("");
+    setInterestToken("0");
+    setCollateralNear("");
+    setDurationDays("7");
+  };
+
+  const handleClose = () => {
+    if (closeDisabled) return;
+    resetForm();
+    onClose();
+  };
+
   const clampCollateral = (next: string) => {
-    // If parsed value exceeds max, clamp to max
     try {
-      const yo = utils.format.parseNearAmount(next || "0");
-      if (yo === null) return setCollateralNear(next);
-      if (BigInt(yo) > BigInt(maxCollateralYocto)) {
-        setCollateralNear(maxCollateralNear);
-      } else {
+      const yocto = utils.format.parseNearAmount(next || "0");
+      if (yocto === null) {
         setCollateralNear(next);
+        return;
       }
+      if (BigInt(yocto) > BigInt(maxCollateralYocto)) {
+        setCollateralNear(maxCollateralNear);
+        return;
+      }
+      setCollateralNear(next);
     } catch {
       setCollateralNear(next);
     }
@@ -176,13 +243,14 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
         amount,
         interest: interestToken,
         collateral_near: collateralNear,
-        duration_days: Number(durationDays || 0),
+        duration_days: Number(durationDays),
       });
       await indexVault({ factoryId, vault: vaultId, txHash });
-      if (onSuccess) onSuccess();
-      resetAndClose();
+      onSuccess?.();
+      resetForm();
+      onClose();
     } catch {
-      // handled by hook error state; keep dialog open to allow corrections
+      // Hook state surfaces the error.
     }
   };
 
@@ -190,210 +258,264 @@ export function RequestLiquidityDialog({ open, onClose, vaultId, onSuccess }: Pr
     if (!token || !minStorageDeposit) return;
     try {
       await registerStorage(token, vaultId, minStorageDeposit);
-      // Re-check
-      const bal = await storageBalanceOf(token, vaultId);
-      const registered = bal !== null;
-      setIsRegistered(registered);
+      const balance = await storageBalanceOf(token, vaultId);
+      setIsRegistered(balance !== null);
     } catch {
-      // regError handled in hook
+      // Storage hook surfaces the error.
     }
   };
+
+  const currentStepValid =
+    currentStep === 0
+      ? hasToken && hasValidAmount
+      : currentStep === 1
+        ? hasValidDuration
+        : currentStep === 2
+          ? hasValidInterestToken
+          : currentStep === 3
+            ? isCollateralStepValid
+            : hasToken && hasValidAmount && hasValidDuration && hasValidInterestToken && isCollateralStepValid && isRegistered;
+
+  const handlePrimaryAction = () => {
+    if (currentStep < STEP_ITEMS.length - 1) {
+      setCurrentStep((step) => step + 1);
+      return;
+    }
+    void confirm();
+  };
+
+  const primaryLabel =
+    currentStep === STEP_ITEMS.length - 1
+      ? pending
+        ? "Submitting..."
+        : !isRegistered
+          ? "Register vault first"
+          : "Submit request"
+      : "Next";
 
   return (
     <Modal
       open={open}
-      onClose={resetAndClose}
-      title="Open liquidity request"
-      disableBackdropClose={pending}
+      onClose={handleClose}
+      title="Request liquidity"
+      disableBackdropClose={closeDisabled}
+      panelClassName="max-w-xl"
       footer={
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-          <Button variant="secondary" onClick={resetAndClose} disabled={pending}>
-            Cancel
-          </Button>
-          <Button onClick={confirm} disabled={!canSubmit || pending}>
-            {pending ? "Submitting..." : "Continue"}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {currentStep > 0 && (
+              <Button
+                variant="secondary"
+                onClick={() => setCurrentStep((step) => step - 1)}
+                disabled={closeDisabled}
+                className="w-full sm:w-auto"
+              >
+                Back
+              </Button>
+            )}
+            <Button variant="secondary" onClick={handleClose} disabled={closeDisabled} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+          </div>
+          <Button onClick={handlePrimaryAction} disabled={closeDisabled || !currentStepValid} className="w-full sm:w-auto sm:min-w-[12rem]">
+            {primaryLabel}
           </Button>
         </div>
       }
     >
       <div className="space-y-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-xs text-secondary-text">Vault</div>
-            <div className="mt-1 text-sm font-medium text-foreground break-all" title={vaultId}>{vaultId}</div>
-          </div>
-          <Badge variant="neutral" className="uppercase">{network}</Badge>
-        </div>
-
-        <section className="rounded border bg-background p-4 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-xs text-secondary-text">Token (fixed)</div>
-              <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="text-sm font-medium text-foreground">{tokenSymbol}</span>
-                <span className="text-xs text-secondary-text">{tokenName}</span>
-                <Badge variant="info">Fixed</Badge>
-              </div>
-            </div>
-            {checkingRegistration ? (
-              <Badge variant="neutral">Checking</Badge>
-            ) : isRegistered ? (
-              <Badge variant="success">Registered</Badge>
-            ) : (
-              <Badge variant="warn">Action required</Badge>
-            )}
-          </div>
-          <div>
-            <div className="text-xs text-secondary-text mb-1">Token contract</div>
-            <div className="flex items-center justify-between gap-2 rounded border bg-background px-3 h-10">
-              <div className="truncate" title={token || undefined}>{token || "Not configured"}</div>
-              {token && <CopyButton value={token} title="Copy token id" />}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-xs text-secondary-text">
-            <span>This request is fixed to {tokenSymbol} on {network.toUpperCase()}.</span>
-            {token && (
-              <a
-                href={explorerAccountUrl(network, token)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline"
-              >
-                View token on Explorer
-              </a>
-            )}
+        <div className="space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">
+            Step {currentStep + 1} of {STEP_ITEMS.length}
           </div>
           <div className="text-sm text-secondary-text">
-            {checkingRegistration
-              ? "Checking whether the vault is registered with the token contract."
-              : isRegistered
-                ? `Your vault is registered and can receive ${tokenSymbol}.`
-                : "Your vault must be registered with the token contract before it can receive funds."}
-            {!isRegistered && minStorageDeposit && (
-              <> This requires a one-time storage deposit of {utils.format.formatNearAmount(minStorageDeposit)} NEAR.</>
-            )}
+            {tokenSymbol} request on {network}
           </div>
-          {!isRegistered && (
-            <div className="flex flex-wrap items-center gap-3">
-              <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit} aria-busy={regPending ? true : undefined}>
-                {regPending ? "Registering…" : "Register vault"}
-              </Button>
-              {regPending && (
-                <div className="sr-only" role="status" aria-live="polite">Registering…</div>
-              )}
-              <a
-                href="/docs/token-registration"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-primary underline"
-              >
-                Learn more
-              </a>
-              {regError && <div className="text-xs text-red-600">{regError}</div>}
-            </div>
-          )}
-        </section>
+        </div>
 
-        <section className="rounded border bg-background p-4">
-          <div className="text-sm font-medium">Loan terms</div>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {currentStep === 0 && (
+          <section className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-semibold text-foreground">How much {tokenSymbol} do you want to borrow?</h4>
+              <p className="mt-2 text-sm leading-6 text-secondary-text">
+                This is the amount a lender will send into the vault if they accept your request.
+              </p>
+            </div>
+            {!hasToken && (
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+                A default loan token is not configured for this network yet.
+              </div>
+            )}
             <Input
-              label={`Amount (${tokenSymbol})`}
+              label={`Borrow amount (${tokenSymbol})`}
               type="number"
               min={0}
               step="any"
               inputMode="decimal"
               placeholder="0.0"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(event) => setAmount(event.target.value)}
+              hint="Example: 100 means the vault receives 100 USDC when funded."
+              suffix={tokenSymbol}
             />
+          </section>
+        )}
+
+        {currentStep === 1 && (
+          <section className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-semibold text-foreground">How many days should the loan stay open?</h4>
+              <p className="mt-2 text-sm leading-6 text-secondary-text">
+                This is the repayment window after a lender accepts the request.
+              </p>
+            </div>
             <Input
-              label={`Interest (${tokenSymbol})`}
+              label="Repayment window"
+              type="number"
+              min={1}
+              step={1}
+              inputMode="numeric"
+              placeholder="7"
+              value={durationDays}
+              onChange={(event) => setDurationDays(event.target.value)}
+              hint="Use a whole number of days. Common choices are 7, 14, or 30."
+              suffix="days"
+            />
+          </section>
+        )}
+
+        {currentStep === 2 && (
+          <section className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-semibold text-foreground">How much should the lender earn?</h4>
+              <p className="mt-2 text-sm leading-6 text-secondary-text">
+                This fee is added on top of the borrowed amount and paid back when the loan is repaid on time.
+              </p>
+            </div>
+            <Input
+              label={`Lender fee (${tokenSymbol})`}
               type="number"
               min={0}
               step="any"
               inputMode="decimal"
-              placeholder="e.g. 1.25"
+              placeholder="0.0"
               value={interestToken}
-              onChange={(e) => setInterestToken(e.target.value)}
+              onChange={(event) => setInterestToken(event.target.value)}
+              hint="Set this to 0 if you want a zero-interest request."
+              suffix={tokenSymbol}
             />
-          </div>
-          <div className="mt-3 text-xs text-secondary-text">
-            Enter the total interest in {tokenSymbol}. Up to {tokenDecimals} decimals.
-          </div>
-        </section>
-
-        <section className="rounded border bg-background p-4">
-          <div className="text-sm font-medium">Collateral & duration</div>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Input
-                label="Collateral (NEAR)"
-                type="number"
-                min={0}
-                step="any"
-                inputMode="decimal"
-                placeholder="0.0"
-                value={collateralNear}
-                onChange={(e) => clampCollateral(e.target.value)}
-              />
-              <div className="mt-1 text-xs text-secondary-text">
-                <div>Max available (staked): {maxCollateralNear} NEAR</div>
-                <div className="mt-2 flex justify-start">
-                  <Button variant="ghost" size="sm" onClick={() => setCollateralNear(maxCollateralNear)} disabled={maxCollateralYocto === "0"}>
-                    Max
-                  </Button>
-                </div>
+            <div className="space-y-1 text-sm text-secondary-text">
+              <div>
+                Total repayment: <span className="font-semibold text-foreground">{totalRepayment === "—" ? "—" : `${totalRepayment} ${tokenSymbol}`}</span>
               </div>
-              {showCollateralError && (
-                <div className="mt-1 text-xs text-red-500">Collateral exceeds your total staked balance.</div>
+              <div>
+                Estimated APR: <span className="font-semibold text-foreground">{estimatedApr}</span>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {currentStep === 3 && (
+          <section className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-semibold text-foreground">How much NEAR should secure the request?</h4>
+              <p className="mt-2 text-sm leading-6 text-secondary-text">
+                Only delegated NEAR can be used as collateral for this request.
+              </p>
+            </div>
+            <div className="text-sm text-secondary-text">
+              Available delegated balance: <span className="font-semibold text-foreground">{displayMaxCollateralNear} NEAR</span>
+            </div>
+            {hasDelegatedCollateral && (
+              <div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setCollateralNear(maxCollateralNear)}
+                >
+                  Use all staked NEAR
+                </Button>
+              </div>
+            )}
+            <Input
+              label="Collateral amount"
+              type="number"
+              min={0}
+              step="any"
+              inputMode="decimal"
+              placeholder="0.0"
+              value={collateralNear}
+              onChange={(event) => clampCollateral(event.target.value)}
+              hint={
+                hasDelegatedCollateral
+                  ? `You can use up to ${displayMaxCollateralNear} NEAR.`
+                  : "Delegate NEAR first, then return to this step."
+              }
+              suffix="NEAR"
+            />
+            {showCollateralError && (
+              <div className="rounded-2xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600">
+                The collateral amount cannot be higher than the delegated NEAR in this vault.
+              </div>
+            )}
+            {!hasDelegatedCollateral && (
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-700 dark:text-amber-300">
+                Delegate NEAR from this vault first, then open the request.
+              </div>
+            )}
+          </section>
+        )}
+
+        {currentStep === 4 && (
+          <section className="space-y-4">
+            <div>
+              <h4 className="text-2xl font-semibold text-foreground">Review the request</h4>
+              <p className="mt-2 text-sm leading-6 text-secondary-text">
+                If everything looks right, submit and confirm it in your wallet.
+              </p>
+            </div>
+            <div className="divide-y divide-[color:var(--panel-border)] rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)]">
+              <ReviewRow label="Borrow amount" value={hasValidAmount ? `${amount} ${tokenSymbol}` : "—"} />
+              <ReviewRow label="Repayment window" value={hasValidDuration ? formatDays(Number(durationDays)) : "—"} />
+              <ReviewRow label="Lender fee" value={hasValidInterestToken ? `${interestToken} ${tokenSymbol}` : "—"} />
+              <ReviewRow label="Total repayment" value={totalRepayment === "—" ? "—" : `${totalRepayment} ${tokenSymbol}`} />
+              <ReviewRow label="Estimated APR" value={estimatedApr} />
+              <ReviewRow label="Collateral" value={hasValidCollateral ? `${collateralNear} NEAR` : "—"} />
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)] p-4">
+              <div className="text-sm font-semibold text-foreground">Vault readiness</div>
+              <div className="mt-3 text-sm leading-6 text-secondary-text">
+                {checkingRegistration
+                  ? `Checking whether ${vaultId} can receive ${tokenSymbol}.`
+                  : isRegistered
+                    ? `This vault is ready to receive ${tokenSymbol}.`
+                    : `Register the vault first with a one-time storage deposit.`}
+                {!isRegistered && minStorageDeposit && (
+                  <> Required storage deposit: {utils.format.formatNearAmount(minStorageDeposit)} NEAR.</>
+                )}
+              </div>
+              {!isRegistered && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button onClick={onRegister} disabled={regPending || checkingRegistration || !minStorageDeposit}>
+                    {regPending ? "Registering..." : "Register vault"}
+                  </Button>
+                  {regError && (
+                    <div className="text-sm text-red-600" role="alert">
+                      {regError}
+                    </div>
+                  )}
+                </div>
               )}
             </div>
-            <div className="space-y-2">
-              <Input
-                label="Duration (days)"
-                type="number"
-                min={1}
-                step={1}
-                inputMode="numeric"
-                placeholder="7"
-                value={durationDays}
-                onChange={(e) => setDurationDays(e.target.value)}
-              />
-              <div className="text-xs text-secondary-text">
-                Duration is the number of days this request stays open.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded border bg-background p-4">
-          <div className="text-sm font-medium">Summary</div>
-          <div className="mt-3 space-y-2 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-secondary-text">You will borrow</span>
-              <span className="font-medium">{amount || "—"} {tokenSymbol}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-secondary-text">Interest</span>
-              <span className="font-medium">{interestToken || "—"} {tokenSymbol}</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-secondary-text">Collateral</span>
-              <span className="font-medium">{collateralNear || "—"} NEAR</span>
-            </div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-secondary-text">Duration</span>
-              <span className="font-medium">{durationDays || "—"} days</span>
-            </div>
-          </div>
-          <div className="mt-3 text-xs text-secondary-text">
-            You’ll review and approve this request in your wallet.
-          </div>
-        </section>
+          </section>
+        )}
 
         {error && (
-          <div className="text-xs text-red-500">{error}</div>
+          <div className="rounded-2xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600" role="alert">
+            {error}
+          </div>
         )}
       </div>
     </Modal>

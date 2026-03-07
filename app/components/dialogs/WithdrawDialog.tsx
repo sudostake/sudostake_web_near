@@ -36,6 +36,7 @@ export function WithdrawDialog({
   requestToken,
   liquidationActive = false,
   refundsCount,
+  allowedAssets = ["NEAR", "USDC"],
 }: {
   open: boolean;
   onClose: () => void;
@@ -45,6 +46,7 @@ export function WithdrawDialog({
   requestToken?: string | null;
   liquidationActive?: boolean;
   refundsCount?: number | null;
+  allowedAssets?: Array<"NEAR" | "USDC">;
 }) {
   const [amount, setAmount] = useState<string>("");
   const [kind, setKind] = useState<"NEAR" | "USDC">("NEAR");
@@ -60,11 +62,24 @@ export function WithdrawDialog({
   const { registered: ownerRegistered, minDeposit: ownerMinDeposit, loading: regLoading, refresh: refreshReg } =
     useTokenRegistration(usdcId ?? null, signedAccountId ?? null);
   const { registerStorage, pending: storagePending } = useFtStorage();
+  const nearAllowed = allowedAssets.includes("NEAR");
+  const usdcAllowed = allowedAssets.includes("USDC") && Boolean(usdcId);
 
-  // If liquidation is active, default to USDC since NEAR is disallowed
+  // Keep the selected asset valid for the current dialog configuration.
   useEffect(() => {
-    if (open && liquidationActive && usdcId) setKind("USDC");
-  }, [open, liquidationActive, usdcId]);
+    if (!open) return;
+    if (liquidationActive && usdcAllowed) {
+      setKind("USDC");
+      return;
+    }
+    if (kind === "NEAR" && !nearAllowed && usdcAllowed) {
+      setKind("USDC");
+      return;
+    }
+    if (kind === "USDC" && !usdcAllowed && nearAllowed) {
+      setKind("NEAR");
+    }
+  }, [kind, liquidationActive, nearAllowed, open, usdcAllowed]);
 
   const amountNum = Number(amount);
   const withdrawAvailableNum = useMemo(() => {
@@ -148,20 +163,27 @@ export function WithdrawDialog({
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <div>
-          <div className="text-sm text-secondary-text mb-1">Asset</div>
-          <AssetToggle
-            value={kind}
-            onChange={setKind}
-            disabled={withdrawing}
-            size="sm"
-            variant="primary"
-            options={[
-              { kind: "NEAR", available: true },
-              { kind: "USDC", available: Boolean(usdcId) },
-            ]}
-          />
-        </div>
+        {(nearAllowed || usdcAllowed) && nearAllowed !== usdcAllowed && (
+          <div className="text-sm text-secondary-text">
+            Asset: <span className="font-medium text-foreground">{nearAllowed ? "NEAR" : "USDC"}</span>
+          </div>
+        )}
+        {nearAllowed && usdcAllowed && (
+          <div>
+            <div className="text-sm text-secondary-text mb-1">Asset</div>
+            <AssetToggle
+              value={kind}
+              onChange={setKind}
+              disabled={withdrawing}
+              size="sm"
+              variant="primary"
+              options={[
+                { kind: "NEAR", available: nearAllowed },
+                { kind: "USDC", available: usdcAllowed },
+              ]}
+            />
+          </div>
+        )}
         <Input
           label="Amount"
           type="number"

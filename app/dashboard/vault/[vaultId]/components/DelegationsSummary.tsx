@@ -4,212 +4,106 @@ import React from "react";
 import { parseNumber } from "@/utils/format";
 import type { DelegationSummaryEntry } from "@/hooks/useVaultDelegations";
 import { useDelegationsActions } from "./DelegationsActionsContext";
-import { shortAmount } from "@/utils/format";
-import { analyzeUnstakeEntry } from "@/utils/epochs";
-import { EpochDetails } from "./EpochDetails";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { explorerAccountUrl, getActiveNetwork } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
 
-// Enum representing the delegation summary status for a validator entry
-export enum DelegationStatus {
-  Withdrawable = "withdrawable",
-  Unstaking = "unstaking",
-  Active = "active",
-}
-
-
-function summaryStatus(entry: DelegationSummaryEntry): DelegationStatus | null {
-  const unstakedParsed = parseNumber(entry.unstaked_balance.toDisplay());
-  const stakedParsed = parseNumber(entry.staked_balance.toDisplay());
-  const unstakedNum = Number.isNaN(unstakedParsed) ? 0 : unstakedParsed;
-  const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
-  if (unstakedNum > 0 && entry.can_withdraw) return DelegationStatus.Withdrawable;
-  if (unstakedNum > 0) return DelegationStatus.Unstaking;
-  if (stakedNum > 0) return DelegationStatus.Active;
-  return null;
-}
-
-function statusPillClass(status: DelegationStatus | null): string {
-  const base = "text-xs uppercase tracking-wide rounded px-2 py-0.5 ring-1 ring-transparent";
-  switch (status) {
-    case DelegationStatus.Withdrawable:
-      return `${base} bg-emerald-100 text-emerald-800 ring-emerald-300/50 dark:bg-emerald-800/50 dark:text-emerald-100 dark:ring-emerald-500/40`;
-    case DelegationStatus.Unstaking:
-      return `${base} bg-amber-100 text-amber-800 ring-amber-300/50 dark:bg-amber-800/50 dark:text-amber-100 dark:ring-amber-500/40`;
-    case DelegationStatus.Active:
-      return `${base} bg-primary/15 text-primary ring-primary/35`;
-    default:
-      return `${base} bg-background`;
-  }
-}
-
-function statusLabel(status: DelegationStatus | null): string {
-  switch (status) {
-    case DelegationStatus.Withdrawable:
-      return STRINGS.statusWithdrawable;
-    case DelegationStatus.Unstaking:
-      return STRINGS.statusUnstaking;
-    case DelegationStatus.Active:
-      return STRINGS.statusActive;
-    default:
-      return "";
-  }
-}
-
-// shortAmount moved to utils/format
-
-function accentBarClass(status: DelegationStatus | null): string {
-  const base = "absolute left-0 top-0 bottom-0 w-1 group-hover:w-1.5 transition-all duration-200 rounded-l"; // subtle accent
-  switch (status) {
-    case DelegationStatus.Withdrawable:
-      return `${base} bg-emerald-300/80 dark:bg-emerald-300/50`;
-    case DelegationStatus.Unstaking:
-      return `${base} bg-amber-300/80 dark:bg-amber-300/50`;
-    case DelegationStatus.Active:
-      return `${base} bg-primary/70`;
-    default:
-      return `${base} bg-foreground/10`;
-  }
+function ValueRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div>
+      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
+      <div className="mt-1 break-all font-mono text-sm text-foreground">{value}</div>
+    </div>
+  );
 }
 
 function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
-  const status = summaryStatus(entry);
+  const stakedDisplay = `${entry.staked_balance.toDisplay()} ${entry.staked_balance.symbol}`;
+  const unstakedDisplay = `${entry.unstaked_balance.toDisplay()} ${entry.unstaked_balance.symbol}`;
+  const withdrawableNow = entry.can_withdraw ? unstakedDisplay : `0 ${entry.unstaked_balance.symbol}`;
+
   const stakedParsed = parseNumber(entry.staked_balance.toDisplay());
+  const unstakedParsed = parseNumber(entry.unstaked_balance.toDisplay());
   const stakedNum = Number.isNaN(stakedParsed) ? 0 : stakedParsed;
+  const unstakedNum = Number.isNaN(unstakedParsed) ? 0 : unstakedParsed;
+
   const canUndelegate = Boolean(onUndelegate) && stakedNum > 0;
-  const canClaim = Boolean(onUnclaimUnstaked) && status === DelegationStatus.Withdrawable;
+  const canClaim = Boolean(onUnclaimUnstaked) && entry.can_withdraw && unstakedNum > 0;
   const canDelegate = Boolean(onDelegate);
-
-  const [showMore, setShowMore] = React.useState(false);
-
-  // Compute epoch info for ETA/details when available
-  const epochDetails = React.useMemo(() => {
-    if (entry.unstaked_at === undefined) return null;
-    const current = entry.current_epoch ?? null;
-    const info = analyzeUnstakeEntry(entry.unstaked_at, current);
-    return info;
-  }, [entry.unstaked_at, entry.current_epoch]);
 
   return (
     <li
-      className="group relative overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-3 transition-colors hover:bg-[color:var(--surface)]"
+      className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4"
       key={entry.validator}
     >
-      <div className={accentBarClass(status)} aria-hidden="true" />
-      <div className="min-w-0">
-        {/* Validator + status */}
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <a
-            href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-sm underline break-all"
-            title={entry.validator}
-            aria-label={`View validator ${entry.validator} on explorer`}
-          >
-            {entry.validator}
-          </a>
-          <CopyButton value={entry.validator} title="Copy validator" />
-          {status && (
-            <span
-              className={
-                statusPillClass(status) +
-                (status === DelegationStatus.Withdrawable ? " cursor-help" : "")
-              }
-              title={
-                status === DelegationStatus.Withdrawable
-                  ? `${entry.unstaked_balance.minimal} yoctoNEAR`
-                  : undefined
-              }
-            >
-              {statusLabel(status)}
-            </span>
-          )}
-        </div>
-        {showMore && entry.unstaked_at !== undefined && entry.current_epoch !== undefined && (
-          <div className="mt-1 text-xs text-secondary-text">
-            current epoch {entry.current_epoch} • unstaked epoch {entry.unstaked_at}
-          </div>
-        )}
-
-        {/* Balances */}
-        <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.stakedLabelUI}</div>
-            <div className="font-mono text-sm break-all" title={entry.staked_balance.toDisplay()}>
-              {shortAmount(entry.staked_balance.toDisplay(), 6)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.unstakedLabelUI}</div>
-            <div className="font-mono text-sm break-all" title={entry.unstaked_balance.toDisplay()}>
-              {shortAmount(entry.unstaked_balance.toDisplay(), 6)}
-            </div>
-          </div>
-        </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
+        <a
+          href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all font-mono text-sm underline"
+          title={entry.validator}
+          aria-label={`View validator ${entry.validator} on explorer`}
+        >
+          {entry.validator}
+        </a>
+        <CopyButton value={entry.validator} title="Copy validator" />
       </div>
-      {/* Optional per-entry more details */}
-      {epochDetails && (
-        <div className="mt-2">
-          <button
-            type="button"
-            className="text-xs underline text-primary"
-            onClick={() => setShowMore((v) => !v)}
-          >
-            {showMore ? STRINGS.hideDetails : STRINGS.showDetails}
-          </button>
-          {showMore && (
-            <div className="mt-2">
-              <EpochDetails
-                unlockEpoch={epochDetails.unlockEpoch}
-                remaining={epochDetails.remaining}
-                availableNow={entry.can_withdraw}
-                unstakeEpoch={entry.unstaked_at}
-              />
-            </div>
-          )}
-        </div>
-      )}
-      {/* Actions footer: show only when any action handlers are available (e.g., owner view). */}
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <ValueRow label={STRINGS.stakedLabelUI} value={stakedDisplay} />
+        <ValueRow label={STRINGS.unstakedLabelUI} value={unstakedDisplay} />
+        <ValueRow label="Withdrawable now" value={withdrawableNow} />
+      </div>
+
       {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
-        <div className="mt-3 border-t border-foreground/10 pt-2">
+        <div className="mt-4 border-t border-foreground/10 pt-3">
           <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
             {canClaim && (
               <button
                 type="button"
                 aria-label={`Claim unstaked for ${entry.validator}`}
-                className="text-xs rounded-full bg-primary text-primary-text py-1 px-2.5 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40"
+                className="rounded-full bg-primary px-2.5 py-1 text-xs whitespace-nowrap text-primary-text focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
                 onClick={() => onUnclaimUnstaked?.(entry.validator)}
                 disabled={!canClaim}
               >
                 {STRINGS.claimAction}
               </button>
             )}
-            <button
-              type="button"
-              aria-label={`Delegate to ${entry.validator}`}
-              className={[
-                "text-xs rounded-full py-1 px-2.5 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-1 focus:ring-primary/40",
-                canClaim
-                  ? "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]"
-                  : "bg-primary text-primary-text",
-              ].join(" ")}
-              onClick={() => onDelegate?.(entry.validator)}
-              disabled={!canDelegate}
-            >
-              {STRINGS.delegateAction}
-            </button>
-            <button
-              type="button"
-              aria-label={`Undelegate from ${entry.validator}`}
-              className="text-xs rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] py-1 px-2.5 whitespace-nowrap hover:bg-[color:var(--surface-muted)] disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-1 focus:ring-primary/40"
-              onClick={() => onUndelegate?.(entry.validator)}
-              disabled={!canUndelegate}
-            >
-              {STRINGS.undelegateAction}
-            </button>
+            {onDelegate && (
+              <button
+                type="button"
+                aria-label={`Delegate to ${entry.validator}`}
+                className={[
+                  "rounded-full px-2.5 py-1 text-xs whitespace-nowrap focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60",
+                  canClaim
+                    ? "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]"
+                    : "bg-primary text-primary-text",
+                ].join(" ")}
+                onClick={() => onDelegate(entry.validator)}
+                disabled={!canDelegate}
+              >
+                {STRINGS.delegateAction}
+              </button>
+            )}
+            {onUndelegate && (
+              <button
+                type="button"
+                aria-label={`Undelegate from ${entry.validator}`}
+                className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-2.5 py-1 text-xs whitespace-nowrap hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={() => onUndelegate(entry.validator)}
+                disabled={!canUndelegate}
+              >
+                {STRINGS.undelegateAction}
+              </button>
+            )}
           </div>
         </div>
       )}
