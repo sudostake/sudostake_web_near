@@ -30,41 +30,42 @@ export function CurrentRequestPanel({
 }) {
   const showExpiryField = Boolean(active && showTimeline && (expiryLabel || countdownLabel));
   const countdown = countdownLabel ?? null;
-  const timelineValue = expiryLabel ?? (countdown ? STRINGS.loanDeadlineCountdown(String(countdown)) : "—");
-  const timelineDetail = expiryLabel
-    ? expired
-      ? STRINGS.expiredLabel
-      : countdown
-      ? STRINGS.loanDeadlineCountdown(String(countdown))
-      : null
-    : expired
-    ? STRINGS.expiredLabel
-    : null;
+  const timelineValue = expired
+    ? expiryLabel ?? STRINGS.expiredLabel
+    : expiryLabel ?? (countdown ? STRINGS.loanDeadlineCountdown(String(countdown)) : "—");
+  const leadFields = [
+    active
+      ? { label: STRINGS.totalDue, value: content.totalDue, highlight: true }
+      : { label: STRINGS.amountLabel, value: content.amount, highlight: true },
+    { label: STRINGS.collateralLabel, value: content.collateral, highlight: true },
+    {
+      label: showExpiryField ? STRINGS.loanDeadlineLabel : STRINGS.durationLabel,
+      value: showExpiryField ? timelineValue : formatDays(content.durationDays),
+      highlight: true,
+    },
+  ];
+  const detailFields = [
+    { label: STRINGS.tokenLabel, value: content.token, mono: false },
+    !active ? { label: STRINGS.totalDue, value: content.totalDue } : { label: STRINGS.amountLabel, value: content.amount },
+    { label: STRINGS.interestLabel, value: content.interest },
+  ];
 
   return (
     <section
-      className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
       role="region"
       aria-label={STRINGS.currentRequestTitle}
     >
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{STRINGS.currentRequestTitle}</p>
-        <p className="text-xs text-secondary-text">Snapshot of terms currently enforced on-chain.</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{STRINGS.currentRequestTitle}</p>
+      <div className="grid gap-2 md:grid-cols-3">
+        {leadFields.map((field) => (
+          <Field key={field.label} label={field.label} value={field.value} mono highlight={field.highlight} />
+        ))}
       </div>
-      <div className="grid gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
-        <Field label={STRINGS.tokenLabel} value={content.token} mono={false} />
-        <Field label={STRINGS.amountLabel} value={content.amount} mono />
-        <Field label={STRINGS.interestLabel} value={content.interest} mono />
-        {active && <Field label={STRINGS.totalDue} value={content.totalDue} mono />}
-        <Field label={STRINGS.collateralLabel} value={content.collateral} mono />
-        <Field label={STRINGS.durationLabel} value={formatDays(content.durationDays)} />
-        {showExpiryField && (
-          <Field
-            label={STRINGS.loanDeadlineLabel}
-            value={timelineValue}
-            detail={timelineDetail}
-          />
-        )}
+      <div className="grid gap-2 text-sm sm:grid-cols-3">
+        {detailFields.map((field) => (
+          <Field key={field.label} label={field.label} value={field.value} mono={field.mono ?? true} />
+        ))}
       </div>
     </section>
   );
@@ -74,18 +75,24 @@ function Field({
   label,
   value,
   mono = false,
-  detail,
+  highlight = false,
 }: {
   label: string;
   value: string;
   mono?: boolean;
-  detail?: string | null;
+  highlight?: boolean;
 }) {
   return (
-    <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-2">
-      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
+    <div
+      className={[
+        "rounded-2xl border px-3 py-3",
+        highlight
+          ? "border-primary/20 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_10%,var(--surface)),var(--surface))]"
+          : "border-[color:var(--border)] bg-[color:var(--surface)]",
+      ].join(" ")}
+    >
+      <div className="text-xs uppercase tracking-[0.18em] text-secondary-text">{label}</div>
       <div className={`${mono ? "font-mono" : "font-semibold"} mt-1 break-all text-foreground`}>{value}</div>
-      {detail && <div className="text-xs text-secondary-text">{detail}</div>}
     </div>
   );
 }

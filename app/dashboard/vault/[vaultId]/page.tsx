@@ -20,7 +20,7 @@ import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Balance } from "@/utils/balance";
 import { NATIVE_TOKEN, NATIVE_DECIMALS } from "@/utils/constants";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
-import { useViewerRole } from "@/hooks/useViewerRole";
+import { getViewerRole } from "@/hooks/useViewerRole";
 import { useAccountFtBalance } from "@/hooks/useAccountFtBalance";
 import { getDefaultUsdcTokenId } from "@/utils/tokens";
 import { networkFromFactoryId } from "@/utils/api/rpcClient";
@@ -34,7 +34,6 @@ import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
-
 export default function VaultPage() {
   const router = useRouter();
   const { vaultId } = useParams<{ vaultId: string }>();
@@ -44,11 +43,18 @@ export default function VaultPage() {
   const [connectingWallet, setConnectingWallet] = useState(false);
 
   const { data, loading, error, refetch } = useVault(factoryId, vaultId);
-  const { isOwner } = useViewerRole(factoryId, vaultId);
+  const role = useMemo(
+    () =>
+      getViewerRole({
+        signedAccountId,
+        owner: data?.owner,
+        lender: data?.accepted_offer?.lender,
+      }),
+    [signedAccountId, data?.owner, data?.accepted_offer?.lender]
+  );
+  const isOwner = role === "owner";
   const { balance: vaultNear, loading: vaultNearLoading, refetch: refetchVaultNear } =
     useAccountBalance(vaultId);
-  
-
   const { balance: availBalance, loading: availLoading, refetch: refetchAvail } =
     useAvailableBalance(vaultId);
 
@@ -196,44 +202,23 @@ export default function VaultPage() {
       </div>
     );
   } else {
-    const supportGridClass = isOwner ? "grid gap-3 lg:grid-cols-2" : "space-y-3";
     Body = (
       <div className="space-y-4">
-        <LiquidityRequestsCard
-          vaultId={vaultId}
-          factoryId={factoryId}
-          onAfterAccept={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterRepay={() => {
-            refetchVaultUsdc();
-            refetchAvail();
-            refetchDeleg();
-          }}
-          onAfterTopUp={() => {
-            refetchVaultUsdc();
-          }}
-          onAfterProcess={debouncedProcessRefresh}
+        <AvailableBalanceCard
+          balance={availBalance}
+          loading={availLoading}
+          actions={
+            isOwner ? (
+              <ActionButtons
+                onDeposit={handleDeposit}
+                onWithdraw={handleWithdraw}
+                onTransfer={handleTransfer}
+                disabled={loading || Boolean(error)}
+              />
+            ) : undefined
+          }
         />
 
-        <div className={supportGridClass}>
-          <AvailableBalanceCard
-            balance={availBalance}
-            loading={availLoading}
-          />
-
-          {isOwner && (
-            <Card className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault controls</p>
-                <h2 className="text-lg font-semibold text-foreground">Manage vault funds</h2>
-              </div>
-              <ActionButtons onDeposit={handleDeposit} onWithdraw={handleWithdraw} onTransfer={handleTransfer} disabled={loading || Boolean(error)} />
-            </Card>
-          )}
-        </div>
-
-        {/* Delegations list & controls */}
         <DelegationsActionsProvider
           value={
             isOwner
@@ -241,7 +226,6 @@ export default function VaultPage() {
                   onDeposit: handleDeposit,
                   onDelegate: handleDelegate,
                   onUndelegate: data?.liquidation || data?.state === "pending" ? undefined : handleUndelegate,
-                  // Do not allow claiming unstaked during liquidation
                   onUnclaimUnstaked: data?.liquidation ? undefined : handleUnclaimUnstaked,
                 }
               : {}
@@ -258,6 +242,31 @@ export default function VaultPage() {
             showClaimDisabledNote={isOwner && Boolean(data?.liquidation)}
           />
         </DelegationsActionsProvider>
+
+        <LiquidityRequestsCard
+          vaultId={vaultId}
+          factoryId={factoryId}
+          vault={data}
+          delegations={delegData}
+          availableNear={availBalance}
+          role={role}
+          isOwner={isOwner}
+          refetchVault={refetch}
+          refetchDelegations={refetchDeleg}
+          refetchAvailableBalance={refetchAvail}
+          onAfterAccept={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterRepay={() => {
+            refetchVaultUsdc();
+            refetchAvail();
+            refetchDeleg();
+          }}
+          onAfterTopUp={() => {
+            refetchVaultUsdc();
+          }}
+          onAfterProcess={debouncedProcessRefresh}
+        />
       </div>
     );
   }
@@ -284,25 +293,27 @@ export default function VaultPage() {
             liquidation={Boolean(data?.liquidation)}
           />
           {!signedAccountId && (
-            <Card className="flex flex-col gap-4 rounded-2xl border border-dashed border-primary/30 bg-primary/5 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-              <h2 className="text-sm font-semibold text-primary">Connect wallet to continue</h2>
-              <Button
-                onClick={() => {
-                  if (connectingWallet) return;
-                  setConnectingWallet(true);
-                  Promise.resolve(signIn())
-                    .catch((err) => {
-                      console.error("Wallet sign-in failed", err);
-                      showToast("Wallet connection failed. Please try again.", { variant: "error" });
-                    })
-                    .finally(() => setConnectingWallet(false));
-                }}
-                className="w-full sm:w-auto"
-                disabled={connectingWallet}
-                aria-busy={connectingWallet || undefined}
-              >
-                {connectingWallet ? "Opening wallet..." : "Connect wallet"}
-              </Button>
+            <Card className="rounded-3xl border border-primary/20 bg-[color:var(--surface)] px-4 py-3 sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-sm font-semibold text-foreground">Connect to act</div>
+                <Button
+                  onClick={() => {
+                    if (connectingWallet) return;
+                    setConnectingWallet(true);
+                    Promise.resolve(signIn())
+                      .catch((err) => {
+                        console.error("Wallet sign-in failed", err);
+                        showToast("Wallet connection failed. Please try again.", { variant: "error" });
+                      })
+                      .finally(() => setConnectingWallet(false));
+                  }}
+                  className="w-full sm:w-auto"
+                  disabled={connectingWallet}
+                  aria-busy={connectingWallet || undefined}
+                >
+                  {connectingWallet ? "Opening wallet..." : "Connect wallet"}
+                </Button>
+              </div>
             </Card>
           )}
           {Body}

@@ -7,6 +7,7 @@ import { STRINGS, includesMaturedString, startLiquidationInString } from "@/util
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { Button } from "@/app/components/ui/Button";
 import { Card } from "@/app/components/ui/Card";
+import { Badge } from "@/app/components/ui/Badge";
 
 type Props = {
   remainingMs: number | null;
@@ -38,8 +39,10 @@ export function LenderActionsPanel({
   if (remainingMs !== null && remainingMs > 0) {
     return (
       <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="status" aria-live="polite">
-        <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
-        <p className="text-sm text-secondary-text">{STRINGS.availableAfterExpiry}</p>
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-sm font-semibold text-foreground">Lender actions</h3>
+          <Badge variant="info">{formattedCountdown ?? "—"}</Badge>
+        </div>
         <Button
           type="button"
           size="sm"
@@ -55,28 +58,21 @@ export function LenderActionsPanel({
 
   return (
     <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" aria-live="polite">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">{STRINGS.nextPayoutSources}</h3>
-        <p className="text-xs text-secondary-text">See what’s available to claim right now and how much is queued.</p>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold text-foreground">Lender actions</h3>
+        <Badge variant={hasClaimableNow ? "success" : "neutral"}>{claimableNowLabel} NEAR</Badge>
       </div>
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-secondary-text">{STRINGS.availableNow}</span>
-        <span className="font-semibold">{claimableNowLabel} NEAR</span>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Metric label={STRINGS.availableNow} value={`${claimableNowLabel} NEAR`} highlight={hasClaimableNow} />
+        {expectedNextLabel ? (
+          <Metric label={STRINGS.expectedNext} value={`${expectedNextLabel} NEAR`} />
+        ) : (
+          <Metric label={STRINGS.expectedNext} value="—" />
+        )}
       </div>
-      {!hasClaimableNow && (
-        <p className="text-xs text-secondary-text">
-          {STRINGS.nothingAvailableNow}
-          {expectedNextLabel && (
-            <>
-              {" · "}
-              {STRINGS.expectedNext}: {expectedNextLabel} NEAR
-            </>
-          )}
-        </p>
-      )}
       {lenderId && (
-        <p className="text-xs text-secondary-text">
-          {STRINGS.payoutsGoTo}{" "}
+        <div className="flex flex-wrap items-center gap-2 text-xs text-secondary-text">
+          <span>{STRINGS.payoutsGoTo}</span>
           <span className="font-medium break-all" title={lenderId}>{lenderId}</span>
           <a
             href={explorerAccountUrl(network, lenderId)}
@@ -87,15 +83,13 @@ export function LenderActionsPanel({
           >
             {STRINGS.viewAccountOnExplorer}
           </a>
-        </p>
+        </div>
       )}
       {processError && (
         <p className="text-xs text-red-600" role="alert">{processError}</p>
       )}
       {maturedYocto > BigInt(0) && (
-        <p className="text-xs text-secondary-text">
-          {includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}
-        </p>
+        <p className="text-xs text-secondary-text">{includesMaturedString(safeFormatYoctoNear(maturedYocto.toString(), 5))}</p>
       )}
       <Button
         type="button"
@@ -114,5 +108,29 @@ export function LenderActionsPanel({
         </div>
       )}
     </Card>
+  );
+}
+
+function Metric({
+  label,
+  value,
+  highlight = false,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      className={[
+        "rounded-2xl border px-3 py-3",
+        highlight
+          ? "border-primary/20 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_10%,var(--surface)),var(--surface))]"
+          : "border-[color:var(--border)] bg-[color:var(--surface)]",
+      ].join(" ")}
+    >
+      <div className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
+    </div>
   );
 }

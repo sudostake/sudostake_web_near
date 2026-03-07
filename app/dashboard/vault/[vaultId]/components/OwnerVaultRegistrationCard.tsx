@@ -6,6 +6,7 @@ import { STRINGS, storageDepositString } from "@/utils/strings";
 import type { Network } from "@/utils/networks";
 import { explorerAccountUrl } from "@/utils/networks";
 import { Card } from "@/app/components/ui/Card";
+import { Badge } from "@/app/components/ui/Badge";
 
 type Props = {
   ownerMinDeposit: string | null;
@@ -18,13 +19,17 @@ type Props = {
 
 export function OwnerVaultRegistrationCard({ ownerMinDeposit, storagePending, onRegister, tokenId, network, storageError }: Props) {
   return (
-    <Card className="space-y-3 border border-amber-400/40 bg-amber-50/70 text-amber-900" role="region" aria-label="Vault registration">
-      <div className="text-sm font-semibold">{STRINGS.vaultRegistrationRequiredTitle}</div>
-      <p className="text-sm">
-        {STRINGS.vaultRegistrationRequiredOwnerBody}
-        {ownerMinDeposit && <> {storageDepositString(ownerMinDeposit)}</>}
-      </p>
-      <div className="flex flex-col gap-2 text-sm">
+    <Card className="space-y-3 rounded-2xl border border-amber-400/40 bg-amber-50/70 px-4 py-4 text-amber-900" role="region" aria-label="Vault registration">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="text-sm font-semibold">{STRINGS.vaultRegistrationRequiredTitle}</div>
+          <div className="text-xs">Required before funding</div>
+        </div>
+        <Badge variant="warn">
+          {ownerMinDeposit ? storageDepositString(ownerMinDeposit) : "Deposit required"}
+        </Badge>
+      </div>
+      <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
         <Button
           type="button"
           onClick={onRegister}
@@ -46,9 +51,6 @@ export function OwnerVaultRegistrationCard({ ownerMinDeposit, storagePending, on
               {STRINGS.viewTokenOnExplorer}
             </a>
           )}
-          <a href="/docs/token-registration" target="_blank" rel="noopener noreferrer" className="text-primary underline">
-            {STRINGS.learnMore}
-          </a>
         </div>
         {storageError && <div className="text-xs text-red-600">{storageError}</div>}
       </div>

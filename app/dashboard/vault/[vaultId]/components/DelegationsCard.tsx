@@ -91,64 +91,77 @@ export function DelegationsCard({
     });
     return entries;
   }, [summary]);
+  const shouldShowSummary = !error || (Array.isArray(summary) && summary.length > 0);
+  const statusBadges = [
+    (loading || refundsLoading) ? <Badge key="sync" variant="neutral">Syncing</Badge> : null,
+    showClaimDisabledNote ? <Badge key="claims-locked" variant="danger">Claims locked</Badge> : null,
+    typeof refundsCount === "number" && refundsCount > 0 ? (
+      <Badge key="refunds" variant="warn">{refundsCount} refund{refundsCount === 1 ? "" : "s"}</Badge>
+    ) : null,
+    error ? <Badge key="error" variant="warn">Data unavailable</Badge> : null,
+  ].filter(Boolean);
 
   return (
     <Card
       aria-labelledby="delegations-summary-heading"
-      className="surface-card space-y-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
+      className="surface-card space-y-4 rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
       role="region"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 id="delegations-summary-heading" className="text-lg font-semibold">{STRINGS.delegationsSummaryTitle}</h2>
-          <p className="text-xs text-secondary-text">Track validator stakes, unstaking progress, and claimability.</p>
-        </div>
-        {(loading || refundsLoading) && (
-          <span className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-xs text-secondary-text">
-            Loading...
-          </span>
-        )}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h2 id="delegations-summary-heading" className="text-lg font-semibold">Delegations</h2>
+        <div className="flex flex-wrap gap-2">{statusBadges}</div>
       </div>
 
-      {showClaimDisabledNote && (
-        <div className="rounded-xl border border-red-200/60 bg-red-50/80 px-4 py-3 text-sm text-red-700">
-          {STRINGS.claimDisabledLiquidation}
-        </div>
-      )}
-
-      {typeof refundsCount === "number" && refundsCount > 0 && (
-        <div className="rounded-xl border border-amber-200/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-700">
-          <span className="font-medium">{STRINGS.pendingRefunds}:</span> {refundsCount}. {STRINGS.refundsAffectDelegation}
-        </div>
-      )}
-
       {error && (
-        <div className="rounded-xl border border-red-200/60 bg-red-50/90 px-4 py-3 text-sm text-red-700" role="alert">
-          Failed to load delegations
-          <div className="mt-1 text-xs">{error}</div>
+        <div
+          className="rounded-2xl border border-amber-200/60 bg-amber-50/90 px-4 py-3 text-xs font-medium text-amber-800"
+          role="alert"
+          title={error}
+        >
+          Delegation data unavailable
         </div>
       )}
 
-      <Summary
-        loading={loading}
-        entries={entriesForRender}
-        availableBalance={availableBalance}
-        availableLoading={availableLoading}
-      />
+      {shouldShowSummary ? (
+        <Summary
+          loading={loading}
+          entries={entriesForRender}
+          availableBalance={availableBalance}
+          availableLoading={availableLoading}
+        />
+      ) : null}
 
       {Array.isArray(summary) && summary.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3 text-xs text-secondary-text">
-          <span>
-            {STRINGS.totalStaked}: <span className="font-mono text-foreground">{shortAmount(stats.stakedDisplay, 6)}</span> {NATIVE_TOKEN}
-          </span>
-          <span>
-            {STRINGS.totalUnstaked}: <span className="font-mono text-foreground">{shortAmount(stats.unstakedDisplay, 6)}</span> {NATIVE_TOKEN}
-          </span>
-          {stats.withdrawableCount > 0 && (
-            <Badge variant="success">Ready to claim: {stats.withdrawableCount}</Badge>
-          )}
+        <div className="grid gap-2 sm:grid-cols-3">
+          <StatCell label={STRINGS.totalStaked} value={`${shortAmount(stats.stakedDisplay, 6)} ${NATIVE_TOKEN}`} />
+          <StatCell label={STRINGS.totalUnstaked} value={`${shortAmount(stats.unstakedDisplay, 6)} ${NATIVE_TOKEN}`} />
+          <StatCell label="Ready" value={String(stats.withdrawableCount)} tone={stats.withdrawableCount > 0 ? "success" : "neutral"} />
         </div>
       )}
     </Card>
+  );
+}
+
+function StatCell({
+  label,
+  value,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  tone?: "neutral" | "success";
+}) {
+  return (
+    <div
+      className={[
+        "rounded-2xl border px-3 py-3",
+        tone === "success"
+          ? "border-primary/20 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_10%,var(--surface)),var(--surface))]"
+          : "border-[color:var(--border)] bg-[color:var(--surface-muted)]",
+      ].join(" ")}
+    >
+      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</p>
+      <p className="mt-1 font-mono text-sm text-foreground">{value}</p>
+    </div>
   );
 }

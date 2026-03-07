@@ -14,6 +14,19 @@ export type UseViewerRoleResult = {
   error: string | null;
 };
 
+type ViewerRoleInput = {
+  signedAccountId?: string | null;
+  owner?: string | null;
+  lender?: string | null;
+};
+
+export function getViewerRole({ signedAccountId, owner, lender }: ViewerRoleInput): ViewerRole {
+  if (!signedAccountId) return "guest";
+  if (lender && lender === signedAccountId) return "activeLender";
+  if (owner && owner === signedAccountId) return "owner";
+  return "potentialLender";
+}
+
 /**
  * Determine the viewer's role relative to a given vault, derived from on-chain indexed state.
  *
@@ -30,14 +43,15 @@ export function useViewerRole(
   const { signedAccountId } = useWalletSelector();
   const { data, loading, error } = useVault(factoryId ?? undefined, vaultId ?? undefined);
 
-  const role: ViewerRole = useMemo(() => {
-    if (!signedAccountId) return "guest";
-    const owner = data?.owner;
-    const lender = data?.accepted_offer?.lender;
-    if (lender && lender === signedAccountId) return "activeLender";
-    if (owner && owner === signedAccountId) return "owner";
-    return "potentialLender";
-  }, [signedAccountId, data?.owner, data?.accepted_offer?.lender]);
+  const role: ViewerRole = useMemo(
+    () =>
+      getViewerRole({
+        signedAccountId,
+        owner: data?.owner,
+        lender: data?.accepted_offer?.lender,
+      }),
+    [signedAccountId, data?.owner, data?.accepted_offer?.lender]
+  );
 
   const isOwner = role === "owner";
   const isActiveLender = role === "activeLender";
