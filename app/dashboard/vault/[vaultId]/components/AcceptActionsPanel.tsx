@@ -57,7 +57,7 @@ export function AcceptActionsPanel({
         disabled={disabled}
         variant="primary"
         size="sm"
-        className="gap-2"
+        className="w-full justify-center gap-2 sm:w-auto"
         title={title}
         aria-busy={pending || balLoading ? true : undefined}
       >

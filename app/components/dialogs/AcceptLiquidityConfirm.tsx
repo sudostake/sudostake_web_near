@@ -65,11 +65,11 @@ export function AcceptLiquidityConfirm({
       title="Confirm Lending"
       disableBackdropClose={pending}
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={pending}>
+        <div className="flex flex-col items-stretch justify-end gap-2 sm:flex-row sm:items-center">
+          <Button variant="secondary" onClick={onClose} disabled={pending} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button onClick={onConfirm} disabled={pending}>
+          <Button onClick={onConfirm} disabled={pending} className="w-full sm:w-auto">
             {pending ? "Confirming…" : "Confirm accept"}
           </Button>
         </div>
@@ -78,10 +78,10 @@ export function AcceptLiquidityConfirm({
       <div className="space-y-3 text-sm">
         <div>
           You are lending <span className="font-medium">{lendAmount} {tokenSymbol}</span>
-          {" "}to <span className="font-medium" title={vaultId}>{vaultId}</span>.
+          {" "}to <span className="break-all font-medium" title={vaultId}>{vaultId}</span>.
         </div>
         <div className="rounded border bg-background p-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="text-secondary-text">You’ll receive on-time</div>
             <div className="font-medium">{totalRepay} {tokenSymbol}</div>
             <div className="text-secondary-text">Includes interest</div>

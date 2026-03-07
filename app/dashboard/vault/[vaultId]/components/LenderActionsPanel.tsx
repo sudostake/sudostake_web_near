@@ -39,7 +39,7 @@ export function LenderActionsPanel({
   if (remainingMs !== null && remainingMs > 0) {
     return (
       <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="status" aria-live="polite">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h3 className="text-sm font-semibold text-foreground">Lender actions</h3>
           <Badge variant="info">{formattedCountdown ?? "—"}</Badge>
         </div>
@@ -58,7 +58,7 @@ export function LenderActionsPanel({
 
   return (
     <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" aria-live="polite">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-sm font-semibold text-foreground">Lender actions</h3>
         <Badge variant={hasClaimableNow ? "success" : "neutral"}>{claimableNowLabel} NEAR</Badge>
       </div>
@@ -130,7 +130,7 @@ function Metric({
       ].join(" ")}
     >
       <div className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
+      <div className="mt-1 break-all font-mono text-sm text-foreground">{value}</div>
     </div>
   );
 }

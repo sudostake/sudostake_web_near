@@ -45,7 +45,7 @@ export function ActionButtons({ onDeposit, onWithdraw, onTransfer, disabled }: A
   ];
 
   return (
-    <section className="grid grid-cols-3 gap-2" aria-label="Vault actions">
+    <section className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-3" aria-label="Vault actions">
       {actions.map((action) => (
         <button
           key={action.label}
@@ -53,7 +53,7 @@ export function ActionButtons({ onDeposit, onWithdraw, onTransfer, disabled }: A
           onClick={action.onClick}
           disabled={disabled}
           className={[
-            "group flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-center transition-[border-color,background-color,box-shadow] duration-150 ease-out",
+            "group flex min-h-24 min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-center transition-[border-color,background-color,box-shadow] duration-150 ease-out",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             "disabled:cursor-not-allowed disabled:opacity-60",
             action.accent,
@@ -62,7 +62,7 @@ export function ActionButtons({ onDeposit, onWithdraw, onTransfer, disabled }: A
           <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-current/15 bg-white/40 text-primary dark:bg-black/10">
             {action.icon}
           </span>
-          <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-foreground">{action.label}</span>
+          <span className="block break-words text-xs font-semibold uppercase tracking-[0.08em] text-foreground">{action.label}</span>
         </button>
       ))}
     </section>

@@ -24,7 +24,7 @@ export function OwnerActionsPanel({ onRepay, onBeginLiquidation, remainingMs, fo
 
   return (
     <Card className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4" role="region" aria-label="Owner actions">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="text-sm font-semibold text-foreground">Owner actions</h3>
         {(hasCountdown || hasExpired) && (
           <Badge variant={hasExpired ? "warn" : "info"}>

@@ -54,14 +54,14 @@ export function LiquidityRequestHeader(props: Props) {
         </div>
       </div>
       {!props.hasOpenRequest && props.isOwner && (
-        <div className="shrink-0 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-2">
+        <div className="w-full shrink-0 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-2 lg:w-auto">
           <Button
             type="button"
             onClick={props.onOpenRequest}
             disabled={props.openDisabled}
             variant="primary"
             size="sm"
-            className="min-w-[11rem] gap-2"
+            className="w-full gap-2 sm:min-w-[11rem] lg:w-auto"
           >
             {STRINGS.openRequest}
           </Button>

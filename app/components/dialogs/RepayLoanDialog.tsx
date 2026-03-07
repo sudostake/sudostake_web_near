@@ -176,8 +176,8 @@ export function RepayLoanDialog({
       title="Repay loan"
       disableBackdropClose={pending}
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={pending}>
+        <div className="flex flex-col items-stretch justify-end gap-2 sm:flex-row sm:items-center">
+          <Button variant="secondary" onClick={onClose} disabled={pending} className="w-full sm:w-auto">
             Cancel
           </Button>
           <Button
@@ -185,6 +185,7 @@ export function RepayLoanDialog({
             disabled={pending || balLoading || missingMinimal !== "0"}
             title={missingMinimal !== "0" ? `Missing ${missingLabel} ${symbol} on vault` : undefined}
             aria-busy={pending ? true : undefined}
+            className="w-full sm:w-auto"
           >
             {pending ? "Repaying…" : "Repay now"}
           </Button>
@@ -196,10 +197,10 @@ export function RepayLoanDialog({
     >
       <div className="space-y-3">
         <div className="text-sm text-secondary-text">
-          Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
+          Vault: <span className="break-all font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
         <div className="rounded border bg-background p-3 text-sm">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <div className="text-secondary-text">Token</div>
             <div className="font-medium break-all" title={tokenId}>{tokenId}</div>
             <div className="text-secondary-text">Principal</div>
@@ -319,7 +320,7 @@ function TopUpSection({
       <div className="mt-1 text-secondary-text">
         Your balance: <span className="font-medium text-foreground">{ownerBalLoading ? "…" : `${ownerBalanceLabel} ${symbol}`}</span>
       </div>
-      <div className="mt-1 text-xs text-secondary-text">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-secondary-text">
         <a
           href={explorerAccountUrl(networkId, tokenId)}
           target="_blank"
@@ -331,7 +332,7 @@ function TopUpSection({
         </a>
         <button
           type="button"
-          className="ml-2 underline text-primary"
+          className="underline text-primary"
           onClick={() => copy(tokenId)}
           title={copied === tokenId ? STRINGS.copied : STRINGS.copy}
         >
@@ -341,14 +342,14 @@ function TopUpSection({
           href={explorerAccountUrl(networkId, vaultId)}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline text-primary ml-3"
+          className="underline text-primary"
           aria-label={`View vault ${vaultId} on explorer`}
         >
           {STRINGS.viewVaultOnExplorer}
         </a>
         <button
           type="button"
-          className="ml-2 underline text-primary"
+          className="underline text-primary"
           onClick={() => copy(vaultId)}
           title={copied === vaultId ? STRINGS.copied : STRINGS.copy}
         >
@@ -357,7 +358,7 @@ function TopUpSection({
       </div>
       {vaultRegistered === false ? (
         <div className="mt-2">
-          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit} aria-busy={regPending ? true : undefined}>
+          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit} aria-busy={regPending ? true : undefined} className="w-full sm:w-auto">
             {regPending ? "Registering…" : STRINGS.registerVaultWithToken}
           </Button>
           {regPending && (
@@ -371,7 +372,7 @@ function TopUpSection({
         </div>
       ) : ownerRegistered === false ? (
         <div className="mt-2">
-          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit} aria-busy={regPending ? true : undefined}>
+          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit} aria-busy={regPending ? true : undefined} className="w-full sm:w-auto">
             {regPending ? "Registering…" : STRINGS.registerAccountWithToken}
           </Button>
           {regError && <div className="mt-1 text-xs text-red-700" role="alert">{regError}</div>}
@@ -381,7 +382,7 @@ function TopUpSection({
         </div>
       ) : (
         <div className="mt-2">
-          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip} aria-busy={transferPending ? true : undefined}>
+          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip} aria-busy={transferPending ? true : undefined} className="w-full sm:w-auto">
             {transferPending ? STRINGS.transferring : STRINGS.topUpToVault(missingLabel, symbol)}
           </Button>
           {transferError && <div className="mt-1 text-xs text-red-700" role="alert">{transferError}</div>}
