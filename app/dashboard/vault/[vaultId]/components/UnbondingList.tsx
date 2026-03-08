@@ -6,26 +6,17 @@ import { EpochDetails } from "./EpochDetails";
 import { STRINGS } from "@/utils/strings";
 import { explorerAccountUrl, getActiveNetwork } from "@/utils/networks";
 import { CopyButton } from "@/app/components/ui/CopyButton";
-import { Card } from "@/app/components/ui/Card";
 
 export type UnbondingEntryRow = {
   validator: string;
-  amount: string; // yoctoNEAR
+  amount: string;
   unlockEpoch: number;
   unstakeEpoch: number;
-  remaining: number | null; // epochs remaining until unlock
+  remaining: number | null;
 };
-
-
-// Progress is shown via EpochDetails; no local progress calculation needed
 
 type Props = {
   entries: UnbondingEntryRow[];
-  /**
-   * When true, renders only the list of validator rows, without the outer
-   * container and title. Useful when the parent already provides the header
-   * and surrounding card/chrome.
-   */
   bare?: boolean;
 };
 
@@ -33,54 +24,58 @@ export function UnbondingList({ entries, bare = false }: Props) {
   const titleId = useId();
   if (!Array.isArray(entries) || entries.length === 0) return null;
   const network = getActiveNetwork();
-  const List = (
-    <ul className={bare ? "space-y-2" : "mt-2 space-y-2"} aria-labelledby={bare ? undefined : titleId}>
-      {entries.map((row, idx) => {
-        const { validator, unlockEpoch, unstakeEpoch, remaining } = row;
-        return (
-          <li key={`${validator}-${idx}`}>
-            <Card className="space-y-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-3 shadow-none sm:px-4 sm:py-3">
-              <div className="flex items-center justify-between gap-2 min-w-0">
-                <div className="flex items-center gap-1 min-w-0">
-                  <a
-                    href={explorerAccountUrl(network, validator)}
-                    target="_blank"
+
+  const list = (
+    <ul className="divide-y divide-foreground/10" aria-labelledby={bare ? undefined : titleId}>
+      {entries.map((row, idx) => (
+        <li key={`${row.validator}-${idx}`} className="py-4 first:pt-0 last:pb-0">
+          <div className="grid gap-x-6 gap-y-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1.85fr)]">
+            <div className="min-w-0 space-y-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <a
+                  href={explorerAccountUrl(network, row.validator)}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-sm underline break-all"
-                  title={validator}
-                  aria-label={`View validator ${validator} on explorer`}
+                  className="break-all font-mono text-sm underline"
+                  title={row.validator}
+                  aria-label={`View validator ${row.validator} on explorer`}
                 >
-                  {validator}
+                  {row.validator}
                 </a>
-                <CopyButton value={validator} title="Copy validator" />
+                <CopyButton value={row.validator} title="Copy validator" />
               </div>
-              <div className="text-right">
-                <div className="text-xs uppercase tracking-wide text-secondary-text">{STRINGS.amountLabel}</div>
-                <div className="font-mono text-sm">{safeFormatYoctoNear(row.amount)} NEAR</div>
+              <div className="space-y-1">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">
+                  {STRINGS.amountLabel}
+                </div>
+                <div className="font-mono text-sm text-foreground">{safeFormatYoctoNear(row.amount)} NEAR</div>
               </div>
             </div>
-            <div className="mt-2">
-              <EpochDetails
-                unlockEpoch={unlockEpoch}
-                remaining={remaining}
-                unstakeEpoch={unstakeEpoch}
-              />
-            </div>
-            </Card>
-          </li>
-        );
-      })}
+
+            <EpochDetails
+              unlockEpoch={row.unlockEpoch}
+              remaining={row.remaining}
+              unstakeEpoch={row.unstakeEpoch}
+            />
+          </div>
+        </li>
+      ))}
     </ul>
   );
 
-  if (bare) return List;
+  if (bare) return list;
 
   return (
-    <Card className="space-y-3" role="region" aria-labelledby={titleId}>
-      <div id={titleId} className="text-sm font-semibold text-foreground">{STRINGS.waitingToUnlock}</div>
-      <p className="text-xs text-secondary-text">Delegations queued to unlock. Claimable amounts move here before reaching your available balance.</p>
-      {List}
-      {/* ETA is rendered per entry above */}
-    </Card>
+    <section className="space-y-4" role="region" aria-labelledby={titleId}>
+      <div className="space-y-1">
+        <div id={titleId} className="text-sm font-semibold text-foreground">
+          {STRINGS.waitingToUnlock}
+        </div>
+        <p className="text-sm text-secondary-text">
+          Delegations queued to unlock. These amounts only become claimable once the validator unlock window completes.
+        </p>
+      </div>
+      {list}
+    </section>
   );
 }

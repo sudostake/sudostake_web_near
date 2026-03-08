@@ -14,12 +14,27 @@ type Props = {
   unstakeEpoch?: number;
 };
 
+function Field({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+      <div className="font-mono text-sm text-foreground">{value}</div>
+    </div>
+  );
+}
+
 export function EpochDetails({ unlockEpoch, remaining, availableNow, className, unstakeEpoch }: Props) {
   const etaMs = React.useMemo(() => {
     if (availableNow) return 0;
     if (remaining === null) return null;
     return remaining * AVERAGE_EPOCH_SECONDS * 1000;
-  }, [remaining, availableNow]);
+  }, [availableNow, remaining]);
 
   const pct = React.useMemo(() => {
     if (remaining === null || remaining < 0) return null;
@@ -28,39 +43,32 @@ export function EpochDetails({ unlockEpoch, remaining, availableNow, className, 
     return Math.round(ratio * 100);
   }, [remaining]);
 
+  const etaLabel = availableNow
+    ? STRINGS.availableNowLabel
+    : etaMs && etaMs > 0
+      ? `~${formatDurationShort(etaMs)} (by ${formatDateTime(new Date(Date.now() + Math.max(0, etaMs)))})`
+      : "—";
+
+  const remainingLabel = remaining === null ? "—" : `${remaining} ${remaining === 1 ? "epoch" : "epochs"}`;
+
   return (
-    <div className={className ?? "grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-secondary-text dark:text-neutral-300"}>
-      <div>
-        <div className="uppercase tracking-wide text-secondary-text dark:text-neutral-400">{STRINGS.unlockEpochLabel}</div>
-        <div className="font-mono text-sm text-foreground dark:text-neutral-100">{unlockEpoch}</div>
+    <div className={["space-y-3", className].filter(Boolean).join(" ")}>
+      <div className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
+        <Field label={STRINGS.unlockEpochLabel} value={String(unlockEpoch)} />
+        <Field label={STRINGS.remainingLabel} value={remainingLabel} />
+        <Field label={STRINGS.etaLabel} value={etaLabel} />
       </div>
-      <div>
-        <div className="uppercase tracking-wide text-secondary-text dark:text-neutral-400">{STRINGS.remainingLabel}</div>
-        <div className="font-mono text-sm text-foreground dark:text-neutral-100">
-          {remaining ?? "—"}
-          {remaining !== null ? (remaining === 1 ? " epoch" : " epochs") : ""}
-        </div>
-      </div>
-      <div>
-        <div className="uppercase tracking-wide text-secondary-text dark:text-neutral-400">{STRINGS.etaLabel}</div>
-        <div className="font-mono text-sm text-foreground dark:text-neutral-100">
-          {availableNow
-            ? STRINGS.availableNowLabel
-            : etaMs && etaMs > 0
-            ? `~${formatDurationShort(etaMs)} (by ${formatDateTime(new Date(Date.now() + Math.max(0, etaMs)))})`
-            : "—"}
-        </div>
-      </div>
+
       {pct !== null && (
-        <div className="sm:col-span-3" aria-label="Unbonding progress">
-          <div className="h-1.5 w-full bg-red-200 dark:bg-red-800 rounded">
-            <div className="h-1.5 bg-red-500 dark:bg-red-400 rounded" style={{ width: `${pct}%` }} />
+        <div className="space-y-1" aria-label="Unbonding progress">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
+            <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${pct}%` }} />
           </div>
-          <div className="mt-1 text-xs text-secondary-text dark:text-neutral-300">{pct}%</div>
+          <div className="text-xs text-secondary-text">
+            {pct}% through unlock window
+            {unstakeEpoch !== undefined ? ` · unstaked at epoch ${unstakeEpoch}` : ""}
+          </div>
         </div>
-      )}
-      {unstakeEpoch !== undefined && (
-        <div className="sm:col-span-3 text-xs text-secondary-text dark:text-neutral-400">Unstaked epoch: {unstakeEpoch}</div>
       )}
     </div>
   );

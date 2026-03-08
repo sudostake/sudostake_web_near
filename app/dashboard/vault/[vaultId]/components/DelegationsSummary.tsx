@@ -7,6 +7,7 @@ import { useDelegationsActions } from "./DelegationsActionsContext";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { explorerAccountUrl, getActiveNetwork } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
+import { Button } from "@/app/components/ui/Button";
 
 function ValueRow({
   label,
@@ -16,14 +17,20 @@ function ValueRow({
   value: string;
 }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-wide text-secondary-text">{label}</div>
-      <div className="mt-1 break-all font-mono text-sm text-foreground">{value}</div>
+    <div className="space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+      <div className="break-all font-mono text-sm text-foreground">{value}</div>
     </div>
   );
 }
 
-function SummaryItem({ entry, flat = false }: { entry: DelegationSummaryEntry; flat?: boolean }) {
+function validatorStatus(entry: DelegationSummaryEntry, unstakedNum: number) {
+  if (entry.can_withdraw && unstakedNum > 0) return STRINGS.statusWithdrawable;
+  if (unstakedNum > 0) return STRINGS.statusUnstaking;
+  return STRINGS.statusActive;
+}
+
+function SummaryItem({ entry }: { entry: DelegationSummaryEntry }) {
   const { onDelegate, onUndelegate, onUnclaimUnstaked } = useDelegationsActions();
   const stakedDisplay = `${entry.staked_balance.toDisplay()} ${entry.staked_balance.symbol}`;
   const unstakedDisplay = `${entry.unstaked_balance.toDisplay()} ${entry.unstaked_balance.symbol}`;
@@ -37,78 +44,67 @@ function SummaryItem({ entry, flat = false }: { entry: DelegationSummaryEntry; f
   const canUndelegate = Boolean(onUndelegate) && stakedNum > 0;
   const canClaim = Boolean(onUnclaimUnstaked) && entry.can_withdraw && unstakedNum > 0;
   const canDelegate = Boolean(onDelegate);
+  const status = validatorStatus(entry, unstakedNum);
 
   return (
-    <li
-      className={
-        flat
-          ? "py-4 first:pt-0 last:pb-0"
-          : "rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] p-4"
-      }
-      key={entry.validator}
-    >
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <a
-          href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="break-all font-mono text-sm transition-colors hover:text-primary"
-          title={entry.validator}
-          aria-label={`View validator ${entry.validator} on explorer`}
-        >
-          {entry.validator}
-        </a>
-        <CopyButton value={entry.validator} title="Copy validator" />
-      </div>
+    <li className="py-4 first:pt-0 last:pb-0">
+      <div className="grid gap-x-6 gap-y-4 xl:grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,1fr))]">
+        <div className="min-w-0 space-y-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <a
+              href={explorerAccountUrl(getActiveNetwork(), entry.validator)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="break-all font-mono text-sm transition-colors hover:text-primary"
+              title={entry.validator}
+              aria-label={`View validator ${entry.validator} on explorer`}
+            >
+              {entry.validator}
+            </a>
+            <CopyButton value={entry.validator} title="Copy validator" />
+          </div>
+          <div className="text-sm text-secondary-text">{status}</div>
+        </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <ValueRow label={STRINGS.stakedLabelUI} value={stakedDisplay} />
         <ValueRow label={STRINGS.unstakedLabelUI} value={unstakedDisplay} />
         <ValueRow label="Withdrawable now" value={withdrawableNow} />
       </div>
 
       {Boolean(onDelegate || onUndelegate || onUnclaimUnstaked) && (
-        <div className={flat ? "mt-4 pt-1" : "mt-4 border-t border-foreground/10 pt-3"}>
-          <div className="flex flex-wrap justify-start gap-2 sm:justify-end">
-            {canClaim && (
-              <button
-                type="button"
-                aria-label={`Claim unstaked for ${entry.validator}`}
-                className="rounded-full bg-primary px-2.5 py-1 text-xs whitespace-nowrap text-primary-text focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => onUnclaimUnstaked?.(entry.validator)}
-                disabled={!canClaim}
-              >
-                {STRINGS.claimAction}
-              </button>
-            )}
-            {onDelegate && (
-              <button
-                type="button"
-                aria-label={`Delegate to ${entry.validator}`}
-                className={[
-                  "rounded-full px-2.5 py-1 text-xs whitespace-nowrap focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60",
-                  canClaim
-                    ? "border border-[color:var(--border)] bg-[color:var(--surface)] hover:bg-[color:var(--surface-muted)]"
-                    : "bg-primary text-primary-text",
-                ].join(" ")}
-                onClick={() => onDelegate(entry.validator)}
-                disabled={!canDelegate}
-              >
-                {STRINGS.delegateAction}
-              </button>
-            )}
-            {onUndelegate && (
-              <button
-                type="button"
-                aria-label={`Undelegate from ${entry.validator}`}
-                className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-2.5 py-1 text-xs whitespace-nowrap hover:bg-[color:var(--surface-muted)] focus:outline-none focus:ring-1 focus:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={() => onUndelegate(entry.validator)}
-                disabled={!canUndelegate}
-              >
-                {STRINGS.undelegateAction}
-              </button>
-            )}
-          </div>
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-foreground/10 pt-4">
+          {canClaim && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => onUnclaimUnstaked?.(entry.validator)}
+              disabled={!canClaim}
+            >
+              {STRINGS.claimAction}
+            </Button>
+          )}
+          {onDelegate && (
+            <Button
+              type="button"
+              size="sm"
+              variant={canClaim ? "secondary" : "primary"}
+              onClick={() => onDelegate(entry.validator)}
+              disabled={!canDelegate}
+            >
+              {STRINGS.delegateAction}
+            </Button>
+          )}
+          {onUndelegate && (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={() => onUndelegate(entry.validator)}
+              disabled={!canUndelegate}
+            >
+              {STRINGS.undelegateAction}
+            </Button>
+          )}
         </div>
       )}
     </li>
@@ -123,10 +119,17 @@ export function DelegationsSummary({
   flat?: boolean;
 }) {
   return (
-    <div className={flat ? "" : "space-y-2"} aria-label="Delegations summary">
-      <ul className={flat ? "space-y-4" : "space-y-2"}>
+    <div
+      className={[
+        flat ? "" : "rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-1 sm:px-5",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      aria-label="Delegations summary"
+    >
+      <ul className="divide-y divide-foreground/10">
         {entries.map((entry) => (
-          <SummaryItem key={entry.validator} entry={entry} flat={flat} />
+          <SummaryItem key={entry.validator} entry={entry} />
         ))}
       </ul>
     </div>

@@ -5,9 +5,7 @@ import type { ViewerRole } from "@/hooks/useViewerRole";
 import { STRINGS } from "@/utils/strings";
 import { formatDateTime } from "@/utils/datetime";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
-import { Card } from "@/app/components/ui/Card";
 import { Button } from "@/app/components/ui/Button";
-import { Badge } from "@/app/components/ui/Badge";
 import { UnbondingStatusCard } from "./UnbondingStatusCard";
 import type { UnbondingEntryRow } from "./UnbondingList";
 
@@ -34,141 +32,19 @@ type Props = {
   longestEtaLabel: string | null;
 };
 
-type LiquidationPayoutCardProps = {
-  liquidatedYocto: string;
-  remainingTargetLabel: string | null;
-  collateralLabel: string | null;
-  claimableNowLabel: string;
-  hasClaimableNow: boolean;
-  expectedImmediateYocto: bigint;
-  maturedYocto: bigint;
-  maturedTotalLabel: string | null;
-  className?: string;
-};
-
-function LiquidationPayoutCard({
-  liquidatedYocto,
-  remainingTargetLabel,
-  collateralLabel,
-  claimableNowLabel,
-  hasClaimableNow,
-  expectedImmediateYocto,
-  maturedYocto,
-  maturedTotalLabel,
-  className,
-}: LiquidationPayoutCardProps) {
-  const hasVaultBalanceNow = expectedImmediateYocto > BigInt(0);
-  const hasMaturedNow = maturedYocto > BigInt(0);
+function Stat({
+  label,
+  value,
+  emphasize = false,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) {
   return (
-    <Card
-      className={["rounded-lg border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3", className]
-        .filter(Boolean)
-        .join(" ")}
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-        <div>
-          <div className="text-secondary-text">{STRINGS.paidSoFar}</div>
-          <div className="font-medium">{safeFormatYoctoNear(liquidatedYocto, 5)} NEAR</div>
-        </div>
-        {remainingTargetLabel && (
-          <div>
-            <div className="text-secondary-text">{STRINGS.remainingLabel}</div>
-            <div className="font-medium">{remainingTargetLabel} NEAR{collateralLabel ? ` (Target: ${collateralLabel} NEAR)` : ""}</div>
-          </div>
-        )}
-      </div>
-      <div className="my-2 h-px bg-foreground/10" />
-      <div className="text-sm">
-        <div className="text-secondary-text">{STRINGS.nextPayoutSources}</div>
-        <div className="mt-1">
-          {hasClaimableNow ? (
-            <div className="font-medium">{claimableNowLabel} NEAR {STRINGS.availableNow.toLowerCase()}</div>
-          ) : (
-            <div className="text-secondary-text">{STRINGS.nothingAvailableNow}</div>
-          )}
-          <ul className="mt-2 space-y-1">
-            <li className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <svg
-                  aria-hidden="true"
-                  className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/55"}`}
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                >
-                  <rect x="2" y="6" width="12" height="6" rx="2" />
-                  <rect x="4" y="4" width="8" height="3" rx="1.5" />
-                  <circle cx="6" cy="9" r="0.6" />
-                  <circle cx="10" cy="9" r="0.6" />
-                </svg>
-                <span className="text-secondary-text">{STRINGS.sourceVaultBalanceNow}</span>
-                {hasVaultBalanceNow && (
-                  <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
-                )}
-              </div>
-              <span className={`font-mono font-medium transition-colors duration-200 ${hasVaultBalanceNow ? "text-primary" : "text-foreground/75"}`}>
-                {safeFormatYoctoNear(expectedImmediateYocto.toString())} NEAR
-              </span>
-            </li>
-            {maturedTotalLabel && (
-              <li className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <svg
-                    aria-hidden="true"
-                    className={`h-4 w-4 shrink-0 transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/55"}`}
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="8" cy="8" r="6" />
-                    <path d="M5.5 8l2 2 3.5-3.5" />
-                  </svg>
-                  <span className="text-secondary-text">{STRINGS.maturedClaimableNow}</span>
-                  {hasMaturedNow && (
-                    <span aria-hidden="true" className="ml-1 h-1.5 w-1.5 rounded-full bg-primary/90 animate-pulse-soft" />
-                  )}
-                </div>
-                <span className={`font-mono font-medium transition-colors duration-200 ${hasMaturedNow ? "text-primary" : "text-foreground/75"}`}>
-                  {maturedTotalLabel} NEAR
-                </span>
-              </li>
-            )}
-          </ul>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-type ProcessActionsProps = {
-  hasClaimableNow: boolean;
-  processPending: boolean;
-  processError: string | null;
-  onProcess: () => void;
-};
-
-function ProcessActions({ hasClaimableNow, processPending, processError, onProcess }: ProcessActionsProps) {
-  return (
-    <div className="mt-3 flex flex-col items-end gap-2">
-      <Button
-        type="button"
-        onClick={onProcess}
-        disabled={processPending || !hasClaimableNow}
-        size="sm"
-        className="w-full justify-center gap-2 sm:w-auto"
-        title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
-        aria-busy={processPending ? true : undefined}
-      >
-        {processPending ? STRINGS.processing : STRINGS.processNow}
-      </Button>
-      {processError && (
-        <div className="text-xs text-red-600" role="alert">{processError}</div>
-      )}
-      {processPending && (
-        <div className="sr-only" role="status" aria-live="polite">{STRINGS.processing}</div>
-      )}
+    <div className="space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+      <div className={`${emphasize ? "text-lg" : "text-sm"} font-mono text-foreground`}>{value}</div>
     </div>
   );
 }
@@ -196,96 +72,79 @@ export function LiquidationStatusSection({
   longestEtaLabel,
 }: Props) {
   const isActiveLender = role === "activeLender";
+  const recoveredLabel = `${safeFormatYoctoNear(liquidatedYocto, 5)} NEAR`;
+  const readyNowLabel = `${claimableNowLabel} NEAR`;
+  const vaultBalanceLabel = `${safeFormatYoctoNear(expectedImmediateYocto.toString(), 5)} NEAR`;
+  const maturedNowLabel = `${maturedTotalLabel ?? safeFormatYoctoNear(maturedYocto.toString(), 5)} NEAR`;
+  const stillUnlockingLabel = `${unbondingTotalLabel ?? "0"} NEAR`;
+  const remainingLabel = `${remainingTargetLabel ?? "0"} NEAR`;
+  const summaryText = isActiveLender
+    ? expiryDate
+      ? `Loan expired on ${formatDateTime(expiryDate)}. Liquidation now repays you from vault balance and validator unlocks.`
+      : "Loan expired. Liquidation now repays you from vault balance and validator unlocks."
+    : ownerLiquidationSummary;
+  const statusText = hasClaimableNow
+    ? isActiveLender
+      ? `${readyNowLabel} is ready now. ${vaultBalanceLabel} is already in the vault${maturedYocto > BigInt(0) ? ` and ${maturedNowLabel} has matured at validators.` : "."}`
+      : `${readyNowLabel} is ready now for the lender. ${vaultBalanceLabel} is already in the vault${maturedYocto > BigInt(0) ? ` and ${maturedNowLabel} has matured at validators.` : "."}`
+    : unbondingTotalLabel
+      ? `Nothing is claimable yet. ${stillUnlockingLabel} is still unlocking${longestEtaLabel ? ` and the longest ETA is ${longestEtaLabel}` : ""}.`
+      : "Nothing is claimable yet.";
+
   return (
-    <Card
-      className="space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
-      role="region"
-      aria-label="Liquidation status"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-sm font-semibold uppercase tracking-wide text-foreground">
-          {isActiveLender ? STRINGS.liquidationInProgress : STRINGS.ownerLiquidationHeader}
-        </div>
-        <Badge
-          variant={isActiveLender ? "neutral" : "danger"}
-          title={expiryDate ? formatDateTime(expiryDate) : undefined}
-        >
-          {STRINGS.expiredLabel}
-        </Badge>
+    <section className="space-y-5" role="region" aria-label="Liquidation status">
+      <div className="space-y-1">
+        <p className="text-sm text-secondary-text">{summaryText}</p>
       </div>
-      {!isActiveLender && (
-        <div className="mt-1 text-xs text-secondary-text">
-          {ownerLiquidationSummary}
+
+      <div className="grid gap-x-6 gap-y-4 md:grid-cols-2 xl:grid-cols-4">
+        <Stat label="Paid out" value={recoveredLabel} emphasize />
+        <Stat label="Claimable now" value={readyNowLabel} emphasize />
+        <Stat label="Unlocking" value={stillUnlockingLabel} emphasize />
+        <Stat label="Remaining" value={remainingLabel} emphasize />
+      </div>
+
+      <div className="border-t border-foreground/10 pt-4">
+        <p className="text-sm text-secondary-text">
+          {statusText}
+          {collateralLabel ? ` Original target: ${collateralLabel} NEAR.` : ""}
+        </p>
+      </div>
+
+      {(isActiveLender || isOwner) && (
+        <div className="space-y-2 border-t border-foreground/10 pt-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              type="button"
+              onClick={onProcess}
+              disabled={processPending || !hasClaimableNow}
+              size="sm"
+              className="w-full justify-center sm:w-auto"
+              title={!hasClaimableNow ? STRINGS.nothingAvailableNow : undefined}
+              aria-busy={processPending ? true : undefined}
+            >
+              {processPending ? STRINGS.processing : "Process available NEAR"}
+            </Button>
+          </div>
+          {processError ? (
+            <div className="text-sm text-red-600" role="alert">
+              {processError}
+            </div>
+          ) : null}
         </div>
       )}
-      {isActiveLender ? (
-        <div>
-          <LiquidationPayoutCard
-            liquidatedYocto={liquidatedYocto}
-            remainingTargetLabel={remainingTargetLabel}
-            collateralLabel={collateralLabel}
-            claimableNowLabel={claimableNowLabel}
-            hasClaimableNow={hasClaimableNow}
-            expectedImmediateYocto={expectedImmediateYocto}
-            maturedYocto={maturedYocto}
-            maturedTotalLabel={maturedTotalLabel}
-            className="py-4 space-y-3"
-          />
-          <ProcessActions
-            hasClaimableNow={hasClaimableNow}
-            processPending={processPending}
-            processError={processError}
-            onProcess={onProcess}
-          />
-          {unbondingTotalLabel && (
-            <UnbondingStatusCard
-              className="mt-2"
-              open={showDetails}
-              onToggle={onToggleDetails}
-              count={unbondingEntries?.length ?? 0}
-              totalLabel={unbondingTotalLabel}
-              etaLabel={longestEtaLabel}
-              entries={unbondingEntries ?? []}
-              footnote={STRINGS.unbondingFootnoteLender}
-            />
-          )}
-        </div>
-      ) : (
-        <>
-          <LiquidationPayoutCard
-            liquidatedYocto={liquidatedYocto}
-            remainingTargetLabel={remainingTargetLabel}
-            collateralLabel={collateralLabel}
-            claimableNowLabel={claimableNowLabel}
-            hasClaimableNow={hasClaimableNow}
-            expectedImmediateYocto={expectedImmediateYocto}
-            maturedYocto={maturedYocto}
-            maturedTotalLabel={maturedTotalLabel}
-            className="mt-2"
-          />
-          {isOwner && (
-            <ProcessActions
-              hasClaimableNow={hasClaimableNow}
-              processPending={processPending}
-              processError={processError}
-              onProcess={onProcess}
-            />
-          )}
-          {unbondingTotalLabel && (
-            <UnbondingStatusCard
-              className="mt-2"
-              open={showDetails}
-              onToggle={onToggleDetails}
-              count={unbondingEntries?.length ?? 0}
-              totalLabel={unbondingTotalLabel}
-              etaLabel={longestEtaLabel}
-              entries={unbondingEntries ?? []}
-              footnote={STRINGS.unbondingFootnoteOwner}
-            />
-          )}
-        </>
+
+      {unbondingTotalLabel && (
+        <UnbondingStatusCard
+          open={showDetails}
+          onToggle={onToggleDetails}
+          count={unbondingEntries?.length ?? 0}
+          totalLabel={unbondingTotalLabel}
+          etaLabel={longestEtaLabel}
+          entries={unbondingEntries ?? []}
+          footnote={isActiveLender ? STRINGS.unbondingFootnoteLender : STRINGS.unbondingFootnoteOwner}
+        />
       )}
-      {/* Removed redundant owner note; the header and expired+in-progress line already convey this */}
-    </Card>
+    </section>
   );
 }

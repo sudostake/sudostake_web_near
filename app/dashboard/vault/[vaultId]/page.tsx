@@ -19,11 +19,14 @@ import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
 import { useFtBalance } from "@/hooks/useFtBalance";
 import { useFtStorage } from "@/hooks/useFtStorage";
 import { useIndexVault } from "@/hooks/useIndexVault";
+import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
+import type { ViewerRole } from "@/hooks/useViewerRole";
 import { callViewFunction } from "@/utils/api/rpcClient";
 import { formatMinimalTokenAmount } from "@/utils/format";
+import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { getActiveFactoryId, getActiveNetwork } from "@/utils/networks";
-import { NATIVE_DECIMALS, NATIVE_TOKEN, SECONDS_PER_DAY } from "@/utils/constants";
+import { AVERAGE_EPOCH_SECONDS, NATIVE_DECIMALS, NATIVE_TOKEN, SECONDS_PER_DAY } from "@/utils/constants";
 import { getDefaultUsdcTokenId, getTokenConfigById, getTokenDecimals } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
 import type { VaultViewState } from "@/utils/types/vault_view_state";
@@ -31,11 +34,19 @@ import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { Balance } from "@/utils/balance";
 import { DelegationsSummary } from "./components/DelegationsSummary";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
+import { LiquidationStatusSection } from "./components/LiquidationStatusSection";
 import { sumMinimal } from "@/utils/amounts";
 import { formatDateTime } from "@/utils/datetime";
 import { normalizeToIntegerString } from "@/utils/numbers";
 import { STRINGS } from "@/utils/strings";
 import { formatDurationShort } from "@/utils/time";
+import {
+  computeClaimableNow,
+  computeExpectedImmediate,
+  computeMaturedTotals,
+  computeRemainingYocto,
+  computeUnbondingTotals,
+} from "@/utils/liquidation";
 import { utils } from "near-api-js";
 
 type LiquidityRequestState = {
@@ -49,6 +60,10 @@ type LiquidityRequestState = {
 type AcceptedOfferState = {
   lender: string;
   acceptedAt: string;
+} | null;
+
+type LiquidationState = {
+  liquidated: string;
 } | null;
 
 function acceptedAtToDate(value: string): Date | null {
@@ -94,15 +109,17 @@ function FlatSection({
   actions?: React.ReactNode;
 }>) {
   return (
-    <section className="space-y-4 border-t border-foreground/10 pt-6 first:border-t-0 first:pt-0">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-          {caption && <p className="max-w-3xl text-sm text-secondary-text">{caption}</p>}
+    <section className="overflow-hidden rounded-app-lg border-2 border-[color:var(--border)] bg-[color:var(--surface)]">
+      <div className="border-b-2 border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4 sm:px-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+            {caption && <p className="max-w-3xl text-sm text-secondary-text">{caption}</p>}
+          </div>
+          {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
         </div>
-        {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
       </div>
-      {children}
+      <div className="space-y-4 px-4 py-5 sm:px-5 sm:py-6">{children}</div>
     </section>
   );
 }
@@ -158,6 +175,7 @@ export default function VaultPage() {
   const [acceptedOffer, setAcceptedOffer] = React.useState<AcceptedOfferState>(null);
   const [requestToken, setRequestToken] = React.useState<string | null>(null);
   const [liquidationActive, setLiquidationActive] = React.useState(false);
+  const [liquidation, setLiquidation] = React.useState<LiquidationState>(null);
   const [refundCount, setRefundCount] = React.useState(0);
   const [factoryId, setFactoryId] = React.useState<string>(() => getActiveFactoryId());
   const [acceptReadinessVersion, setAcceptReadinessVersion] = React.useState(0);
@@ -165,9 +183,11 @@ export default function VaultPage() {
   const [lenderMinDeposit, setLenderMinDeposit] = React.useState<string | null>(null);
   const [vaultRegisteredForToken, setVaultRegisteredForToken] = React.useState<boolean | null>(null);
   const [remainingMs, setRemainingMs] = React.useState<number | null>(null);
+  const [showLiquidationDetails, setShowLiquidationDetails] = React.useState(false);
   const { signedAccountId, signIn } = useWalletSelector();
   const { acceptLiquidity, pending: acceptPending, error: acceptError } = useAcceptLiquidityRequest();
   const { cancelLiquidityRequest, pending: cancelPending, error: cancelError } = useCancelLiquidityRequest();
+  const { processClaims, pending: processPending, error: processError } = useProcessClaims();
   const { balance: lenderTokenBalance, loading: lenderTokenBalanceLoading, refetch: refetchLenderTokenBalance } = useFtBalance(liquidityRequest?.token ?? null);
   const { storageBalanceOf, storageBounds, registerStorage, pending: storagePending, error: storageError } = useFtStorage();
   const { indexVault } = useIndexVault();
@@ -182,7 +202,10 @@ export default function VaultPage() {
     () => new Balance(availableNearRaw || "0", NATIVE_DECIMALS, NATIVE_TOKEN),
     [availableNearRaw]
   );
-  const delegationEntries = delegationData?.summary ?? [];
+  const delegationEntries = React.useMemo(
+    () => delegationData?.summary ?? [],
+    [delegationData?.summary]
+  );
   const undelegateBalance = React.useMemo(
     () =>
       delegationEntries.find((entry) => entry.validator === undelegateValidator)?.staked_balance ??
@@ -300,6 +323,7 @@ export default function VaultPage() {
       setAcceptedOffer(null);
       setRequestToken(null);
       setLiquidationActive(false);
+      setLiquidation(null);
       return;
     }
 
@@ -311,7 +335,19 @@ export default function VaultPage() {
         if (cancelled) return;
         setOwner(typeof state?.owner === "string" ? state.owner : "");
         setVaultState(state?.accepted_offer ? "active" : state?.liquidity_request ? "pending" : "idle");
+        const liquidationState =
+          state?.liquidation && typeof state.liquidation === "object"
+            ? {
+                liquidated:
+                  typeof state.liquidation.liquidated === "string" ||
+                  typeof state.liquidation.liquidated === "number" ||
+                  typeof state.liquidation.liquidated === "bigint"
+                    ? normalizeToIntegerString(state.liquidation.liquidated)
+                    : "0",
+              }
+            : null;
         setLiquidationActive(Boolean(state?.liquidation));
+        setLiquidation(liquidationState);
         const request =
           state?.liquidity_request &&
           typeof state.liquidity_request === "object" &&
@@ -354,6 +390,7 @@ export default function VaultPage() {
         setAcceptedOffer(null);
         setRequestToken(null);
         setLiquidationActive(false);
+        setLiquidation(null);
       })
       .finally(() => {
         if (cancelled) return;
@@ -515,6 +552,44 @@ export default function VaultPage() {
     setVaultVersion((current) => current + 1);
   }, []);
 
+  const handleProcessClaims = React.useCallback(async () => {
+    if (!vaultId) return;
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+
+    try {
+      const { txHash } = await processClaims({ vault: vaultId });
+      showToast(STRINGS.processClaimsSuccess, { variant: "success" });
+      refetchNearBalance();
+      refetchDelegations();
+      setBalanceVersion((current) => current + 1);
+      setVaultVersion((current) => current + 1);
+      void indexVault({ factoryId, vault: vaultId, txHash })
+        .then(() => {
+          refetchNearBalance();
+          refetchDelegations();
+          setBalanceVersion((current) => current + 1);
+          setVaultVersion((current) => current + 1);
+        })
+        .catch((error) => {
+          console.error("Vault indexing after process_claims failed:", error);
+        });
+    } catch (error) {
+      console.error("Error processing liquidation claims:", error);
+    }
+  }, [
+    connectWallet,
+    factoryId,
+    indexVault,
+    processClaims,
+    refetchDelegations,
+    refetchNearBalance,
+    signedAccountId,
+    vaultId,
+  ]);
+
   const handleRepaySuccess = React.useCallback(() => {
     refetchNearBalance();
     refetchDelegations();
@@ -557,6 +632,56 @@ export default function VaultPage() {
     acceptedOffer?.lender &&
     signedAccountId === acceptedOffer.lender
   );
+  const liquidationViewerRole = React.useMemo<ViewerRole>(() => {
+    if (isAcceptedLenderViewer) return "activeLender";
+    if (isOwnerViewer) return "owner";
+    if (signedAccountId) return "potentialLender";
+    return "guest";
+  }, [isAcceptedLenderViewer, isOwnerViewer, signedAccountId]);
+  const ownerLiquidationSummary = React.useMemo(
+    () => STRINGS.liquidationOwnerSummary(liquidationStartLabel ?? undefined),
+    [liquidationStartLabel]
+  );
+  const collateralLabel = React.useMemo(
+    () => (liquidityRequest?.collateral ? safeFormatYoctoNear(liquidityRequest.collateral, 5) : null),
+    [liquidityRequest?.collateral]
+  );
+  const remainingYocto = React.useMemo(
+    () => computeRemainingYocto(liquidityRequest?.collateral, liquidation?.liquidated),
+    [liquidityRequest?.collateral, liquidation?.liquidated]
+  );
+  const remainingTargetLabel = React.useMemo(
+    () => (remainingYocto === null ? null : safeFormatYoctoNear(remainingYocto.toString(), 5)),
+    [remainingYocto]
+  );
+  const { maturedYocto, maturedTotalLabel } = React.useMemo(
+    () => computeMaturedTotals(delegationData?.summary),
+    [delegationData?.summary]
+  );
+  const { unbondingTotalLabel, unbondingEntries, longestRemainingEpochs } = React.useMemo(
+    () => computeUnbondingTotals(delegationData?.summary, delegationData?.current_epoch ?? null),
+    [delegationData?.current_epoch, delegationData?.summary]
+  );
+  const { yocto: expectedImmediateYocto } = React.useMemo(
+    () => computeExpectedImmediate(availableNearRaw, remainingYocto),
+    [availableNearRaw, remainingYocto]
+  );
+  const { yocto: claimableNowYocto, label: claimableNowLabel } = React.useMemo(
+    () => computeClaimableNow(expectedImmediateYocto, maturedYocto, remainingYocto),
+    [expectedImmediateYocto, maturedYocto, remainingYocto]
+  );
+  const hasClaimableNow = React.useMemo(() => claimableNowYocto > BigInt(0), [claimableNowYocto]);
+  const longestEtaLabel = React.useMemo(() => {
+    if (longestRemainingEpochs === null) return null;
+    const etaMs = longestRemainingEpochs * AVERAGE_EPOCH_SECONDS * 1000;
+    return etaMs > 0 ? formatDurationShort(etaMs) : null;
+  }, [longestRemainingEpochs]);
+  const showLiquidationProgress = Boolean(
+    liquidationActive &&
+    liquidation &&
+    liquidityRequest &&
+    (isAcceptedLenderViewer || isOwnerViewer)
+  );
   const checkingAcceptReadiness =
     canAcceptLiquidityRequest &&
     (lenderTokenBalanceLoading || lenderRegistered === null || vaultRegisteredForToken === null);
@@ -570,12 +695,18 @@ export default function VaultPage() {
       : vaultState === "active"
         ? "Loan active"
         : "No request";
-  const publicViewTitle = vaultState === "pending"
+  const publicViewTitle = liquidationActive
+    ? "Liquidation in progress"
+    : vaultState === "pending"
     ? "Open request"
     : vaultState === "active"
       ? "Active loan"
       : "Vault snapshot";
-  const publicViewBody = vaultState === "pending"
+  const publicViewBody = liquidationActive
+    ? isAcceptedLenderViewer
+      ? "Track payouts, claimable balance, and unstaking progress."
+      : "Liquidation is underway for this vault."
+    : vaultState === "pending"
     ? "Public terms and collateral."
     : vaultState === "active"
       ? "Active terms and collateral."
@@ -584,19 +715,6 @@ export default function VaultPage() {
   const pageBody = isPublicViewer
     ? publicViewBody
     : "Manage balances, collateral, and request terms.";
-  const requestSectionCaption = liquidityRequestContent
-    ? vaultState === "pending"
-      ? "Live request terms."
-      : "Active loan terms."
-    : isPublicViewer
-      ? "No open request."
-      : "Open a request when ready.";
-  const collateralSectionCaption = isPublicViewer
-    ? "Validator-backed NEAR."
-    : "Validator positions and collateral.";
-  const factsSectionCaption = isPublicViewer
-    ? "Key vault data."
-    : "Balances and identifiers.";
   const ownerRepayDetail = remainingMs !== null && remainingMs > 0
     ? `Repay before ${liquidationStartLabel ?? "the deadline"} to avoid liquidation.`
     : "Repay now before liquidation begins.";
@@ -889,14 +1007,10 @@ export default function VaultPage() {
               <Button
                 variant="secondary"
                 onClick={handleDelegateClick}
-                disabled={!vaultId || connectingWallet || ownerLoading || Boolean(delegateBlockedReason)}
+                disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
-                {delegateBlockedReason
-                  ? refundCount > 0
-                    ? "Delegation blocked by refunds"
-                    : "Delegation blocked by liquidation"
-                  : `Delegate ${NATIVE_TOKEN}`}
+                {`Delegate ${NATIVE_TOKEN}`}
               </Button>
               <Button
                 variant="secondary"
@@ -920,7 +1034,6 @@ export default function VaultPage() {
 
         <FlatSection
           title="Current terms"
-          caption={requestSectionCaption}
         >
           {liquidityRequestContent ? (
             <div className="space-y-3">
@@ -1085,9 +1198,37 @@ export default function VaultPage() {
           </FlatSection>
         )}
 
+        {showLiquidationProgress && (
+          <FlatSection
+            title="Liquidation progress"
+          >
+            <LiquidationStatusSection
+              role={liquidationViewerRole}
+              isOwner={isOwnerViewer}
+              expiryDate={liquidationStartDate}
+              ownerLiquidationSummary={ownerLiquidationSummary}
+              liquidatedYocto={liquidation?.liquidated ?? "0"}
+              remainingTargetLabel={remainingTargetLabel}
+              collateralLabel={collateralLabel}
+              claimableNowLabel={claimableNowLabel}
+              hasClaimableNow={hasClaimableNow}
+              expectedImmediateYocto={expectedImmediateYocto}
+              maturedYocto={maturedYocto}
+              maturedTotalLabel={maturedTotalLabel}
+              processPending={processPending}
+              processError={processError}
+              onProcess={() => void handleProcessClaims()}
+              unbondingTotalLabel={unbondingTotalLabel}
+              unbondingEntries={unbondingEntries}
+              showDetails={showLiquidationDetails}
+              onToggleDetails={() => setShowLiquidationDetails((current) => !current)}
+              longestEtaLabel={longestEtaLabel}
+            />
+          </FlatSection>
+        )}
+
         <FlatSection
           title={isPublicViewer ? "Validator collateral" : "Validator positions"}
-          caption={collateralSectionCaption}
         >
           {delegationsLoading ? (
             <p className="text-sm text-secondary-text">Loading delegations...</p>
@@ -1112,7 +1253,6 @@ export default function VaultPage() {
 
         <FlatSection
           title="On-chain snapshot"
-          caption={factsSectionCaption}
         >
           <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
             <SummaryField label="Vault ID" value={vaultId || "Vault address unavailable"} />
