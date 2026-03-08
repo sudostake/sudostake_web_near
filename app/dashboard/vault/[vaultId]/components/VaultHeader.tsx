@@ -129,7 +129,7 @@ export function VaultHeader({
         </div>
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <OverviewCell label={STRINGS.vaultIdLabel}>
           <div className="flex min-w-0 flex-wrap items-start gap-2">
             <Link
@@ -194,7 +194,7 @@ export function VaultHeader({
 
 function OverviewCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="min-w-0 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3">
+    <div className="min-w-0 border-l-2 border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] pl-3 sm:pl-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</p>
       <div className="mt-1 min-h-[24px]">{children}</div>
     </div>

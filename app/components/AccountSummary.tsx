@@ -50,6 +50,7 @@ export function AccountSummary({
           valueFull={near.toDisplay()}
           symbol={near.symbol}
           loading={isLoading}
+          tone={surface === "plain" ? "inline" : "card"}
         />
         <BalanceStat
           label={usdcLabel}
@@ -57,6 +58,7 @@ export function AccountSummary({
           valueFull={usdc.toDisplay()}
           symbol={usdc.symbol}
           loading={isLoading}
+          tone={surface === "plain" ? "inline" : "card"}
         />
       </div>
       <div className={actionRowClassName}>
@@ -145,15 +147,21 @@ function BalanceStat({
   valueFull,
   symbol,
   loading,
+  tone,
 }: {
   label: string;
   valueDisplay: string;
   valueFull: string;
   symbol: string;
   loading: boolean;
+  tone: "card" | "inline";
 }) {
+  const containerClassName = tone === "card"
+    ? "rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-4 sm:px-4"
+    : "border-l-2 border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] pl-3 sm:pl-4";
+
   return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-4 sm:px-4">
+    <div className={containerClassName}>
       <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</div>
       <div className="mt-1.5 flex min-w-0 items-baseline gap-1 text-[1.55rem] font-semibold leading-none sm:text-[1.7rem]">
         {loading ? (
