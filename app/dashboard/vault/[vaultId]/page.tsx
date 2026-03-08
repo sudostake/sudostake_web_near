@@ -8,6 +8,7 @@ import { AddValueDialog } from "@/app/components/dialogs/AddValueDialog";
 import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
+import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
@@ -144,6 +145,7 @@ export default function VaultPage() {
   const [requestOpen, setRequestOpen] = React.useState(false);
   const [acceptOpen, setAcceptOpen] = React.useState(false);
   const [addValueOpen, setAddValueOpen] = React.useState(false);
+  const [repayOpen, setRepayOpen] = React.useState(false);
   const [withdrawOpen, setWithdrawOpen] = React.useState(false);
   const [undelegateOpen, setUndelegateOpen] = React.useState(false);
   const [undelegateValidator, setUndelegateValidator] = React.useState("");
@@ -513,6 +515,13 @@ export default function VaultPage() {
     setVaultVersion((current) => current + 1);
   }, []);
 
+  const handleRepaySuccess = React.useCallback(() => {
+    refetchNearBalance();
+    refetchDelegations();
+    setBalanceVersion((current) => current + 1);
+    setVaultVersion((current) => current + 1);
+  }, [refetchDelegations, refetchNearBalance]);
+
   const handleDelegateSuccess = React.useCallback(() => {
     refetchNearBalance();
     refetchDelegations();
@@ -588,6 +597,9 @@ export default function VaultPage() {
   const factsSectionCaption = isPublicViewer
     ? "Key vault data."
     : "Balances and identifiers.";
+  const ownerRepayDetail = remainingMs !== null && remainingMs > 0
+    ? `Repay before ${liquidationStartLabel ?? "the deadline"} to avoid liquidation.`
+    : "Repay now before liquidation begins.";
   const delegatedNearLabel = delegationsLoading
     ? "Loading delegated balance..."
     : delegationsError
@@ -930,7 +942,23 @@ export default function VaultPage() {
                         : `Liquidation can begin in ${formattedCountdown} if the loan is not repaid. Deadline: ${liquidationStartLabel}.`
                       : isAcceptedLenderViewer
                         ? "Repayment window ended. You can begin liquidation now."
-                        : "Repayment window ended. Liquidation can begin now."
+                      : "Repayment window ended. Liquidation can begin now."
+                  }
+                />
+              )}
+              {vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest && (
+                <ActionRow
+                  title="Repay now"
+                  detail={ownerRepayDetail}
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setRepayOpen(true)}
+                      variant="primary"
+                      size="sm"
+                    >
+                      {STRINGS.ownerRepayNow}
+                    </Button>
                   }
                 />
               )}
@@ -1159,6 +1187,21 @@ export default function VaultPage() {
         vaultId={vaultId}
         onSuccess={handleRequestLiquiditySuccess}
       />
+      {liquidityRequest && (
+        <RepayLoanDialog
+          open={repayOpen}
+          onClose={() => setRepayOpen(false)}
+          vaultId={vaultId}
+          factoryId={factoryId}
+          tokenId={liquidityRequest.token}
+          principalMinimal={liquidityRequest.amount}
+          interestMinimal={liquidityRequest.interest}
+          onSuccess={handleRepaySuccess}
+          onVaultTokenBalanceChange={() => {
+            setBalanceVersion((current) => current + 1);
+          }}
+        />
+      )}
       <AddValueDialog
         open={addValueOpen}
         onClose={() => {
