@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
 import { AddValueDialog } from "@/app/components/dialogs/AddValueDialog";
@@ -48,6 +48,7 @@ import {
   computeUnbondingTotals,
 } from "@/utils/liquidation";
 import { utils } from "near-api-js";
+import { APP_ROUTES, sanitizeReturnHref } from "@/app/components/navigationRoutes";
 
 type LiquidityRequestState = {
   token: string;
@@ -145,11 +146,17 @@ function ActionRow({
 }
 
 export default function VaultPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const params = useParams<{ vaultId: string }>();
   const vaultId = React.useMemo(() => {
     const raw = params?.vaultId;
     return Array.isArray(raw) ? raw[0] ?? "" : raw ?? "";
   }, [params]);
+  const returnHref = React.useMemo(
+    () => sanitizeReturnHref(searchParams.get("from")),
+    [searchParams]
+  );
   const [owner, setOwner] = React.useState<string>("");
   const [ownerLoading, setOwnerLoading] = React.useState(false);
   const [availableNearRaw, setAvailableNearRaw] = React.useState("0");
@@ -618,6 +625,14 @@ export default function VaultPage() {
   const isOwnerViewer = viewerMode === "owner";
   const isGuestViewer = viewerMode === "guest";
   const isPublicViewer = viewerMode === "guest" || viewerMode === "lender";
+  const fallbackBackHref = signedAccountId ? APP_ROUTES.dashboard.href : APP_ROUTES.discover.href;
+  const backLabel = React.useMemo(() => {
+    if (!returnHref) return "Back";
+    if (returnHref === APP_ROUTES.home.href) return "Back home";
+    if (returnHref.startsWith(APP_ROUTES.discover.href)) return "Back to discover";
+    if (returnHref.startsWith(APP_ROUTES.dashboard.href)) return "Back to dashboard";
+    return "Back";
+  }, [returnHref]);
   const canAcceptLiquidityRequest =
     viewerMode === "lender" &&
     vaultState === "pending" &&
@@ -973,11 +988,47 @@ export default function VaultPage() {
     vaultId,
     vaultState,
   ]);
+  const handleBackClick = React.useCallback(() => {
+    if (returnHref) {
+      router.replace(returnHref);
+      return;
+    }
+
+    if (typeof window !== "undefined" && document.referrer) {
+      try {
+        const referrer = new URL(document.referrer);
+        if (referrer.origin === window.location.origin) {
+          router.back();
+          return;
+        }
+      } catch (error) {
+        console.warn("Failed to parse vault referrer.", error);
+      }
+    }
+
+    router.replace(fallbackBackHref);
+  }, [fallbackBackHref, returnHref, router]);
 
   return (
     <main id="main" className="min-h-screen bg-background">
       <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
         <header className="space-y-4">
+          <div>
+            <Button type="button" variant="ghost" size="sm" onClick={handleBackClick} className="gap-2 px-0 text-left">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="h-4 w-4"
+                aria-hidden="true"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+              <span>{backLabel}</span>
+            </Button>
+          </div>
           <div className="space-y-2">
             <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">{pageTitle}</h1>
             <p className="max-w-3xl text-sm text-secondary-text">{pageBody}</p>

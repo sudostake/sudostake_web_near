@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Big from "big.js";
 import { useWalletSelector } from "@near-wallet-selector/react-hook";
 import { setupModal } from "@near-wallet-selector/modal-ui";
@@ -15,7 +16,7 @@ import { getActiveFactoryId } from "@/utils/networks";
 import { formatDurationWords } from "@/utils/time";
 import { getTokenConfigById } from "@/utils/tokens";
 import { showToast } from "@/utils/toast";
-import { APP_ROUTES } from "@/app/components/navigationRoutes";
+import { APP_ROUTES, buildVaultHref } from "@/app/components/navigationRoutes";
 
 type RequestPreview = {
   id: string;
@@ -52,6 +53,7 @@ const SAMPLE_REQUEST_PREVIEWS: RequestPreview[] = [
 ];
 
 export function Hero() {
+  const pathname = usePathname();
   const { signIn, walletSelector } = useWalletSelector();
   const [connecting, setConnecting] = React.useState(false);
   const [factoryId, setFactoryId] = React.useState<string | null>(null);
@@ -99,11 +101,11 @@ export function Hero() {
           term: formatDurationWords(lr.duration),
           collateral: `${collateral} NEAR`,
           apr: aprLabel,
-          href: `/dashboard/vault/${encodeURIComponent(item.id)}`,
+          href: buildVaultHref(item.id, pathname),
         },
       ];
     });
-  }, [liveRequests, requestNetwork]);
+  }, [liveRequests, pathname, requestNetwork]);
   const totalOpenRequests = React.useMemo(
     () => (pendingRequests ?? []).filter((item) => Boolean(item.liquidity_request)).length,
     [pendingRequests]

@@ -2,11 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Badge } from "@/app/components/ui/Badge";
 import { Card } from "@/app/components/ui/Card";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useState } from "react";
 import { VaultIcon } from "@/app/components/vaults/VaultIcon";
+import { buildVaultHref } from "@/app/components/navigationRoutes";
 
 export type VaultSummary = { id: string; state: "idle" | "pending" | "active" };
 export type VaultListProps = {
@@ -17,6 +19,7 @@ export type VaultListProps = {
 
 export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
   const [copied] = useState<string | null>(null);
+  const pathname = usePathname();
 
   const baseCardClasses =
     "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5";
@@ -84,7 +87,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
             </button>
           ) : (
             <Link
-              href={`/dashboard/vault/${encodeURIComponent(id)}`}
+              href={buildVaultHref(id, pathname)}
               className="group block focus:outline-none focus-visible:outline-none"
               title={id}
               prefetch
