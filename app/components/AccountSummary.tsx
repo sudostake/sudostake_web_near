@@ -1,16 +1,13 @@
 "use client";
 import React from "react";
-// import { useWalletSelector } from "@near-wallet-selector/react-hook";
 
 import { Balance } from "@/utils/balance";
-// import { getActiveNetwork } from "@/utils/networks";
 import { Card } from "@/app/components/ui/Card";
 import { shortAmount } from "@/utils/format";
 import { Button } from "@/app/components/ui/Button";
 import { SendValueDialog } from "@/app/components/dialogs/SendValueDialog";
 import { ReceiveValueDialog } from "@/app/components/dialogs/ReceiveValueDialog";
 import { AddValueDialog } from "@/app/components/dialogs/AddValueDialog";
-// (No asset toggle here; dialogs handle asset selection themselves)
 
 type AccountSummaryProps = {
   near: Balance;
@@ -18,6 +15,8 @@ type AccountSummaryProps = {
   loading?: boolean;
   onRefreshBalances?: () => void;
   className?: string;
+  surface?: "card" | "plain";
+  showHeader?: boolean;
 };
 
 export function AccountSummary({
@@ -26,6 +25,8 @@ export function AccountSummary({
   loading,
   onRefreshBalances,
   className = "",
+  surface = "card",
+  showHeader = true,
 }: AccountSummaryProps) {
   const usdcLabel = "USDC Balance";
   const nearShort = shortAmount(near.toDisplay(), 3);
@@ -34,13 +35,15 @@ export function AccountSummary({
   const [recvOpen, setRecvOpen] = React.useState(false);
   const [addOpen, setAddOpen] = React.useState(false);
   const isLoading = Boolean(loading);
-
-  return (
-    <Card
-      className={`surface-card h-full w-full rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7 ${className}`}
-    >
-      <HeaderWithActions loading={isLoading} onRefreshBalances={onRefreshBalances} />
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+  const actionRowClassName = showHeader
+    ? "mt-5 flex flex-wrap gap-2 sm:justify-end"
+    : "mt-5 flex flex-col gap-3 border-t border-[color:var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between";
+  const content = (
+    <>
+      {!showHeader ? (
+        <p className="text-sm text-secondary-text">Ready for transfers, deposits, and request funding.</p>
+      ) : null}
+      <div className={`${showHeader ? "mt-4" : "mt-3"} grid grid-cols-1 gap-3 md:grid-cols-2`}>
         <BalanceStat
           label={`${near.symbol} balance`}
           valueDisplay={nearShort}
@@ -56,21 +59,49 @@ export function AccountSummary({
           loading={isLoading}
         />
       </div>
-      <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => setRecvOpen(true)}>
+      <div className={actionRowClassName}>
+        {!showHeader ? (
+          <p className="text-sm text-secondary-text">Open a dialog to move funds or add testnet liquidity.</p>
+        ) : null}
+        <div className="flex flex-wrap gap-2">
+          {!showHeader ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onRefreshBalances?.()}
+              disabled={!onRefreshBalances || isLoading}
+            >
+              {isLoading ? "Refreshing..." : "Refresh"}
+            </Button>
+          ) : null}
+          <Button variant="secondary" size="sm" onClick={() => setRecvOpen(true)}>
             Receive
           </Button>
-          <Button variant="secondary" size="sm" className="w-full sm:w-auto" onClick={() => setAddOpen(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setAddOpen(true)}>
             Add
           </Button>
-          <Button size="sm" className="w-full sm:w-auto" onClick={() => setSendOpen(true)}>
+          <Button size="sm" onClick={() => setSendOpen(true)}>
             Send
           </Button>
         </div>
       </div>
+    </>
+  );
 
-      {/* Dialogs */}
+  return (
+    <>
+      {surface === "card" ? (
+        <Card
+          className={`surface-card h-full w-full rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7 ${className}`}
+        >
+          {showHeader ? <HeaderWithActions loading={isLoading} onRefreshBalances={onRefreshBalances} /> : null}
+          {content}
+        </Card>
+      ) : (
+        <div className={className}>{content}</div>
+      )}
+
       <SendValueDialog
         open={sendOpen}
         onClose={() => setSendOpen(false)}
@@ -78,7 +109,7 @@ export function AccountSummary({
       />
       <ReceiveValueDialog open={recvOpen} onClose={() => setRecvOpen(false)} />
       <AddValueDialog open={addOpen} onClose={() => setAddOpen(false)} />
-    </Card>
+    </>
   );
 }
 
@@ -122,9 +153,9 @@ function BalanceStat({
   loading: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3 sm:px-4 sm:py-4">
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-4 sm:px-4">
       <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</div>
-      <div className="mt-2 flex min-w-0 items-baseline gap-1 text-[1.7rem] font-semibold leading-none">
+      <div className="mt-1.5 flex min-w-0 items-baseline gap-1 text-[1.55rem] font-semibold leading-none sm:text-[1.7rem]">
         {loading ? (
           <div className="h-7 w-24 animate-pulse rounded-full bg-surface" aria-hidden="true" />
         ) : (
