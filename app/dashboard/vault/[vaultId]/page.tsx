@@ -4,6 +4,8 @@ import React from "react";
 import { useParams } from "next/navigation";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
+import { AddValueDialog } from "@/app/components/dialogs/AddValueDialog";
+import { AcceptLiquidityConfirm } from "@/app/components/dialogs/AcceptLiquidityConfirm";
 import { DepositDialog } from "@/app/components/dialogs/DepositDialog";
 import { DelegateDialog } from "@/app/components/dialogs/DelegateDialog";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
@@ -11,7 +13,10 @@ import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
 import { CurrentRequestPanel } from "./components/CurrentRequestPanel";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
 import { useCancelLiquidityRequest } from "@/hooks/useCancelLiquidityRequest";
+import { useFtBalance } from "@/hooks/useFtBalance";
+import { useFtStorage } from "@/hooks/useFtStorage";
 import { useIndexVault } from "@/hooks/useIndexVault";
 import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { callViewFunction } from "@/utils/api/rpcClient";
@@ -26,7 +31,11 @@ import { Balance } from "@/utils/balance";
 import { DelegationsSummary } from "./components/DelegationsSummary";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
 import { sumMinimal } from "@/utils/amounts";
+import { formatDateTime } from "@/utils/datetime";
+import { normalizeToIntegerString } from "@/utils/numbers";
 import { STRINGS } from "@/utils/strings";
+import { formatDurationShort } from "@/utils/time";
+import { utils } from "near-api-js";
 
 type LiquidityRequestState = {
   token: string;
@@ -36,21 +45,37 @@ type LiquidityRequestState = {
   duration: number;
 } | null;
 
+type AcceptedOfferState = {
+  lender: string;
+  acceptedAt: string;
+} | null;
+
+function acceptedAtToDate(value: string): Date | null {
+  try {
+    const ms = BigInt(value) / BigInt(1_000_000);
+    return new Date(Number(ms));
+  } catch {
+    return null;
+  }
+}
+
 function SummaryField({
   label,
   value,
   title,
   className = "",
+  mono = true,
 }: {
   label: string;
   value: string;
   title?: string;
   className?: string;
+  mono?: boolean;
 }) {
   return (
     <div className={className}>
       <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</div>
-      <p className="break-all font-mono text-lg text-foreground" title={title ?? value}>
+      <p className={`break-all text-lg text-foreground ${mono ? "font-mono" : "font-medium"}`} title={title ?? value}>
         {value}
       </p>
     </div>
@@ -58,13 +83,11 @@ function SummaryField({
 }
 
 function FlatSection({
-  eyebrow,
   title,
   caption,
   actions,
   children,
 }: React.PropsWithChildren<{
-  eyebrow: string;
   title: string;
   caption?: string;
   actions?: React.ReactNode;
@@ -73,7 +96,6 @@ function FlatSection({
     <section className="space-y-4 border-t border-foreground/10 pt-6 first:border-t-0 first:pt-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{eyebrow}</div>
           <h2 className="text-xl font-semibold text-foreground">{title}</h2>
           {caption && <p className="max-w-3xl text-sm text-secondary-text">{caption}</p>}
         </div>
@@ -81,6 +103,26 @@ function FlatSection({
       </div>
       {children}
     </section>
+  );
+}
+
+function ActionRow({
+  title,
+  detail,
+  action,
+}: {
+  title: string;
+  detail: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="text-sm text-secondary-text">{detail}</p>
+      </div>
+      {action && <div className="sm:flex-none">{action}</div>}
+    </div>
   );
 }
 
@@ -100,6 +142,8 @@ export default function VaultPage() {
   const [depositOpen, setDepositOpen] = React.useState(false);
   const [delegateOpen, setDelegateOpen] = React.useState(false);
   const [requestOpen, setRequestOpen] = React.useState(false);
+  const [acceptOpen, setAcceptOpen] = React.useState(false);
+  const [addValueOpen, setAddValueOpen] = React.useState(false);
   const [withdrawOpen, setWithdrawOpen] = React.useState(false);
   const [undelegateOpen, setUndelegateOpen] = React.useState(false);
   const [undelegateValidator, setUndelegateValidator] = React.useState("");
@@ -109,12 +153,21 @@ export default function VaultPage() {
   const [vaultVersion, setVaultVersion] = React.useState(0);
   const [vaultState, setVaultState] = React.useState<"idle" | "pending" | "active">("idle");
   const [liquidityRequest, setLiquidityRequest] = React.useState<LiquidityRequestState>(null);
+  const [acceptedOffer, setAcceptedOffer] = React.useState<AcceptedOfferState>(null);
   const [requestToken, setRequestToken] = React.useState<string | null>(null);
   const [liquidationActive, setLiquidationActive] = React.useState(false);
   const [refundCount, setRefundCount] = React.useState(0);
   const [factoryId, setFactoryId] = React.useState<string>(() => getActiveFactoryId());
+  const [acceptReadinessVersion, setAcceptReadinessVersion] = React.useState(0);
+  const [lenderRegistered, setLenderRegistered] = React.useState<boolean | null>(null);
+  const [lenderMinDeposit, setLenderMinDeposit] = React.useState<string | null>(null);
+  const [vaultRegisteredForToken, setVaultRegisteredForToken] = React.useState<boolean | null>(null);
+  const [remainingMs, setRemainingMs] = React.useState<number | null>(null);
   const { signedAccountId, signIn } = useWalletSelector();
+  const { acceptLiquidity, pending: acceptPending, error: acceptError } = useAcceptLiquidityRequest();
   const { cancelLiquidityRequest, pending: cancelPending, error: cancelError } = useCancelLiquidityRequest();
+  const { balance: lenderTokenBalance, loading: lenderTokenBalanceLoading, refetch: refetchLenderTokenBalance } = useFtBalance(liquidityRequest?.token ?? null);
+  const { storageBalanceOf, storageBounds, registerStorage, pending: storagePending, error: storageError } = useFtStorage();
   const { indexVault } = useIndexVault();
   const { balance: nearBalance, loading: nearBalanceLoading, refetch: refetchNearBalance } = useAccountBalance(vaultId);
   const {
@@ -163,6 +216,74 @@ export default function VaultPage() {
       durationDays: Math.max(1, Math.round(liquidityRequest.duration / SECONDS_PER_DAY)),
     };
   }, [liquidityRequest]);
+  const requestTokenDecimals = React.useMemo(() => {
+    if (!liquidityRequest?.token) return 6;
+    return getTokenDecimals(liquidityRequest.token, getActiveNetwork());
+  }, [liquidityRequest?.token]);
+  const requestTokenSymbol = React.useMemo(() => {
+    if (!liquidityRequest?.token) return "FT";
+    return getTokenConfigById(liquidityRequest.token, getActiveNetwork())?.symbol ?? "FT";
+  }, [liquidityRequest?.token]);
+  const sufficientLenderBalance = React.useMemo(() => {
+    try {
+      if (!liquidityRequest?.amount || !lenderTokenBalance) return false;
+      return BigInt(lenderTokenBalance) >= BigInt(liquidityRequest.amount);
+    } catch {
+      return false;
+    }
+  }, [liquidityRequest?.amount, lenderTokenBalance]);
+  const lenderBalanceLabel = React.useMemo(() => {
+    if (!lenderTokenBalance) return "—";
+    return formatMinimalTokenAmount(lenderTokenBalance, requestTokenDecimals);
+  }, [lenderTokenBalance, requestTokenDecimals]);
+  const lenderMinDepositLabel = React.useMemo(
+    () => (lenderMinDeposit ? utils.format.formatNearAmount(lenderMinDeposit) : null),
+    [lenderMinDeposit]
+  );
+  const requestAmountLabel = React.useMemo(() => {
+    if (!liquidityRequest?.amount) return `0 ${requestTokenSymbol}`;
+    return `${formatMinimalTokenAmount(liquidityRequest.amount, requestTokenDecimals)} ${requestTokenSymbol}`;
+  }, [liquidityRequest?.amount, requestTokenDecimals, requestTokenSymbol]);
+  const lenderWalletBalanceLabel = React.useMemo(() => {
+    if (lenderTokenBalanceLoading) return `Checking ${requestTokenSymbol} balance.`;
+    if (!lenderTokenBalance) return `Wallet has 0 ${requestTokenSymbol}.`;
+    return `Wallet has ${lenderBalanceLabel} ${requestTokenSymbol}.`;
+  }, [lenderBalanceLabel, lenderTokenBalance, lenderTokenBalanceLoading, requestTokenSymbol]);
+  const lenderFundingGapLabel = React.useMemo(() => {
+    try {
+      if (!liquidityRequest?.amount) return null;
+      const required = BigInt(liquidityRequest.amount);
+      const current = BigInt(lenderTokenBalance ?? "0");
+      if (current >= required) return null;
+      return `${formatMinimalTokenAmount((required - current).toString(), requestTokenDecimals)} ${requestTokenSymbol}`;
+    } catch {
+      return requestAmountLabel;
+    }
+  }, [lenderTokenBalance, liquidityRequest?.amount, requestAmountLabel, requestTokenDecimals, requestTokenSymbol]);
+  const requestUsesDefaultUsdc = React.useMemo(() => {
+    if (!liquidityRequest?.token) return false;
+    return liquidityRequest.token === getDefaultUsdcTokenId(getActiveNetwork());
+  }, [liquidityRequest?.token]);
+  const addFundsLabel = React.useMemo(
+    () => (getActiveNetwork() === "testnet" ? `Get ${requestTokenSymbol}` : `Buy ${requestTokenSymbol}`),
+    [requestTokenSymbol]
+  );
+  const acceptedAtDate = React.useMemo(
+    () => (acceptedOffer?.acceptedAt ? acceptedAtToDate(acceptedOffer.acceptedAt) : null),
+    [acceptedOffer?.acceptedAt]
+  );
+  const liquidationStartDate = React.useMemo(() => {
+    if (!acceptedAtDate || !liquidityRequest?.duration) return null;
+    return new Date(acceptedAtDate.getTime() + liquidityRequest.duration * 1000);
+  }, [acceptedAtDate, liquidityRequest?.duration]);
+  const formattedCountdown = React.useMemo(
+    () => (remainingMs === null ? null : formatDurationShort(remainingMs)),
+    [remainingMs]
+  );
+  const liquidationStartLabel = React.useMemo(
+    () => (liquidationStartDate ? formatDateTime(liquidationStartDate) : null),
+    [liquidationStartDate]
+  );
 
   React.useEffect(() => {
     setFactoryId(getActiveFactoryId());
@@ -174,6 +295,7 @@ export default function VaultPage() {
       setOwnerLoading(false);
       setVaultState("idle");
       setLiquidityRequest(null);
+      setAcceptedOffer(null);
       setRequestToken(null);
       setLiquidationActive(false);
       return;
@@ -204,7 +326,20 @@ export default function VaultPage() {
                 duration: state.liquidity_request.duration,
               }
             : null;
+        const accepted =
+          state?.accepted_offer &&
+          typeof state.accepted_offer === "object" &&
+          typeof state.accepted_offer.lender === "string" &&
+          (typeof state.accepted_offer.accepted_at === "string" ||
+            typeof state.accepted_offer.accepted_at === "number" ||
+            typeof state.accepted_offer.accepted_at === "bigint")
+            ? {
+                lender: state.accepted_offer.lender,
+                acceptedAt: normalizeToIntegerString(state.accepted_offer.accepted_at),
+              }
+            : null;
         setLiquidityRequest(request);
+        setAcceptedOffer(accepted);
         const token = request?.token ?? null;
         setRequestToken(token);
       })
@@ -214,6 +349,7 @@ export default function VaultPage() {
         setOwner("");
         setVaultState("idle");
         setLiquidityRequest(null);
+        setAcceptedOffer(null);
         setRequestToken(null);
         setLiquidationActive(false);
       })
@@ -226,6 +362,23 @@ export default function VaultPage() {
       cancelled = true;
     };
   }, [vaultId, vaultVersion]);
+
+  React.useEffect(() => {
+    if (vaultState !== "active" || liquidationActive || !liquidationStartDate) {
+      setRemainingMs(null);
+      return;
+    }
+
+    const tick = () => {
+      setRemainingMs(Math.max(0, liquidationStartDate.getTime() - Date.now()));
+    };
+
+    tick();
+    const intervalId = window.setInterval(tick, 1000);
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [liquidationActive, liquidationStartDate, vaultState]);
 
   React.useEffect(() => {
     if (!vaultId) {
@@ -381,6 +534,26 @@ export default function VaultPage() {
   const isOwnerViewer = viewerMode === "owner";
   const isGuestViewer = viewerMode === "guest";
   const isPublicViewer = viewerMode === "guest" || viewerMode === "lender";
+  const canAcceptLiquidityRequest =
+    viewerMode === "lender" &&
+    vaultState === "pending" &&
+    Boolean(liquidityRequest);
+  const acceptReady =
+    canAcceptLiquidityRequest &&
+    sufficientLenderBalance &&
+    lenderRegistered === true &&
+    vaultRegisteredForToken === true;
+  const isAcceptedLenderViewer = Boolean(
+    signedAccountId &&
+    acceptedOffer?.lender &&
+    signedAccountId === acceptedOffer.lender
+  );
+  const checkingAcceptReadiness =
+    canAcceptLiquidityRequest &&
+    (lenderTokenBalanceLoading || lenderRegistered === null || vaultRegisteredForToken === null);
+  const needsFunds = !checkingAcceptReadiness && !sufficientLenderBalance;
+  const needsLenderRegistration = !checkingAcceptReadiness && lenderRegistered === false;
+  const needsVaultRegistration = !checkingAcceptReadiness && vaultRegisteredForToken === false;
   const publicVaultStatus = liquidationActive
     ? "Liquidation"
     : vaultState === "pending"
@@ -398,7 +571,6 @@ export default function VaultPage() {
     : vaultState === "active"
       ? "Active terms and collateral."
       : "No open request.";
-  const pageEyebrow = isPublicViewer ? "Vault view" : "Vault workspace";
   const pageTitle = isPublicViewer ? publicViewTitle : "Vault workspace";
   const pageBody = isPublicViewer
     ? publicViewBody
@@ -431,6 +603,71 @@ export default function VaultPage() {
     : refundCount > 0
       ? "Delegation is unavailable while refund entries are pending."
       : null;
+  React.useEffect(() => {
+    if (!canAcceptLiquidityRequest) {
+      setAcceptOpen(false);
+      setLenderRegistered(null);
+      setLenderMinDeposit(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function run() {
+      if (!signedAccountId || !liquidityRequest?.token) return;
+      const balance = await storageBalanceOf(liquidityRequest.token, signedAccountId);
+      if (cancelled) return;
+      const registered = balance !== null;
+      setLenderRegistered(registered);
+      if (!registered) {
+        const bounds = await storageBounds(liquidityRequest.token);
+        if (cancelled) return;
+        setLenderMinDeposit(bounds?.min ?? null);
+        return;
+      }
+      setLenderMinDeposit(null);
+    }
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [acceptReadinessVersion, canAcceptLiquidityRequest, liquidityRequest?.token, signedAccountId, storageBalanceOf, storageBounds]);
+
+  React.useEffect(() => {
+    if (vaultState !== "pending" || !liquidityRequest?.token || !vaultId) {
+      setVaultRegisteredForToken(null);
+      return;
+    }
+
+    let cancelled = false;
+    const tokenId = liquidityRequest.token;
+
+    async function run() {
+      const balance = await storageBalanceOf(tokenId, vaultId);
+      if (cancelled) return;
+      setVaultRegisteredForToken(balance !== null);
+    }
+
+    void run();
+    return () => {
+      cancelled = true;
+    };
+  }, [acceptReadinessVersion, liquidityRequest?.token, storageBalanceOf, vaultId, vaultState]);
+
+  React.useEffect(() => {
+    if (!canAcceptLiquidityRequest) return;
+
+    const onFocus = () => {
+      void refetchLenderTokenBalance();
+      setAcceptReadinessVersion((current) => current + 1);
+    };
+
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [canAcceptLiquidityRequest, refetchLenderTokenBalance]);
 
   const handleWithdrawClick = React.useCallback((asset: "NEAR" | "USDC") => {
     if (!vaultId) return;
@@ -502,6 +739,73 @@ export default function VaultPage() {
     setRequestOpen(true);
   }, [connectWallet, liquidityRequestContent, owner, signedAccountId, vaultId, vaultState]);
 
+  const handleRegisterLender = React.useCallback(async () => {
+    if (!signedAccountId || !liquidityRequest?.token || !lenderMinDeposit) return;
+
+    try {
+      await registerStorage(liquidityRequest.token, signedAccountId, lenderMinDeposit);
+      const balance = await storageBalanceOf(liquidityRequest.token, signedAccountId);
+      const registered = balance !== null;
+      setLenderRegistered(registered);
+      setLenderMinDeposit(registered ? null : lenderMinDeposit);
+      setAcceptReadinessVersion((current) => current + 1);
+      if (registered) {
+        showToast(STRINGS.accountRegisteredSuccess, { variant: "success" });
+      }
+    } catch (error) {
+      console.error("Error registering lender token storage:", error);
+    }
+  }, [lenderMinDeposit, liquidityRequest?.token, registerStorage, signedAccountId, storageBalanceOf]);
+
+  const handleAcceptRequest = React.useCallback(async () => {
+    if (!vaultId || !liquidityRequest) return;
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+
+    try {
+      const { txHash } = await acceptLiquidity({
+        vault: vaultId,
+        token: liquidityRequest.token,
+        amount: liquidityRequest.amount,
+        interest: liquidityRequest.interest,
+        collateral: liquidityRequest.collateral,
+        duration: liquidityRequest.duration,
+      });
+      setAcceptOpen(false);
+      setVaultState("active");
+      setAcceptedOffer({
+        lender: signedAccountId,
+        acceptedAt: (BigInt(Date.now()) * BigInt(1_000_000)).toString(),
+      });
+      showToast("Request accepted", { variant: "success" });
+      void refetchLenderTokenBalance();
+      void indexVault({ factoryId, vault: vaultId, txHash })
+        .then(() => {
+          refetchNearBalance();
+          refetchDelegations();
+          setVaultVersion((current) => current + 1);
+        })
+        .catch((error) => {
+          console.error("Vault indexing after accept failed:", error);
+        });
+    } catch (error) {
+      console.error("Error accepting liquidity request:", error);
+    }
+  }, [
+    acceptLiquidity,
+    connectWallet,
+    factoryId,
+    indexVault,
+    liquidityRequest,
+    refetchDelegations,
+    refetchLenderTokenBalance,
+    refetchNearBalance,
+    signedAccountId,
+    vaultId,
+  ]);
+
   const handleCancelRequest = React.useCallback(async () => {
     if (!vaultId) return;
     if (vaultState !== "pending") {
@@ -549,7 +853,6 @@ export default function VaultPage() {
       <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
         <header className="space-y-4">
           <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{pageEyebrow}</div>
             <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">{pageTitle}</h1>
             <p className="max-w-3xl text-sm text-secondary-text">{pageBody}</p>
           </div>
@@ -557,7 +860,7 @@ export default function VaultPage() {
           {isGuestViewer && vaultState === "pending" && (
             <div className="flex flex-wrap gap-2">
               <Button onClick={connectWallet} disabled={connectingWallet} aria-busy={connectingWallet || undefined}>
-                {connectingWallet ? "Opening wallet..." : "Connect wallet"}
+                {connectingWallet ? "Opening wallet..." : "Connect wallet to continue"}
               </Button>
             </div>
           )}
@@ -604,7 +907,6 @@ export default function VaultPage() {
         </header>
 
         <FlatSection
-          eyebrow="Liquidity request"
           title="Current terms"
           caption={requestSectionCaption}
         >
@@ -613,8 +915,25 @@ export default function VaultPage() {
               <CurrentRequestPanel
                 content={liquidityRequestContent}
                 active={vaultState === "active"}
+                showTimeline={vaultState === "active" && !liquidationActive && remainingMs !== null}
+                countdownLabel={formattedCountdown}
+                expired={remainingMs === 0}
                 flat
               />
+              {vaultState === "active" && isPublicViewer && !liquidationActive && remainingMs !== null && (
+                <ActionRow
+                  title={isAcceptedLenderViewer ? "What next" : "Loan countdown"}
+                  detail={
+                    remainingMs > 0
+                      ? isAcceptedLenderViewer
+                        ? `Liquidation opens in ${formattedCountdown}. If the loan is not repaid, you can begin liquidation after ${liquidationStartLabel}.`
+                        : `Liquidation can begin in ${formattedCountdown} if the loan is not repaid. Deadline: ${liquidationStartLabel}.`
+                      : isAcceptedLenderViewer
+                        ? "Repayment window ended. You can begin liquidation now."
+                        : "Repayment window ended. Liquidation can begin now."
+                  }
+                />
+              )}
               {vaultState === "pending" && isOwnerViewer && (
                 <div className="flex flex-col items-start gap-2">
                   <Button
@@ -635,7 +954,7 @@ export default function VaultPage() {
             </div>
           ) : (
             <div className="text-sm text-secondary-text">
-              {isPublicViewer ? "No live liquidity request is open for lenders right now." : "No liquidity request yet."}
+              {isPublicViewer ? "No live liquidity request." : "No liquidity request yet."}
             </div>
           )}
           {isOwnerViewer && !liquidityRequestContent && (
@@ -651,8 +970,94 @@ export default function VaultPage() {
           )}
         </FlatSection>
 
+        {canAcceptLiquidityRequest && liquidityRequest && (
+          <FlatSection
+            title="Accept request"
+            caption={checkingAcceptReadiness ? "Checking requirements." : undefined}
+          >
+            <div className="space-y-4">
+              {checkingAcceptReadiness && (
+                <p className="text-sm text-secondary-text">Checking wallet and token setup.</p>
+              )}
+              {needsFunds && (
+                <ActionRow
+                  title={`Get ${lenderFundingGapLabel ?? requestAmountLabel}`}
+                  detail={`Need ${requestAmountLabel}. ${lenderWalletBalanceLabel}`}
+                  action={
+                    requestUsesDefaultUsdc ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setAddValueOpen(true)}
+                      >
+                        {addFundsLabel}
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              )}
+              {needsLenderRegistration && (
+                <ActionRow
+                  title="Register account"
+                  detail={
+                    lenderMinDepositLabel
+                      ? `One-time deposit: ${lenderMinDepositLabel} NEAR.`
+                      : "One-time token storage deposit."
+                  }
+                  action={
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => void handleRegisterLender()}
+                      disabled={storagePending || !lenderMinDeposit}
+                      aria-busy={storagePending || undefined}
+                    >
+                      Register account
+                    </Button>
+                  }
+                />
+              )}
+              {needsVaultRegistration && (
+                <ActionRow
+                  title="Wait for vault"
+                  detail="Owner needs to register token storage."
+                />
+              )}
+              {acceptReady && (
+                <ActionRow
+                  title="Ready"
+                  detail={`Lend ${requestAmountLabel} and confirm in wallet.`}
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setAcceptOpen(true)}
+                      disabled={acceptPending}
+                      variant="primary"
+                      size="sm"
+                      aria-busy={acceptPending || undefined}
+                    >
+                      {acceptPending ? "Confirming..." : "Accept request"}
+                    </Button>
+                  }
+                />
+              )}
+              {storageError && lenderRegistered === false && (
+                <p className="text-sm text-secondary-text" role="alert">
+                  {storageError}
+                </p>
+              )}
+              {acceptError && (
+                <p className="text-sm text-secondary-text" role="alert">
+                  {acceptError}
+                </p>
+              )}
+            </div>
+          </FlatSection>
+        )}
+
         <FlatSection
-          eyebrow={isPublicViewer ? "Collateral" : "Delegations"}
           title={isPublicViewer ? "Validator collateral" : "Validator positions"}
           caption={collateralSectionCaption}
         >
@@ -678,7 +1083,6 @@ export default function VaultPage() {
         </FlatSection>
 
         <FlatSection
-          eyebrow="Vault facts"
           title="On-chain snapshot"
           caption={factsSectionCaption}
         >
@@ -689,6 +1093,13 @@ export default function VaultPage() {
               value={ownerLoading ? "Loading owner..." : owner || "Owner unavailable"}
               title={owner || undefined}
             />
+            {vaultState === "active" && acceptedOffer?.lender && (
+              <SummaryField
+                label="Active lender"
+                value={acceptedOffer.lender}
+                title={acceptedOffer.lender}
+              />
+            )}
             <SummaryField
               label="Status"
               value={isPublicViewer ? publicVaultStatus : vaultState === "pending" ? "Pending request" : vaultState === "active" ? "Active loan" : "Idle"}
@@ -748,6 +1159,30 @@ export default function VaultPage() {
         vaultId={vaultId}
         onSuccess={handleRequestLiquiditySuccess}
       />
+      <AddValueDialog
+        open={addValueOpen}
+        onClose={() => {
+          setAddValueOpen(false);
+          void refetchLenderTokenBalance();
+          setAcceptReadinessVersion((current) => current + 1);
+        }}
+      />
+      {liquidityRequest && (
+        <AcceptLiquidityConfirm
+          open={acceptOpen}
+          onClose={() => setAcceptOpen(false)}
+          onConfirm={() => void handleAcceptRequest()}
+          pending={acceptPending}
+          error={acceptError}
+          vaultId={vaultId}
+          tokenSymbol={requestTokenSymbol}
+          decimals={requestTokenDecimals}
+          amountRaw={liquidityRequest.amount}
+          interestRaw={liquidityRequest.interest}
+          collateralYocto={liquidityRequest.collateral}
+          durationSeconds={liquidityRequest.duration}
+        />
+      )}
       <DelegateDialog
         open={delegateOpen}
         onClose={() => setDelegateOpen(false)}
