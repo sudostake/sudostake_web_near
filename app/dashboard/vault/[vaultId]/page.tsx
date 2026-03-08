@@ -1018,9 +1018,14 @@ export default function VaultPage() {
           )}
 
           {isOwnerViewer && (
-            <div className="flex flex-wrap gap-2">
+            <div
+              className="grid w-full gap-2 min-[420px]:grid-cols-2 lg:flex lg:flex-wrap"
+              role="group"
+              aria-label="Vault owner actions"
+            >
               <Button
                 onClick={handleDepositClick}
+                className="w-full min-[420px]:col-span-2 lg:w-auto"
                 disabled={!vaultId || connectingWallet}
                 aria-busy={connectingWallet || undefined}
               >
@@ -1029,6 +1034,7 @@ export default function VaultPage() {
               <Button
                 variant="secondary"
                 onClick={handleDelegateClick}
+                className="w-full lg:w-auto"
                 disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
@@ -1037,6 +1043,7 @@ export default function VaultPage() {
               <Button
                 variant="secondary"
                 onClick={() => handleWithdrawClick("NEAR")}
+                className="w-full lg:w-auto"
                 disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
@@ -1045,6 +1052,7 @@ export default function VaultPage() {
               <Button
                 variant="secondary"
                 onClick={() => handleWithdrawClick("USDC")}
+                className="w-full min-[420px]:col-span-2 lg:w-auto"
                 disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
