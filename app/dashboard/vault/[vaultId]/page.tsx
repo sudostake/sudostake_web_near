@@ -638,10 +638,6 @@ export default function VaultPage() {
     if (signedAccountId) return "potentialLender";
     return "guest";
   }, [isAcceptedLenderViewer, isOwnerViewer, signedAccountId]);
-  const ownerLiquidationSummary = React.useMemo(
-    () => STRINGS.liquidationOwnerSummary(liquidationStartLabel ?? undefined),
-    [liquidationStartLabel]
-  );
   const collateralLabel = React.useMemo(
     () => (liquidityRequest?.collateral ? safeFormatYoctoNear(liquidityRequest.collateral, 5) : null),
     [liquidityRequest?.collateral]
@@ -1200,13 +1196,11 @@ export default function VaultPage() {
 
         {showLiquidationProgress && (
           <FlatSection
-            title="Liquidation progress"
+            title="Liquidation in progress"
           >
             <LiquidationStatusSection
               role={liquidationViewerRole}
-              isOwner={isOwnerViewer}
               expiryDate={liquidationStartDate}
-              ownerLiquidationSummary={ownerLiquidationSummary}
               liquidatedYocto={liquidation?.liquidated ?? "0"}
               remainingTargetLabel={remainingTargetLabel}
               collateralLabel={collateralLabel}

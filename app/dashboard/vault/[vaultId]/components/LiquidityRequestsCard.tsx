@@ -243,11 +243,6 @@ export function LiquidityRequestsCard({
   }, [remainingMs]);
 
   const expiryLabel = useMemo(() => (expiryDate ? formatDateTime(expiryDate) : null), [expiryDate]);
-  const ownerLiquidationSummary = useMemo(
-    () => STRINGS.liquidationOwnerSummary(expiryLabel ?? undefined),
-    [expiryLabel]
-  );
-
   // Collateral/liquidation calculations (all in NEAR)
   const collateralYocto = vault?.liquidity_request?.collateral;
   const liquidatedYocto = vault?.liquidation?.liquidated;
@@ -475,9 +470,7 @@ export function LiquidityRequestsCard({
       {vault?.state === "active" && vault?.liquidation && (
         <LiquidationStatusSection
           role={role}
-          isOwner={isOwner}
           expiryDate={expiryDate}
-          ownerLiquidationSummary={ownerLiquidationSummary}
           liquidatedYocto={vault.liquidation.liquidated}
           remainingTargetLabel={remainingTargetLabel}
           collateralLabel={collateralLabel}
