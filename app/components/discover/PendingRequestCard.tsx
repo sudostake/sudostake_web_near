@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { Card } from "@/app/components/ui/Card";
 import { Badge } from "@/app/components/ui/Badge";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Big from "big.js";
 import { formatMinimalTokenAmount } from "@/utils/format";
 import { getTokenConfigById } from "@/utils/tokens";
@@ -12,6 +13,7 @@ import type { PendingRequest } from "@/utils/data/pending";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { formatDurationWords } from "@/utils/time";
 import { calculateApr } from "@/utils/finance";
+import { buildVaultHref } from "@/app/components/navigationRoutes";
 
 type Props = {
   item: PendingRequest;
@@ -21,6 +23,7 @@ type Props = {
 };
 
 export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals }: Props) {
+  const pathname = usePathname();
   const lr = item.liquidity_request;
   const network = networkFromFactoryId(factoryId);
   const tokenId = lr?.token ?? "";
@@ -59,7 +62,7 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
   const repayDisplay = repayLabel === "—" ? "Unavailable" : `${repayLabel} ${symbol}`;
   const durationDisplay = formatDurationWords(durationSeconds);
   const collateralDisplay = `${collateralNear} NEAR`;
-  const href = `/dashboard/vault/${encodeURIComponent(item.id)}`;
+  const href = buildVaultHref(item.id, pathname);
   if (!lr) return null;
 
   return (

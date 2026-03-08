@@ -2,11 +2,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Badge } from "@/app/components/ui/Badge";
-import { Card } from "@/app/components/ui/Card";
 import { CopyButton } from "@/app/components/ui/CopyButton";
 import { useState } from "react";
 import { VaultIcon } from "@/app/components/vaults/VaultIcon";
+import { buildVaultHref } from "@/app/components/navigationRoutes";
 
 export type VaultSummary = { id: string; state: "idle" | "pending" | "active" };
 export type VaultListProps = {
@@ -17,14 +18,16 @@ export type VaultListProps = {
 
 export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
   const [copied] = useState<string | null>(null);
+  const pathname = usePathname();
 
-  const baseCardClasses =
+  const baseRowClasses =
     "flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5";
-  const interactiveCardClasses = [
-    "transition-[border-color,box-shadow,background-color,color] duration-200",
-    "hover:border-primary/40 hover:shadow-soft-elevated",
-    "group-hover:border-primary/40 group-hover:shadow-soft-elevated",
-    "group-focus-visible:border-primary/50 group-focus-visible:shadow-soft-elevated",
+  const interactiveRowClasses = [
+    "rounded-2xl border border-[color:color-mix(in_oklab,var(--border)_58%,transparent)] bg-transparent",
+    "transition-[border-color,background-color,color] duration-200",
+    "hover:border-primary/35 hover:bg-[color:var(--surface-muted)]",
+    "group-hover:border-primary/35 group-hover:bg-[color:var(--surface-muted)]",
+    "group-focus-visible:border-primary/45 group-focus-visible:bg-[color:var(--surface-muted)]",
   ].join(" ");
 
   const stateFor = (id: string): VaultSummary["state"] | undefined => {
@@ -40,7 +43,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
   };
 
   const ItemInner = ({ id }: { id: string }) => (
-    <Card className={`${baseCardClasses} ${interactiveCardClasses}`}>
+    <div className={`${baseRowClasses} ${interactiveRowClasses}`}>
       <div className="flex min-w-0 items-center gap-3">
         <VaultIcon id={id} size="sm" />
         <div className="min-w-0">
@@ -67,7 +70,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M13 5l7 7-7 7" />
         </svg>
       </div>
-    </Card>
+    </div>
   );
 
   return (
@@ -84,7 +87,7 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
             </button>
           ) : (
             <Link
-              href={`/dashboard/vault/${encodeURIComponent(id)}`}
+              href={buildVaultHref(id, pathname)}
               className="group block focus:outline-none focus-visible:outline-none"
               title={id}
               prefetch

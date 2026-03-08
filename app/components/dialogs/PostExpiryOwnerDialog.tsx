@@ -47,11 +47,11 @@ export function PostExpiryOwnerDialog({
       <div className="space-y-3 text-sm">
         <p>
           {STRINGS.ownerLoanExpiredIntro}{" "}
-          <span className="font-medium" title={vaultId}>{vaultId}</span>.
+          <span className="break-all font-medium" title={vaultId}>{vaultId}</span>.
         </p>
         {(totalDueLabel || collateralNearLabel) && (
           <div className="rounded border bg-background p-3">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {totalDueLabel && (
                 <>
                   <div className="text-secondary-text">{STRINGS.totalDue}</div>

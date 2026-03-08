@@ -10,6 +10,7 @@ export type ModalProps = PropsWithChildren<{
   disableBackdropClose?: boolean;
   footer?: React.ReactNode;
   showClose?: boolean;
+  panelClassName?: string;
 }>;
 
 export function Modal({
@@ -20,6 +21,7 @@ export function Modal({
   disableBackdropClose,
   footer,
   showClose = true,
+  panelClassName = "",
 }: ModalProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -80,7 +82,9 @@ export function Modal({
         onClick={disableBackdropClose ? undefined : onClose}
         aria-hidden="true"
       />
-      <div className="relative z-10 mx-auto flex w-full max-w-lg max-h-modal flex-col overflow-hidden rounded-3xl border border-foreground/10 bg-surface shadow-2xl">
+      <div
+        className={`relative z-10 mx-auto flex w-full max-w-lg max-h-modal flex-col overflow-hidden rounded-3xl border border-foreground/10 bg-surface shadow-2xl ${panelClassName}`}
+      >
         <div className="flex shrink-0 items-center justify-between border-b border-foreground/10 px-5 py-4">
           <h2 id="modal-title" className="text-lg font-semibold break-all">
             {title ?? "Dialog"}

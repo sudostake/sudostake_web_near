@@ -13,6 +13,30 @@ export type CurrentRequestContent = {
   durationDays: number;
 };
 
+type FieldProps = {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+  mono?: boolean;
+};
+
+function Field({ label, value, emphasize = false, mono = false }: FieldProps) {
+  return (
+    <div className="space-y-1">
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{label}</div>
+      <div
+        className={[
+          mono ? "font-mono" : "font-medium",
+          emphasize ? "text-lg" : "text-sm",
+          "break-all text-foreground",
+        ].join(" ")}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
 export function CurrentRequestPanel({
   content,
   active,
@@ -20,6 +44,7 @@ export function CurrentRequestPanel({
   countdownLabel,
   expiryLabel,
   expired = false,
+  flat = false,
 }: {
   content: CurrentRequestContent;
   active: boolean;
@@ -27,72 +52,70 @@ export function CurrentRequestPanel({
   countdownLabel?: string | null;
   expiryLabel?: string | null;
   expired?: boolean;
+  flat?: boolean;
 }) {
   const showExpiryField = Boolean(active && showTimeline && (expiryLabel || countdownLabel));
   const countdown = countdownLabel ?? null;
   const timelineValue = expired
     ? expiryLabel ?? STRINGS.expiredLabel
     : expiryLabel ?? (countdown ? STRINGS.loanDeadlineCountdown(String(countdown)) : "—");
+
   const leadFields = [
     active
-      ? { label: STRINGS.totalDue, value: content.totalDue, highlight: true }
-      : { label: STRINGS.amountLabel, value: content.amount, highlight: true },
-    { label: STRINGS.collateralLabel, value: content.collateral, highlight: true },
+      ? { label: STRINGS.totalDue, value: content.totalDue, emphasize: true }
+      : { label: STRINGS.amountLabel, value: content.amount, emphasize: true },
+    { label: STRINGS.collateralLabel, value: content.collateral, emphasize: true },
     {
       label: showExpiryField ? STRINGS.loanDeadlineLabel : STRINGS.durationLabel,
       value: showExpiryField ? timelineValue : formatDays(content.durationDays),
-      highlight: true,
+      emphasize: true,
     },
   ];
+
   const detailFields = [
-    { label: STRINGS.tokenLabel, value: content.token, mono: false },
-    !active ? { label: STRINGS.totalDue, value: content.totalDue } : { label: STRINGS.amountLabel, value: content.amount },
+    { label: STRINGS.tokenLabel, value: content.token },
+    !active
+      ? { label: STRINGS.totalDue, value: content.totalDue }
+      : { label: STRINGS.amountLabel, value: content.amount },
     { label: STRINGS.interestLabel, value: content.interest },
   ];
 
   return (
     <section
-      className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-4 py-4"
+      className={[
+        "space-y-5",
+        flat ? "" : "rounded-app border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-4 sm:px-5",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       role="region"
       aria-label={STRINGS.currentRequestTitle}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">{STRINGS.currentRequestTitle}</p>
-      <div className="grid gap-2 md:grid-cols-3">
+      {!flat && (
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">
+          {STRINGS.currentRequestTitle}
+        </p>
+      )}
+
+      <div className="grid gap-x-6 gap-y-4 md:grid-cols-3">
         {leadFields.map((field) => (
-          <Field key={field.label} label={field.label} value={field.value} mono highlight={field.highlight} />
+          <Field
+            key={field.label}
+            label={field.label}
+            value={field.value}
+            emphasize={field.emphasize}
+            mono
+          />
         ))}
       </div>
-      <div className="grid gap-2 text-sm sm:grid-cols-3">
-        {detailFields.map((field) => (
-          <Field key={field.label} label={field.label} value={field.value} mono={field.mono ?? true} />
-        ))}
+
+      <div className="border-t border-foreground/10 pt-4">
+        <div className="grid gap-x-6 gap-y-4 sm:grid-cols-3">
+          {detailFields.map((field) => (
+            <Field key={field.label} label={field.label} value={field.value} mono={field.label !== STRINGS.tokenLabel} />
+          ))}
+        </div>
       </div>
     </section>
-  );
-}
-
-function Field({
-  label,
-  value,
-  mono = false,
-  highlight = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={[
-        "rounded-2xl border px-3 py-3",
-        highlight
-          ? "border-primary/20 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--primary)_10%,var(--surface)),var(--surface))]"
-          : "border-[color:var(--border)] bg-[color:var(--surface)]",
-      ].join(" ")}
-    >
-      <div className="text-xs uppercase tracking-[0.18em] text-secondary-text">{label}</div>
-      <div className={`${mono ? "font-mono" : "font-semibold"} mt-1 break-all text-foreground`}>{value}</div>
-    </div>
   );
 }

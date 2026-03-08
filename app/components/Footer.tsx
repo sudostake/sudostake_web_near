@@ -11,7 +11,7 @@ export function Footer() {
   const pathname = usePathname();
 
   return (
-    <footer className="footer-panel mt-16">
+    <footer className="footer-panel">
       <Container className="flex flex-col gap-3 py-7 text-xs text-[color:var(--text-secondary)] sm:flex-row sm:items-center sm:justify-between sm:py-8 sm:text-sm">
         <div className="flex items-center gap-2.5">
           <LogoMark

@@ -25,7 +25,6 @@ import { useProcessClaims } from "@/hooks/useProcessClaims";
 import { showToast } from "@/utils/toast";
 import { STRINGS } from "@/utils/strings";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
-import { Card } from "@/app/components/ui/Card";
 import { Balance } from "@/utils/balance";
 import type { VaultDocument } from "@/utils/types/vault_document";
 import { VaultUsdcRegisteredNotice } from "./VaultUsdcRegisteredNotice";
@@ -244,11 +243,6 @@ export function LiquidityRequestsCard({
   }, [remainingMs]);
 
   const expiryLabel = useMemo(() => (expiryDate ? formatDateTime(expiryDate) : null), [expiryDate]);
-  const ownerLiquidationSummary = useMemo(
-    () => STRINGS.liquidationOwnerSummary(expiryLabel ?? undefined),
-    [expiryLabel]
-  );
-
   // Collateral/liquidation calculations (all in NEAR)
   const collateralYocto = vault?.liquidity_request?.collateral;
   const liquidatedYocto = vault?.liquidation?.liquidated;
@@ -415,10 +409,7 @@ export function LiquidityRequestsCard({
   };
 
   return (
-    <Card
-      className="surface-card space-y-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-5 sm:px-5"
-      aria-label="Liquidity requests"
-    >
+    <section className="space-y-4" aria-label="Liquidity request">
       <LiquidityRequestHeader
         hasOpenRequest={hasOpenRequest}
         isOwner={isOwner}
@@ -479,9 +470,7 @@ export function LiquidityRequestsCard({
       {vault?.state === "active" && vault?.liquidation && (
         <LiquidationStatusSection
           role={role}
-          isOwner={isOwner}
           expiryDate={expiryDate}
-          ownerLiquidationSummary={ownerLiquidationSummary}
           liquidatedYocto={vault.liquidation.liquidated}
           remainingTargetLabel={remainingTargetLabel}
           collateralLabel={collateralLabel}
@@ -561,6 +550,6 @@ export function LiquidityRequestsCard({
           onAfterTopUp?.();
         }}
       />
-    </Card>
+    </section>
   );
 }

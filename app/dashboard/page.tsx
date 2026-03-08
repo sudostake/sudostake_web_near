@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { AccountSummary } from "../components/AccountSummary";
 import { CreateVaultDialog } from "../components/dialogs/CreateVaultDialog";
 import { UserVaults } from "../components/vaults/UserVaults";
@@ -13,6 +13,7 @@ import { useLenderPositions } from "@/hooks/useLenderPositions";
 import { Container } from "@/app/components/layout/Container";
 import { Button } from "@/app/components/ui/Button";
 import { useRouteAccess } from "@/app/hooks/useRouteAccess";
+import { FlatSection } from "@/app/components/ui/FlatSection";
 
 export default function Dashboard() {
   const { signedAccountId, blocked } = useRouteAccess("authOnly");
@@ -21,7 +22,7 @@ export default function Dashboard() {
 
   // Memoize the JSON-RPC provider (same origin proxy) to avoid recreating it per render
   const activeNetwork = getActiveNetwork();
-  const factoryId = useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
+  const factoryId = React.useMemo(() => factoryContract(activeNetwork), [activeNetwork]);
 
   const { balances, loading: balancesLoading, refetch: refetchBalances } = useTokenBalances();
   const { data: userVaultIds } = useUserVaults(signedAccountId, factoryId);
@@ -32,7 +33,6 @@ export default function Dashboard() {
     refetchBalances();
   }, [refetchBalances]);
 
-  // Account summary component
   const [tab, setTab] = React.useState<string>(() => {
     if (typeof window === "undefined") return "vaults";
     const s = window.localStorage.getItem("dashboard:tab");
@@ -44,6 +44,10 @@ export default function Dashboard() {
 
   const totalVaults = userVaultIds?.length ?? 0;
   const totalPositions = lenderPositions?.length ?? 0;
+  const workspaceCaption =
+    tab === "vaults"
+      ? "Open a vault to manage deposits, delegation, and request terms."
+      : "Track the vaults where you currently have active lending positions.";
 
   const shortAccount = React.useMemo(() => {
     if (!signedAccountId) return "";
@@ -56,18 +60,30 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background pb-24">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_67%)]"
-      />
-      <Container className="relative space-y-4 pt-8 sm:pt-10 lg:pt-12">
-        <header className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div className="space-y-2">
-              <h1 className="text-[clamp(1.7rem,3.4vw,2.25rem)] font-semibold leading-[1.1] tracking-tight text-foreground">
-                {shortAccount} · Liquidity Hub
-              </h1>
+    <main id="main" className="min-h-screen bg-background">
+      <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
+        <header className="space-y-4">
+          <div className="space-y-2">
+            <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">Dashboard</h1>
+            <p className="max-w-3xl text-sm text-secondary-text">
+              Manage vaults, lender positions, and wallet balances from one workspace.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-sm font-medium text-secondary-text"
+                title={signedAccountId}
+              >
+                <span className="mr-2 uppercase tracking-wide">Account</span>
+                <span className="font-mono text-foreground">{shortAccount}</span>
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-sm font-medium text-secondary-text">
+                {totalVaults} vault{totalVaults === 1 ? "" : "s"}
+              </span>
+              <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-sm font-medium text-secondary-text">
+                {totalPositions} position{totalPositions === 1 ? "" : "s"}
+              </span>
             </div>
 
             <div className="w-full sm:w-auto">
@@ -84,71 +100,72 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.06fr),minmax(300px,0.94fr)]">
-          <section className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1">
-                  <h2 className="text-[clamp(1.35rem,2.5vw,1.75rem)] font-semibold text-foreground">Workspace</h2>
-                </div>
-                <div className="w-full sm:w-auto sm:min-w-[330px]">
-                  <SegmentedToggle
-                    value={tab}
-                    onChange={setTab}
-                    options={[
-                      { id: "vaults", label: `Vaults (${totalVaults})` },
-                      { id: "positions", label: `Positions (${totalPositions})` },
-                    ]}
-                    ariaLabel="Dashboard sections"
-                    variant="primary"
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="min-h-[260px] pt-1">
-                <div
-                  id="vaults-panel"
-                  role="tabpanel"
-                  aria-labelledby="vaults-trigger"
-                  hidden={tab !== "vaults"}
-                >
-                  <UserVaults
-                    owner={signedAccountId}
-                    factoryId={factoryId}
-                    onCreate={() => setShowCreate(true)}
-                    headerMode="toolsOnly"
-                    showCreateButton={false}
-                  />
-                </div>
-                <div
-                  id="positions-panel"
-                  role="tabpanel"
-                  aria-labelledby="positions-trigger"
-                  hidden={tab !== "positions"}
-                >
-                  <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
-                </div>
-              </div>
+        <FlatSection
+          title="Workspace"
+          caption={workspaceCaption}
+          actions={
+            <div className="w-full sm:min-w-[330px]">
+              <SegmentedToggle
+                value={tab}
+                onChange={setTab}
+                options={[
+                  { id: "vaults", label: `Vaults (${totalVaults})` },
+                  { id: "positions", label: `Positions (${totalPositions})` },
+                ]}
+                ariaLabel="Dashboard sections"
+                variant="primary"
+                className="w-full"
+              />
             </div>
-          </section>
+          }
+          contentClassName="min-h-[260px] px-4 py-5 sm:px-5 sm:py-6"
+        >
+          <div
+            id="vaults-panel"
+            role="tabpanel"
+            aria-labelledby="vaults-trigger"
+            hidden={tab !== "vaults"}
+          >
+            <UserVaults
+              owner={signedAccountId}
+              factoryId={factoryId}
+              onCreate={() => setShowCreate(true)}
+              headerMode="toolsOnly"
+              showCreateButton={false}
+            />
+          </div>
+          <div
+            id="positions-panel"
+            role="tabpanel"
+            aria-labelledby="positions-trigger"
+            hidden={tab !== "positions"}
+          >
+            <LenderPositions lender={signedAccountId} factoryId={factoryId} headerMode="toolsOnly" />
+          </div>
+        </FlatSection>
 
+        <FlatSection
+          title="Wallet balances"
+          caption="Use available balances for transfers, deposits, and request funding."
+        >
           <AccountSummary
             near={balances.near}
             usdc={balances.usdc}
             loading={balancesLoading}
             onRefreshBalances={refetchBalances}
+            surface="plain"
+            showHeader={false}
           />
-        </div>
+        </FlatSection>
       </Container>
       <CreateVaultDialog
         open={showCreate}
         onClose={() => setShowCreate(false)}
         onSuccess={() => {
-        // Update main account balances (NEAR/USDC) after vault creation
+          // Update main account balances (NEAR/USDC) after vault creation
           refetchBalances();
         }}
       />
-    </div>
+    </main>
   );
 }

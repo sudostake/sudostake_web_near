@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo } from "react";
 import { Modal } from "@/app/components/dialogs/Modal";
 import { useRepayLoan } from "@/hooks/useRepayLoan";
 import { useIndexVault } from "@/hooks/useIndexVault";
@@ -16,13 +16,11 @@ import { showToast } from "@/utils/toast";
 import { getFriendlyErrorMessage } from "@/utils/errors";
 import { utils } from "near-api-js";
 import { useTokenRegistration } from "@/hooks/useTokenRegistration";
-import { explorerAccountUrl } from "@/utils/networks";
 import { STRINGS } from "@/utils/strings";
 import { sumMinimal } from "@/utils/amounts";
 import { Button } from "@/app/components/ui/Button";
 
 const TOP_UP_MEMO = "Vault top-up for loan repayment";
-const COPY_FEEDBACK_MS = 1600;
 
 type Props = {
   open: boolean;
@@ -35,6 +33,33 @@ type Props = {
   onSuccess?: () => void;
   onVaultTokenBalanceChange?: () => void;
 };
+
+function SummaryRow({
+  label,
+  value,
+  emphasized = false,
+}: {
+  label: string;
+  value: string;
+  emphasized?: boolean;
+}) {
+  return (
+    <div
+      className={`flex items-start justify-between gap-4 px-4 py-3 ${
+        emphasized ? "bg-[color:var(--surface-muted)]" : ""
+      }`}
+    >
+      <div className="text-sm text-secondary-text">{label}</div>
+      <div
+        className={`text-right ${
+          emphasized ? "text-base font-semibold text-foreground" : "text-sm font-medium text-foreground"
+        }`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
 
 export function RepayLoanDialog({
   open,
@@ -104,8 +129,26 @@ export function RepayLoanDialog({
     return `Need ${missingLabel} ${symbol}, have ${ownerBalanceLabel} ${symbol}`;
   }, [ownerHasEnough, missingLabel, ownerBalanceLabel, symbol]);
 
-  const { registered: ownerRegistered, minDeposit: ownerMinDeposit, refresh: refreshOwnerReg } = useTokenRegistration(tokenId, signedAccountId);
-  const { registered: vaultRegistered, minDeposit: vaultMinDeposit, refresh: refreshVaultReg } = useTokenRegistration(tokenId, vaultId);
+  const {
+    registered: ownerRegistered,
+    minDeposit: ownerMinDeposit,
+    loading: ownerRegistrationLoading,
+    refresh: refreshOwnerReg,
+  } = useTokenRegistration(tokenId, signedAccountId);
+  const {
+    registered: vaultRegistered,
+    minDeposit: vaultMinDeposit,
+    loading: vaultRegistrationLoading,
+    refresh: refreshVaultReg,
+  } = useTokenRegistration(tokenId, vaultId);
+
+  const vaultBalanceLabel = balLoading ? "Checking…" : `${vaultTokenBal?.toDisplay() ?? "0"} ${symbol}`;
+  const canRepayNow = !balLoading && missingMinimal === "0";
+  const statusMessage = balLoading
+    ? `Checking whether the vault already holds enough ${symbol} to repay this loan.`
+    : canRepayNow
+      ? `The vault balance covers the full repayment amount. You can repay now.`
+      : `Add ${missingLabel} ${symbol} to the vault to enable repayment.`;
 
   const confirm = async () => {
     try {
@@ -176,8 +219,8 @@ export function RepayLoanDialog({
       title="Repay loan"
       disableBackdropClose={pending}
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="secondary" onClick={onClose} disabled={pending}>
+        <div className="flex flex-col items-stretch justify-end gap-2 sm:flex-row sm:items-center">
+          <Button variant="secondary" onClick={onClose} disabled={pending} className="w-full sm:w-auto">
             Cancel
           </Button>
           <Button
@@ -185,6 +228,7 @@ export function RepayLoanDialog({
             disabled={pending || balLoading || missingMinimal !== "0"}
             title={missingMinimal !== "0" ? `Missing ${missingLabel} ${symbol} on vault` : undefined}
             aria-busy={pending ? true : undefined}
+            className="w-full sm:w-auto"
           >
             {pending ? "Repaying…" : "Repay now"}
           </Button>
@@ -195,67 +239,62 @@ export function RepayLoanDialog({
       }
     >
       <div className="space-y-3">
-        <div className="text-sm text-secondary-text">
-          Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
-        </div>
-        <div className="rounded border bg-background p-3 text-sm">
-          <div className="grid grid-cols-2 gap-2">
-            <div className="text-secondary-text">Token</div>
-            <div className="font-medium break-all" title={tokenId}>{tokenId}</div>
-            <div className="text-secondary-text">Principal</div>
-            <div className="font-medium">{principalLabel} {symbol}</div>
-            <div className="text-secondary-text">Interest</div>
-            <div className="font-medium">{interestLabel} {symbol}</div>
-            <div className="text-secondary-text">Total due</div>
-            <div className="font-medium">{totalDueLabel} {symbol}</div>
+        <p className="text-sm text-secondary-text">{statusMessage}</p>
+        <div className="overflow-hidden rounded-2xl border border-[color:var(--panel-border)] bg-[color:var(--surface)]">
+          <div className="divide-y divide-[color:var(--panel-border)]">
+            <SummaryRow label="Principal" value={`${principalLabel} ${symbol}`} />
+            <SummaryRow label="Interest" value={`${interestLabel} ${symbol}`} />
+            <SummaryRow label="Total due" value={`${totalDueLabel} ${symbol}`} emphasized />
+            <SummaryRow label="Vault balance" value={vaultBalanceLabel} />
+            {missingMinimal !== "0" && (
+              <SummaryRow label="Still needed" value={`${missingLabel} ${symbol}`} />
+            )}
           </div>
         </div>
-        <div className="text-sm">
-          <div className="text-secondary-text">Vault balance</div>
-          <div className="font-medium">
-            {balLoading ? "…" : `${vaultTokenBal?.toDisplay() ?? "0"} ${symbol}`}
+
+        {missingMinimal !== "0" ? (
+          <TopUpSection
+            symbol={symbol}
+            missingLabel={missingLabel}
+            ownerBalLoading={ownerBalLoading}
+            ownerBalanceLabel={ownerBalanceLabel}
+            vaultRegistered={vaultRegistered}
+            ownerRegistered={ownerRegistered}
+            vaultRegistrationLoading={vaultRegistrationLoading}
+            ownerRegistrationLoading={ownerRegistrationLoading}
+            regPending={regPending}
+            ownerMinDeposit={ownerMinDeposit}
+            vaultMinDeposit={vaultMinDeposit}
+            regError={regError}
+            transferPending={transferPending}
+            transferError={transferError}
+            ownerHasEnough={ownerHasEnough}
+            topUpTooltip={topUpTooltip}
+            onRegisterOwner={onRegisterOwner}
+            onRegisterVault={onRegisterVault}
+            onTopUp={onTopUp}
+          />
+        ) : null}
+
+        {error && (
+          <div className="rounded-2xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm text-red-600" role="alert">
+            {error}
           </div>
-          {missingMinimal !== "0" && (
-            <TopUpSection
-              networkId={network}
-              tokenId={tokenId}
-              vaultId={vaultId}
-              symbol={symbol}
-              missingLabel={missingLabel}
-              ownerBalLoading={ownerBalLoading}
-              ownerBalanceLabel={ownerBalanceLabel}
-              vaultRegistered={vaultRegistered}
-              ownerRegistered={ownerRegistered}
-              regPending={regPending}
-              ownerMinDeposit={ownerMinDeposit}
-              vaultMinDeposit={vaultMinDeposit}
-              regError={regError}
-              transferPending={transferPending}
-              transferError={transferError}
-              ownerHasEnough={ownerHasEnough}
-              topUpTooltip={topUpTooltip}
-              onRegisterOwner={onRegisterOwner}
-              onRegisterVault={onRegisterVault}
-              onTopUp={onTopUp}
-            />
-          )}
-        </div>
-        {error && <div className="text-xs text-red-600" role="alert">{error}</div>}
+        )}
       </div>
     </Modal>
   );
 }
 
 type TopUpSectionProps = {
-  networkId: ReturnType<typeof networkFromFactoryId>;
-  tokenId: string;
-  vaultId: string;
   symbol: string;
   missingLabel: string;
   ownerBalLoading: boolean;
   ownerBalanceLabel: string;
   vaultRegistered: boolean | null;
   ownerRegistered: boolean | null;
+  vaultRegistrationLoading: boolean;
+  ownerRegistrationLoading: boolean;
   regPending: boolean;
   ownerMinDeposit: string | null;
   vaultMinDeposit: string | null;
@@ -270,15 +309,14 @@ type TopUpSectionProps = {
 };
 
 function TopUpSection({
-  networkId,
-  tokenId,
-  vaultId,
   symbol,
   missingLabel,
   ownerBalLoading,
   ownerBalanceLabel,
   vaultRegistered,
   ownerRegistered,
+  vaultRegistrationLoading,
+  ownerRegistrationLoading,
   regPending,
   ownerMinDeposit,
   vaultMinDeposit,
@@ -291,105 +329,77 @@ function TopUpSection({
   onRegisterVault,
   onTopUp,
 }: TopUpSectionProps) {
-  const [copied, setCopied] = useState<string | null>(null);
-  const timeoutRef = useRef<number | null>(null);
-  const copy = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(text);
-      showToast(STRINGS.copied, { variant: "success", duration: COPY_FEEDBACK_MS });
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = window.setTimeout(
-        () => setCopied((prev) => (prev === text ? null : prev)),
-        COPY_FEEDBACK_MS
-      );
-    } catch (e) {
-      showToast(getFriendlyErrorMessage(e), { variant: "error" });
-    }
-  };
+  const registrationLoading = vaultRegistrationLoading || ownerRegistrationLoading;
+  const stepTitle = registrationLoading
+    ? "Checking token registration"
+    : vaultRegistered === false
+      ? "Register vault"
+      : ownerRegistered === false
+        ? "Register wallet"
+        : "Top up vault";
+  const stepDescription = registrationLoading
+    ? "Checking whether the vault and your wallet can receive and send this token."
+    : vaultRegistered === false
+      ? "The vault must be registered before it can receive the repayment shortfall."
+      : ownerRegistered === false
+        ? "Your wallet must be registered before you can transfer tokens into the vault."
+        : `Transfer ${missingLabel} ${symbol} to the vault, then repay the loan.`;
+  const storageDepositLabel = vaultRegistered === false
+    ? vaultMinDeposit
+      ? `Requires about ${utils.format.formatNearAmount(vaultMinDeposit)} NEAR for one-time storage.`
+      : null
+    : ownerRegistered === false
+      ? ownerMinDeposit
+        ? `Requires about ${utils.format.formatNearAmount(ownerMinDeposit)} NEAR for one-time storage.`
+        : null
+      : null;
+  const actionError = vaultRegistered === false || ownerRegistered === false ? regError : transferError;
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-    };
-  }, []);
   return (
-    <div className="mt-2 rounded border border-amber-500/30 bg-amber-100/50 text-amber-900 p-2">
-      <div>Missing {missingLabel} {symbol} on the vault to complete repayment.</div>
-      <div className="mt-1 text-secondary-text">
-        Your balance: <span className="font-medium text-foreground">{ownerBalLoading ? "…" : `${ownerBalanceLabel} ${symbol}`}</span>
+    <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-4 text-sm text-amber-950 dark:text-amber-100">
+      <div className="space-y-2">
+        <div className="text-sm font-semibold text-foreground">
+          Missing {missingLabel} {symbol} on the vault
+        </div>
+        <p className="text-sm text-amber-900/80 dark:text-amber-200/80">
+          {stepDescription}
+        </p>
+        <div className="text-sm text-secondary-text">
+          Wallet balance: <span className="font-medium text-foreground">{ownerBalLoading ? "Checking…" : `${ownerBalanceLabel} ${symbol}`}</span>
+        </div>
+        {!ownerBalLoading && !ownerHasEnough && vaultRegistered !== false && ownerRegistered !== false && (
+          <div className="text-xs text-amber-900 dark:text-amber-100">
+            Your wallet does not currently hold enough {symbol} to cover the shortfall.
+          </div>
+        )}
+        {storageDepositLabel && (
+          <div className="text-xs text-amber-900 dark:text-amber-100">{storageDepositLabel}</div>
+        )}
+        {actionError && <div className="text-xs text-red-700 dark:text-red-300" role="alert">{actionError}</div>}
       </div>
-      <div className="mt-1 text-xs text-secondary-text">
-        <a
-          href={explorerAccountUrl(networkId, tokenId)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline text-primary"
-          aria-label={`View token ${tokenId} on explorer`}
-        >
-          {STRINGS.viewTokenOnExplorer}
-        </a>
-        <button
-          type="button"
-          className="ml-2 underline text-primary"
-          onClick={() => copy(tokenId)}
-          title={copied === tokenId ? STRINGS.copied : STRINGS.copy}
-        >
-          {copied === tokenId ? STRINGS.copied : STRINGS.copy}
-        </button>
-        <a
-          href={explorerAccountUrl(networkId, vaultId)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline text-primary ml-3"
-          aria-label={`View vault ${vaultId} on explorer`}
-        >
-          {STRINGS.viewVaultOnExplorer}
-        </a>
-        <button
-          type="button"
-          className="ml-2 underline text-primary"
-          onClick={() => copy(vaultId)}
-          title={copied === vaultId ? STRINGS.copied : STRINGS.copy}
-        >
-          {copied === vaultId ? STRINGS.copied : STRINGS.copy}
-        </button>
-      </div>
-      {vaultRegistered === false ? (
-        <div className="mt-2">
-          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit} aria-busy={regPending ? true : undefined}>
+
+      <div className="mt-3">
+        {registrationLoading ? (
+          <div className="text-sm text-secondary-text">{stepTitle}…</div>
+        ) : vaultRegistered === false ? (
+          <Button onClick={onRegisterVault} disabled={regPending || !vaultMinDeposit} aria-busy={regPending ? true : undefined} className="w-full sm:w-auto">
             {regPending ? "Registering…" : STRINGS.registerVaultWithToken}
           </Button>
-          {regPending && (
-            <div className="mt-1 sr-only" role="status" aria-live="polite">Registering…</div>
-          )}
-          {vaultMinDeposit && (
-            <div className="mt-1 text-xs text-amber-900">
-              Requires ~{utils.format.formatNearAmount(vaultMinDeposit)} NEAR storage deposit
-            </div>
-          )}
-        </div>
-      ) : ownerRegistered === false ? (
-        <div className="mt-2">
-          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit} aria-busy={regPending ? true : undefined}>
+        ) : ownerRegistered === false ? (
+          <Button variant="secondary" onClick={onRegisterOwner} disabled={regPending || !ownerMinDeposit} aria-busy={regPending ? true : undefined} className="w-full sm:w-auto">
             {regPending ? "Registering…" : STRINGS.registerAccountWithToken}
           </Button>
-          {regError && <div className="mt-1 text-xs text-red-700" role="alert">{regError}</div>}
-          {regPending && (
-            <div className="mt-1 sr-only" role="status" aria-live="polite">Registering…</div>
-          )}
-        </div>
-      ) : (
-        <div className="mt-2">
-          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip} aria-busy={transferPending ? true : undefined}>
+        ) : (
+          <Button onClick={onTopUp} disabled={transferPending || ownerBalLoading || !ownerHasEnough} title={topUpTooltip} aria-busy={transferPending ? true : undefined} className="w-full sm:w-auto">
             {transferPending ? STRINGS.transferring : STRINGS.topUpToVault(missingLabel, symbol)}
           </Button>
-          {transferError && <div className="mt-1 text-xs text-red-700" role="alert">{transferError}</div>}
-          {transferPending && (
-            <div className="mt-1 sr-only" role="status" aria-live="polite">{STRINGS.transferring}</div>
-          )}
-        </div>
-      )}
+        )}
+        {(regPending || transferPending) && (
+          <div className="mt-2 sr-only" role="status" aria-live="polite">
+            {regPending ? "Registering…" : STRINGS.transferring}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

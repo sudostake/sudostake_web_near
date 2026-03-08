@@ -181,9 +181,9 @@ export function LiquidityRequestContent({
           role="region"
           aria-label="Lender registration"
         >
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-secondary-text">Lender actions</div>
-            <div className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-xs font-mono text-foreground">
+            <div className="max-w-full break-all rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-left text-xs font-mono text-foreground">
               {lenderBalanceLabel} {tokenSymbol}
             </div>
           </div>
@@ -199,7 +199,7 @@ export function LiquidityRequestContent({
           {vaultRegisteredForToken === false && (
             <Card className="text-left text-sm rounded-xl border border-red-200/60 bg-red-50/80 px-4 py-3 text-red-800">
               Vault storage required
-              <div className="mt-2 space-x-3">
+              <div className="mt-2 flex flex-wrap items-center gap-3">
                 <a
                   href={explorerAccountUrl(network, vaultId)}
                   target="_blank"

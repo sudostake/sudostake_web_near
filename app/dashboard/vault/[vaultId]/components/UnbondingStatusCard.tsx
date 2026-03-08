@@ -1,10 +1,9 @@
 "use client";
 
 import React from "react";
-import { Card } from "@/app/components/ui/Card";
-import { Badge } from "@/app/components/ui/Badge";
 import { STRINGS } from "@/utils/strings";
 import { UnbondingList, type UnbondingEntryRow } from "./UnbondingList";
+import { Button } from "@/app/components/ui/Button";
 
 type Props = {
   title?: string;
@@ -30,43 +29,32 @@ export function UnbondingStatusCard({
   className,
 }: Props) {
   const countLabel = `${count} ${count === 1 ? "validator" : "validators"}`;
+
   return (
-    <Card className={["p-3", className].filter(Boolean).join(" ")}>
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="text-sm font-medium">{title}</div>
-          <Badge variant="neutral" aria-label={countLabel}>{countLabel}</Badge>
+    <section className={["space-y-4 border-t border-foreground/10 pt-4", className].filter(Boolean).join(" ")}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-1">
+          <div className="text-sm font-semibold text-foreground">{title}</div>
+          <p className="text-sm text-secondary-text">
+            {countLabel}
+            {totalLabel ? ` · ${totalLabel} NEAR still unlocking` : ""}
+            {etaLabel ? ` · longest ETA ${etaLabel}` : ""}
+          </p>
         </div>
+
         {entries.length > 0 && (
-          <button
-            type="button"
-            className="text-xs underline text-primary shrink-0"
-            onClick={onToggle}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={onToggle}>
             {open ? STRINGS.hideDetails : STRINGS.showDetails}
-          </button>
+          </Button>
         )}
       </div>
 
-      {!open && (
-        <div className="mt-2 text-sm">
-          {typeof totalLabel === "string" && totalLabel.length > 0 && (
-            <div className="font-medium">{totalLabel} NEAR</div>
-          )}
-          {etaLabel && <div className="text-xs text-secondary-text mt-0.5">up to ~{etaLabel}</div>}
+      {open && entries.length > 0 ? (
+        <div className="space-y-3">
+          <UnbondingList entries={entries} bare />
+          {footnote && <div className="text-xs text-secondary-text">{footnote}</div>}
         </div>
-      )}
-
-      {open && entries.length > 0 && (
-        <>
-          <div className="mt-3">
-            <UnbondingList entries={entries} bare />
-          </div>
-          {footnote && (
-            <div className="mt-2 text-xs text-secondary-text">{footnote}</div>
-          )}
-        </>
-      )}
-    </Card>
+      ) : null}
+    </section>
   );
 }

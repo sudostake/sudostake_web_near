@@ -36,7 +36,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 type Props = {
   onBack: () => void;
   vaultId: string;
-  vaultShortName: string;
+  vaultShortName?: string;
   network: Network;
   owner: string | null | undefined;
   vaultNear: string;
@@ -61,7 +61,6 @@ const BADGE_STYLES: Record<"primary" | "warn", string> = {
 export function VaultHeader({
   onBack,
   vaultId,
-  vaultShortName,
   network,
   owner,
   vaultNear,
@@ -101,7 +100,7 @@ export function VaultHeader({
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary">Vault</p>
             <h1 className="mt-1 break-all text-[clamp(1.55rem,3.1vw,2.05rem)] font-semibold leading-tight" title={vaultId}>
-              {vaultShortName}
+              {vaultId}
             </h1>
           </div>
         </div>
@@ -130,45 +129,45 @@ export function VaultHeader({
         </div>
       </div>
 
-      <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <OverviewCell label={STRINGS.vaultIdLabel}>
-          <div className="inline-flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-start gap-2">
             <Link
               href={explorerAccountUrl(network, vaultId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="break-all font-mono text-sm underline decoration-dotted"
+              className="min-w-0 flex-1 break-all font-mono text-sm underline decoration-dotted"
               title={vaultId}
               aria-label={`View vault ${vaultId} on explorer`}
             >
               {vaultId}
             </Link>
-            <CopyButton value={vaultId} title="Copy vault ID" />
+            <CopyButton value={vaultId} title="Copy vault ID" className="shrink-0 self-start" />
           </div>
         </OverviewCell>
 
         <OverviewCell label={STRINGS.ownerLabel}>
           {owner ? (
-            <span className="inline-flex min-w-0 items-center gap-2 break-all">
+            <div className="flex min-w-0 flex-wrap items-start gap-2">
               <Link
                 href={explorerAccountUrl(network, owner)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-mono text-sm underline decoration-dotted"
+                className="min-w-0 flex-1 break-all font-mono text-sm underline decoration-dotted"
                 title={owner}
                 aria-label={`View owner ${owner} on explorer`}
               >
                 {owner}
               </Link>
-              <CopyButton value={owner} title="Copy owner ID" />
-            </span>
+              <CopyButton value={owner} title="Copy owner ID" className="shrink-0 self-start" />
+            </div>
           ) : (
             <span className="text-sm text-secondary-text">—</span>
           )}
         </OverviewCell>
 
         <OverviewCell label={STRINGS.contractBalanceLabel}>
-          <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
+          <span className="flex min-w-0 flex-wrap items-baseline gap-1 text-lg font-semibold text-foreground">
             <span className="break-all" title={`${vaultNear} ${NATIVE_TOKEN}`}>
               {vaultNearLoading ? "Loading..." : compactNear}
             </span>
@@ -178,7 +177,7 @@ export function VaultHeader({
 
         <OverviewCell label={STRINGS.usdcBalanceLabel}>
           {usdcDisplay !== null && usdcDisplay !== undefined ? (
-            <span className="inline-flex items-baseline gap-1 text-lg font-semibold text-foreground">
+            <span className="flex min-w-0 flex-wrap items-baseline gap-1 text-lg font-semibold text-foreground">
               <span className="break-all" title={`${usdcDisplay} USDC`}>
                 {compactUsdc}
               </span>
@@ -195,7 +194,7 @@ export function VaultHeader({
 
 function OverviewCell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-3">
+    <div className="min-w-0 border-l-2 border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] pl-3 sm:pl-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-secondary-text">{label}</p>
       <div className="mt-1 min-h-[24px]">{children}</div>
     </div>

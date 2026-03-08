@@ -34,6 +34,22 @@ export const FOOTER_ROUTES: NavRoute[] = [
   APP_ROUTES.docs,
 ];
 
+export function buildVaultHref(vaultId: string, from?: string | null): string {
+  const pathname = `/dashboard/vault/${encodeURIComponent(vaultId)}`;
+  const safeFrom = sanitizeReturnHref(from);
+
+  if (!safeFrom) return pathname;
+
+  const params = new URLSearchParams({ from: safeFrom });
+  return `${pathname}?${params.toString()}`;
+}
+
+export function sanitizeReturnHref(href?: string | null): string | null {
+  if (!href || !href.startsWith("/") || href.startsWith("//")) return null;
+  if (href.startsWith("/dashboard/vault/")) return null;
+  return href;
+}
+
 export function isRouteActive(pathname: string, route: NavRoute): boolean {
   return route.prefixes.some((prefix) => {
     if (prefix === "/") return pathname === "/";

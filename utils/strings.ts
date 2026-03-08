@@ -162,11 +162,6 @@ export const STRINGS = {
   etaLabel: "ETA",
   availableNowLabel: "Available now",
   // Note: dynamic strings should be implemented as functions outside STRINGS
-  // Liquidation card: role-specific headings/notes
-  ownerLiquidationHeader: "Liquidation in progress",
-  liquidationOwnerSummary: (dateLabel?: string) =>
-    dateLabel ? `Loan expired on ${dateLabel}. Liquidation is in progress.` : "Loan expired. Liquidation is in progress.",
-  ownerLiquidationNote: "Liquidation is in progress to satisfy the lender’s claim using your vault’s NEAR.",
   unbondingFootnoteLender: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce the remaining amount owed to you as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
   unbondingFootnoteOwner: "Unbonding completes when the unlock epoch is reached. These amounts will become available to reduce your remaining debt as soon as they mature. The contract will claim matured amounts during the liquidation flow. Epoch timing is network-defined and approximate.",
   // Delegations summary

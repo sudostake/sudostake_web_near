@@ -18,6 +18,7 @@ import { useFtStorage } from "@/hooks/useFtStorage";
 import { Balance } from "@/utils/balance";
 import { safeFormatYoctoNear } from "@/utils/formatNear";
 import { AssetToggle } from "@/app/components/ui/AssetToggle";
+import { showToast } from "@/utils/toast";
 
 function isRequestedTokenWithdrawalBlocked(
   state: "idle" | "pending" | "active" | undefined,
@@ -36,6 +37,7 @@ export function WithdrawDialog({
   requestToken,
   liquidationActive = false,
   refundsCount,
+  allowedAssets = ["NEAR", "USDC"],
 }: {
   open: boolean;
   onClose: () => void;
@@ -45,6 +47,7 @@ export function WithdrawDialog({
   requestToken?: string | null;
   liquidationActive?: boolean;
   refundsCount?: number | null;
+  allowedAssets?: Array<"NEAR" | "USDC">;
 }) {
   const [amount, setAmount] = useState<string>("");
   const [kind, setKind] = useState<"NEAR" | "USDC">("NEAR");
@@ -59,12 +62,25 @@ export function WithdrawDialog({
   const { signedAccountId } = useWalletSelector();
   const { registered: ownerRegistered, minDeposit: ownerMinDeposit, loading: regLoading, refresh: refreshReg } =
     useTokenRegistration(usdcId ?? null, signedAccountId ?? null);
-  const { registerStorage, pending: storagePending } = useFtStorage();
+  const { registerStorage, pending: storagePending, error: storageError } = useFtStorage();
+  const nearAllowed = allowedAssets.includes("NEAR");
+  const usdcAllowed = allowedAssets.includes("USDC") && Boolean(usdcId);
 
-  // If liquidation is active, default to USDC since NEAR is disallowed
+  // Keep the selected asset valid for the current dialog configuration.
   useEffect(() => {
-    if (open && liquidationActive && usdcId) setKind("USDC");
-  }, [open, liquidationActive, usdcId]);
+    if (!open) return;
+    if (liquidationActive && usdcAllowed) {
+      setKind("USDC");
+      return;
+    }
+    if (kind === "NEAR" && !nearAllowed && usdcAllowed) {
+      setKind("USDC");
+      return;
+    }
+    if (kind === "USDC" && !usdcAllowed && nearAllowed) {
+      setKind("NEAR");
+    }
+  }, [kind, liquidationActive, nearAllowed, open, usdcAllowed]);
 
   const amountNum = Number(amount);
   const withdrawAvailableNum = useMemo(() => {
@@ -91,11 +107,42 @@ export function WithdrawDialog({
     if (!amount) return true;
     if (Number.isNaN(amountNum) || amountNum <= 0) return true;
     if (Number.isNaN(withdrawAvailableNum) || amountNum > withdrawAvailableNum) return true;
-    if (kind === "USDC" && ownerRegistered === false) return true;
+    if (kind === "USDC" && (regLoading || ownerRegistered !== true)) return true;
     if (kind === "NEAR" && !canWithdrawNear) return true;
     if (kind === "USDC" && !canWithdrawUsdc) return true;
     return false;
-  }, [amount, amountNum, withdrawAvailableNum, kind, ownerRegistered, canWithdrawNear, canWithdrawUsdc]);
+  }, [amount, amountNum, withdrawAvailableNum, kind, regLoading, ownerRegistered, canWithdrawNear, canWithdrawUsdc]);
+
+  const withdrawTargetLabel = signedAccountId ?? "Connected wallet unavailable";
+  const usdcRegistrationCard = useMemo(() => {
+    if (kind !== "USDC" || !usdcId || !signedAccountId) return null;
+
+    if (regLoading) {
+      return {
+        tone: "border-[color:var(--border)] bg-[color:var(--surface-muted)]",
+        message: "Checking whether this wallet can receive USDC.",
+      };
+    }
+
+    if (ownerRegistered === false) {
+      return {
+        tone: "border-amber-500/40 bg-amber-500/8",
+        message: "This wallet is not registered with the USDC token contract. Register it before withdrawing.",
+      };
+    }
+
+    if (ownerRegistered === true) {
+      return {
+        tone: "border-emerald-500/30 bg-emerald-500/8",
+        message: "This wallet is registered to receive USDC.",
+      };
+    }
+
+    return {
+      tone: "border-[color:var(--border)] bg-[color:var(--surface-muted)]",
+      message: "Unable to confirm USDC registration right now.",
+    };
+  }, [kind, ownerRegistered, regLoading, signedAccountId, usdcId]);
 
   const resetAndClose = () => {
     setAmount("");
@@ -116,11 +163,9 @@ export function WithdrawDialog({
       }
       await indexVault({ factoryId, vault: vaultId, txHash });
       if (onSuccess) onSuccess();
-
+      resetAndClose();
     } catch (err) {
       console.warn("Withdraw failed", err);
-    } finally {
-      resetAndClose();
     }
   };
 
@@ -136,7 +181,7 @@ export function WithdrawDialog({
             Cancel
           </Button>
           <Button onClick={confirm} disabled={disableContinue || withdrawing} aria-busy={withdrawing ? true : undefined}>
-            {withdrawing ? "Withdrawing..." : "Continue"}
+            {withdrawing ? "Withdrawing..." : `Withdraw ${kind}`}
           </Button>
           {withdrawing && (
             <div className="sr-only" role="status" aria-live="polite">Withdrawing…</div>
@@ -148,20 +193,70 @@ export function WithdrawDialog({
         <div className="text-sm text-secondary-text">
           Vault: <span className="font-medium text-foreground" title={vaultId}>{vaultId}</span>
         </div>
-        <div>
-          <div className="text-sm text-secondary-text mb-1">Asset</div>
-          <AssetToggle
-            value={kind}
-            onChange={setKind}
-            disabled={withdrawing}
-            size="sm"
-            variant="primary"
-            options={[
-              { kind: "NEAR", available: true },
-              { kind: "USDC", available: Boolean(usdcId) },
-            ]}
-          />
+        {(nearAllowed || usdcAllowed) && nearAllowed !== usdcAllowed && (
+          <div className="text-sm text-secondary-text">
+            Asset: <span className="font-medium text-foreground">{nearAllowed ? "NEAR" : "USDC"}</span>
+          </div>
+        )}
+        <div className="text-sm text-secondary-text">
+          Withdraw to: <span className="font-medium text-foreground" title={withdrawTargetLabel}>{withdrawTargetLabel}</span>
         </div>
+        {nearAllowed && usdcAllowed && (
+          <div>
+            <div className="text-sm text-secondary-text mb-1">Asset</div>
+            <AssetToggle
+              value={kind}
+              onChange={setKind}
+              disabled={withdrawing}
+              size="sm"
+              variant="primary"
+              options={[
+                { kind: "NEAR", available: nearAllowed },
+                { kind: "USDC", available: usdcAllowed },
+              ]}
+            />
+          </div>
+        )}
+        {usdcRegistrationCard && (
+          <div className={`rounded-app border px-3 py-3 ${usdcRegistrationCard.tone}`}>
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-foreground">USDC receiver check</div>
+              <p className="text-sm text-secondary-text">{usdcRegistrationCard.message}</p>
+              {ownerMinDeposit && ownerRegistered === false && (
+                <div className="text-xs text-secondary-text">
+                  One-time storage deposit: {safeFormatYoctoNear(ownerMinDeposit, 5)} NEAR
+                </div>
+              )}
+              {storageError && ownerRegistered === false && (
+                <div className="text-xs text-red-500" role="alert">{storageError}</div>
+              )}
+            </div>
+            {ownerRegistered === false && (
+              <div className="mt-3">
+                <Button
+                  variant="secondary"
+                  disabled={storagePending || regLoading || !ownerMinDeposit}
+                  onClick={async () => {
+                    if (!ownerMinDeposit || !signedAccountId || !usdcId) return;
+                    try {
+                      await registerStorage(usdcId, signedAccountId, ownerMinDeposit);
+                      refreshReg();
+                      showToast("Wallet registered for USDC", { variant: "success" });
+                    } catch (e) {
+                      console.warn("Storage registration failed", e);
+                    }
+                  }}
+                  aria-busy={storagePending ? true : undefined}
+                >
+                  {storagePending ? "Registering..." : "Register wallet"}
+                </Button>
+                {storagePending && (
+                  <div className="sr-only" role="status" aria-live="polite">Registering…</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <Input
           label="Amount"
           type="number"
@@ -191,35 +286,6 @@ export function WithdrawDialog({
             buttonAriaLabel="Use maximum available"
             onClick={() => setAmount(vaultUsdc?.toDisplay() ?? "0")}
           />
-        )}
-        {kind === "USDC" && usdcId && signedAccountId && ownerRegistered === false && (
-          <div className="text-xs text-secondary-text">
-            Your wallet is not registered to receive USDC. You must register before withdrawing.
-            <div className="mt-2 flex items-center gap-2">
-              <Button
-                variant="secondary"
-                disabled={storagePending || regLoading || !ownerMinDeposit}
-                onClick={async () => {
-                  if (!ownerMinDeposit) return;
-                  try {
-                    await registerStorage(usdcId, signedAccountId, ownerMinDeposit);
-                    refreshReg();
-                  } catch (e) {
-                    console.warn("Storage registration failed", e);
-                  }
-                }}
-                aria-busy={storagePending ? true : undefined}
-              >
-                {storagePending ? "Registering..." : `Register USDC storage`}
-              </Button>
-              {storagePending && (
-                <div className="sr-only" role="status" aria-live="polite">Registering…</div>
-              )}
-              {ownerMinDeposit && (
-                <span>One-time deposit: {safeFormatYoctoNear(ownerMinDeposit, 5)} NEAR</span>
-              )}
-            </div>
-          </div>
         )}
         {/* Policy notes based on current selection */}
         {kind === "NEAR" && !canWithdrawNear && (
