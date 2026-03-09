@@ -126,6 +126,18 @@ export default function Dashboard() {
         <FlatSection
           title="Wallet balances"
           caption="Use available balances for transfers, deposits, and request funding."
+          actions={
+            balancesLoading ? (
+              <div
+                role="status"
+                aria-live="polite"
+                aria-label="Refreshing wallet balances"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] text-secondary-text"
+              >
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              </div>
+            ) : null
+          }
         >
           <AccountSummary
             near={balances.near}

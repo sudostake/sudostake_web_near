@@ -66,17 +66,6 @@ export function AccountSummary({
           <p className="text-sm text-secondary-text">Open a dialog to move funds or add testnet liquidity.</p>
         ) : null}
         <div className="flex flex-wrap gap-2">
-          {!showHeader ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => onRefreshBalances?.()}
-              disabled={!onRefreshBalances || isLoading}
-            >
-              {isLoading ? "Refreshing..." : "Refresh"}
-            </Button>
-          ) : null}
           <Button variant="secondary" size="sm" onClick={() => setRecvOpen(true)}>
             Receive
           </Button>
@@ -158,7 +147,7 @@ function BalanceStat({
 }) {
   const containerClassName = tone === "card"
     ? "rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-4 sm:px-4"
-    : "border-l-2 border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] pl-3 sm:pl-4";
+    : "rounded-xl border border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] bg-[color:var(--surface-muted)] px-3 py-4 sm:px-4";
 
   return (
     <div className={containerClassName}>
