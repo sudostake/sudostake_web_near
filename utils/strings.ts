@@ -131,7 +131,7 @@ export const STRINGS = {
   nextShort: "Next",
   nothingAvailableNow: "Nothing to claim yet",
   claimBecomesAvailable: "Claim will be available once funds mature.",
-  waitingToUnlock: "Unlocking summary",
+  waitingToUnlock: "Unlocking",
   showDetails: "Show details",
   hideDetails: "Hide details",
   nextPayoutSources: "Next payout",

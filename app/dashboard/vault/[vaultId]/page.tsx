@@ -1260,7 +1260,7 @@ export default function VaultPage() {
 
         {showLiquidationProgress && (
           <FlatSection
-            title="Liquidation in progress"
+            title="Liquidation"
           >
             <LiquidationStatusSection
               role={liquidationViewerRole}
