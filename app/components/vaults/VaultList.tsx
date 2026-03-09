@@ -4,8 +4,6 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Badge } from "@/app/components/ui/Badge";
-import { CopyButton } from "@/app/components/ui/CopyButton";
-import { useState } from "react";
 import { VaultIcon } from "@/app/components/vaults/VaultIcon";
 import { buildVaultHref } from "@/app/components/navigationRoutes";
 
@@ -17,7 +15,6 @@ export type VaultListProps = {
 };
 
 export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps) {
-  const [copied] = useState<string | null>(null);
   const pathname = usePathname();
 
   const baseRowClasses =
@@ -54,7 +51,6 @@ export function VaultList({ vaultIds, onVaultClick, summaries }: VaultListProps)
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-3 text-sm text-secondary-text sm:w-auto sm:justify-end">
-        <CopyButton value={id} title={copied === id ? "Copied" : "Copy"} />
         <span aria-hidden="true" className="hidden text-xs font-medium uppercase tracking-wide text-secondary-text sm:inline">
           Open
         </span>
