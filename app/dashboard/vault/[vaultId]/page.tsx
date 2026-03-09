@@ -1089,6 +1089,7 @@ export default function VaultPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">{pageTitle}</h1>
+            <p className="break-all font-mono text-sm text-foreground" title={vaultId}>{vaultId}</p>
             <p className="max-w-3xl text-sm text-secondary-text">{pageBody}</p>
           </div>
 
