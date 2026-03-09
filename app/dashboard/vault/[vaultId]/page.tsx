@@ -36,6 +36,7 @@ import { DelegationsSummary } from "./components/DelegationsSummary";
 import { DelegationsActionsProvider } from "./components/DelegationsActionsContext";
 import { LiquidationStatusSection } from "./components/LiquidationStatusSection";
 import { FlatSection } from "@/app/components/ui/FlatSection";
+import { CopyButton } from "@/app/components/ui/CopyButton";
 import { sumMinimal } from "@/utils/amounts";
 import { formatDateTime } from "@/utils/datetime";
 import { normalizeToIntegerString } from "@/utils/numbers";
@@ -1089,7 +1090,10 @@ export default function VaultPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">{pageTitle}</h1>
-            <p className="break-all font-mono text-sm text-foreground" title={vaultId}>{vaultId}</p>
+            <div className="flex flex-wrap items-start gap-2">
+              <p className="min-w-0 break-all font-mono text-sm text-foreground" title={vaultId}>{vaultId}</p>
+              {vaultId ? <CopyButton value={vaultId} title="Copy vault ID" className="mt-0.5 shrink-0" /> : null}
+            </div>
             <p className="max-w-3xl text-sm text-secondary-text">{pageBody}</p>
           </div>
 
