@@ -44,16 +44,11 @@ export default function Dashboard() {
 
   const totalVaults = userVaultIds?.length ?? 0;
   const totalPositions = lenderPositions?.length ?? 0;
+  const workspaceTitle = tab === "vaults" ? "Manage vaults" : "Track positions";
   const workspaceCaption =
     tab === "vaults"
       ? "Open a vault to manage deposits, delegation, and request terms."
       : "Track the vaults where you currently have active lending positions.";
-
-  const shortAccount = React.useMemo(() => {
-    if (!signedAccountId) return "";
-    if (signedAccountId.length <= 26) return signedAccountId;
-    return `${signedAccountId.slice(0, 10)}…${signedAccountId.slice(-8)}`;
-  }, [signedAccountId]);
 
   if (blocked || !signedAccountId) {
     return null;
@@ -63,29 +58,13 @@ export default function Dashboard() {
     <main id="main" className="min-h-screen bg-background">
       <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
         <header className="space-y-4">
-          <div className="space-y-2">
-            <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">Dashboard</h1>
-            <p className="max-w-3xl text-sm text-secondary-text">
-              Manage vaults, lender positions, and wallet balances from one workspace.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface-muted)] px-3 py-1 text-sm font-medium text-secondary-text"
-                title={signedAccountId}
-              >
-                <span className="mr-2 uppercase tracking-wide">Account</span>
-                <span className="font-mono text-foreground">{shortAccount}</span>
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-sm font-medium text-secondary-text">
-                {totalVaults} vault{totalVaults === 1 ? "" : "s"}
-              </span>
-              <span className="inline-flex items-center rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-3 py-1 text-sm font-medium text-secondary-text">
-                {totalPositions} position{totalPositions === 1 ? "" : "s"}
-              </span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">Dashboard</h1>
+              <p className="max-w-3xl text-sm text-secondary-text">
+                Manage vaults, lender positions, and wallet balances from one workspace.
+              </p>
             </div>
-
             <div className="w-full sm:w-auto">
               <Button
                 variant="primary"
@@ -101,7 +80,7 @@ export default function Dashboard() {
         </header>
 
         <FlatSection
-          title="Workspace"
+          title={workspaceTitle}
           caption={workspaceCaption}
           actions={
             <div className="w-full sm:min-w-[330px]">
