@@ -29,17 +29,15 @@ export function UnbondingStatusCard({
   className,
 }: Props) {
   const countLabel = `${count} ${count === 1 ? "validator" : "validators"}`;
+  const summary = totalLabel ? `${totalLabel} NEAR across ${countLabel}` : countLabel;
+  const meta = etaLabel ? `${summary} · ETA ${etaLabel}` : summary;
 
   return (
     <section className={["space-y-4 border-t border-foreground/10 pt-4", className].filter(Boolean).join(" ")}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <div className="text-sm font-semibold text-foreground">{title}</div>
-          <p className="text-sm text-secondary-text">
-            {countLabel}
-            {totalLabel ? ` · ${totalLabel} NEAR still unlocking` : ""}
-            {etaLabel ? ` · longest ETA ${etaLabel}` : ""}
-          </p>
+          <p className="text-sm text-secondary-text">{meta}</p>
         </div>
 
         {entries.length > 0 && (

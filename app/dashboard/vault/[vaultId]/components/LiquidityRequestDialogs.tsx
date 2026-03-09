@@ -171,10 +171,13 @@ export function LiquidityRequestDialogs({
           open={ownerPostExpiryOpen}
           onClose={onCloseOwnerPostExpiry}
           onRepay={onOwnerRepay}
+          onBeginLiquidation={onBeginLiquidation}
           vaultId={vaultId}
           tokenSymbol={tokenSymbol}
           totalDueLabel={totalDueLabel}
           collateralNearLabel={collateralNearLabel}
+          pending={processPending}
+          error={processError ?? undefined}
         />
       )}
 

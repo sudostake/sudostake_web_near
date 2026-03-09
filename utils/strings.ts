@@ -88,7 +88,7 @@ export const STRINGS = {
   ownerLoanExpiredIntro: "The loan for your vault has reached the end of its term:",
   ownerWhatYouCanDo: "What you can do",
   ownerCanRepay: "Repay the total due to avoid liquidation.",
-  ownerLiquidationMayStart: "If you do not repay, the lender can begin liquidation and claim from your vault’s NEAR collateral.",
+  ownerLiquidationMayStart: "If you do not repay, you or the lender can begin liquidation and claim from your vault’s NEAR collateral.",
   ownerCollateralRisk: "Liquidation may progressively use your NEAR collateral until the lender’s claim is fully satisfied.",
   // Liquidation progress clarity
   waitingOnUnbondingTitle: "Unbonding status",
@@ -131,7 +131,7 @@ export const STRINGS = {
   nextShort: "Next",
   nothingAvailableNow: "Nothing to claim yet",
   claimBecomesAvailable: "Claim will be available once funds mature.",
-  waitingToUnlock: "Unlocking summary",
+  waitingToUnlock: "Unlocking",
   showDetails: "Show details",
   hideDetails: "Hide details",
   nextPayoutSources: "Next payout",

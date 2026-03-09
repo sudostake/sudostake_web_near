@@ -214,6 +214,7 @@ export function LiquidityRequestsCard({
       const { txHash } = await processClaims({ vault: vaultId });
       showToast(STRINGS.processClaimsSuccess, { variant: "success" });
       setPostExpiryOpen(false);
+      setOwnerPostExpiryOpen(false);
       // Update local views immediately
       refetchAvailableBalance();
       refetchVault();

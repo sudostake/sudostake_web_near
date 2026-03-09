@@ -601,13 +601,6 @@ export default function VaultPage() {
   const isGuestViewer = viewerMode === "guest";
   const isPublicViewer = viewerMode === "guest" || viewerMode === "lender";
   const fallbackBackHref = signedAccountId ? APP_ROUTES.dashboard.href : APP_ROUTES.discover.href;
-  const backLabel = React.useMemo(() => {
-    if (!returnHref) return "Back";
-    if (returnHref === APP_ROUTES.home.href) return "Back home";
-    if (returnHref.startsWith(APP_ROUTES.discover.href)) return "Back to discover";
-    if (returnHref.startsWith(APP_ROUTES.dashboard.href)) return "Back to dashboard";
-    return "Back";
-  }, [returnHref]);
   const canAcceptLiquidityRequest =
     viewerMode === "lender" &&
     vaultState === "pending" &&
@@ -701,9 +694,6 @@ export default function VaultPage() {
   const pageBody = isPublicViewer
     ? publicViewBody
     : "Manage balances, collateral, and request terms.";
-  const ownerRepayDetail = remainingMs !== null && remainingMs > 0
-    ? `Repay before ${liquidationStartLabel ?? "the deadline"} to avoid liquidation.`
-    : "Repay now before liquidation begins.";
   const delegatedNearLabel = delegationsLoading
     ? "Loading delegated balance..."
     : delegationsError
@@ -984,25 +974,118 @@ export default function VaultPage() {
     router.replace(fallbackBackHref);
   }, [fallbackBackHref, returnHref, router]);
 
+  const currentTermsCaption = liquidityRequestContent
+    ? liquidationActive
+      ? "Original loan terms shown for reference while liquidation runs."
+      : vaultState === "active" && remainingMs === 0
+        ? isOwnerViewer
+          ? "Deadline passed. Choose repayment or liquidation."
+          : isAcceptedLenderViewer
+            ? "Deadline passed. Liquidation can begin now."
+            : "Deadline passed."
+        : undefined
+    : undefined;
+
+  const currentTermsActions = (
+    <>
+      {isOwnerViewer && !liquidityRequestContent && (
+        <Button
+          onClick={handleOpenRequestClick}
+          size="sm"
+          disabled={!vaultId || connectingWallet || ownerLoading}
+          aria-busy={connectingWallet || undefined}
+        >
+          Open request
+        </Button>
+      )}
+      {vaultState === "pending" && isOwnerViewer && liquidityRequestContent && (
+        <Button
+          variant="secondary"
+          onClick={() => void handleCancelRequest()}
+          size="sm"
+          disabled={!vaultId || connectingWallet || ownerLoading || cancelPending}
+          aria-busy={cancelPending || undefined}
+        >
+          {cancelPending ? "Cancelling..." : "Cancel request"}
+        </Button>
+      )}
+      {vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest && (
+        <>
+          <Button
+            type="button"
+            onClick={() => setRepayOpen(true)}
+            size="sm"
+            disabled={processPending}
+          >
+            {STRINGS.ownerRepayNow}
+          </Button>
+          {remainingMs === 0 && (
+            <Button
+              type="button"
+              onClick={() => void handleProcessClaims()}
+              variant="secondary"
+              size="sm"
+              disabled={processPending}
+              aria-busy={processPending ? true : undefined}
+            >
+              {processPending ? STRINGS.processing : STRINGS.beginLiquidation}
+            </Button>
+          )}
+        </>
+      )}
+      {vaultState === "active" && isAcceptedLenderViewer && !liquidationActive && remainingMs === 0 && (
+        <Button
+          type="button"
+          onClick={() => void handleProcessClaims()}
+          size="sm"
+          disabled={processPending}
+          aria-busy={processPending ? true : undefined}
+        >
+          {processPending ? STRINGS.processing : STRINGS.beginLiquidation}
+        </Button>
+      )}
+    </>
+  );
+  const hasCurrentTermsActions = Boolean(
+    (isOwnerViewer && !liquidityRequestContent) ||
+      (vaultState === "pending" && isOwnerViewer && liquidityRequestContent) ||
+      (vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest) ||
+      (vaultState === "active" && isAcceptedLenderViewer && !liquidationActive && remainingMs === 0)
+  );
+
+  const currentTermsError =
+    vaultState === "pending" && isOwnerViewer
+      ? cancelError
+      : vaultState === "active" && !liquidationActive && (isOwnerViewer || isAcceptedLenderViewer) && remainingMs === 0
+        ? processError
+        : null;
+
   return (
     <main id="main" className="min-h-screen bg-background">
       <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
         <header className="space-y-4">
           <div>
-            <Button type="button" variant="ghost" size="sm" onClick={handleBackClick} className="gap-2 px-0 text-left">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                className="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-              </svg>
-              <span>{backLabel}</span>
-            </Button>
+            <button
+              type="button"
+              onClick={handleBackClick}
+              className="group inline-flex items-center gap-3 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-2 py-2 text-sm font-medium text-foreground shadow-[var(--pixel-shadow)] transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out hover:border-[color:var(--accent-primary)] hover:bg-[color:var(--surface-muted)] hover:shadow-[var(--pixel-shadow-lg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+              aria-label="Go back"
+            >
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[color:color-mix(in_oklab,var(--border)_72%,transparent)] bg-[color:var(--surface-muted)] transition-colors duration-150 group-hover:border-[color:var(--accent-primary)] group-hover:text-[color:var(--accent-primary)]">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  className="h-4 w-4"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                </svg>
+              </span>
+              <span className="pr-2">Back</span>
+            </button>
           </div>
           <div className="space-y-2">
             <h1 className="text-[clamp(1.9rem,3vw,2.6rem)] font-semibold leading-tight text-foreground">{pageTitle}</h1>
@@ -1064,80 +1147,27 @@ export default function VaultPage() {
 
         <FlatSection
           title="Current terms"
+          caption={currentTermsCaption}
+          actions={hasCurrentTermsActions ? currentTermsActions : undefined}
         >
           {liquidityRequestContent ? (
-            <div className="space-y-3">
-              <CurrentRequestPanel
-                content={liquidityRequestContent}
-                active={vaultState === "active"}
-                showTimeline={vaultState === "active" && !liquidationActive && remainingMs !== null}
-                countdownLabel={formattedCountdown}
-                expired={remainingMs === 0}
-                flat
-              />
-              {vaultState === "active" && isPublicViewer && !liquidationActive && remainingMs !== null && (
-                <ActionRow
-                  title={isAcceptedLenderViewer ? "What next" : "Loan countdown"}
-                  detail={
-                    remainingMs > 0
-                      ? isAcceptedLenderViewer
-                        ? `Liquidation opens in ${formattedCountdown}. If the loan is not repaid, you can begin liquidation after ${liquidationStartLabel}.`
-                        : `Liquidation can begin in ${formattedCountdown} if the loan is not repaid. Deadline: ${liquidationStartLabel}.`
-                      : isAcceptedLenderViewer
-                        ? "Repayment window ended. You can begin liquidation now."
-                      : "Repayment window ended. Liquidation can begin now."
-                  }
-                />
-              )}
-              {vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest && (
-                <ActionRow
-                  title="Repay now"
-                  detail={ownerRepayDetail}
-                  action={
-                    <Button
-                      type="button"
-                      onClick={() => setRepayOpen(true)}
-                      variant="primary"
-                      size="sm"
-                    >
-                      {STRINGS.ownerRepayNow}
-                    </Button>
-                  }
-                />
-              )}
-              {vaultState === "pending" && isOwnerViewer && (
-                <div className="flex flex-col items-start gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => void handleCancelRequest()}
-                    disabled={!vaultId || connectingWallet || ownerLoading || cancelPending}
-                    aria-busy={cancelPending || undefined}
-                  >
-                    {cancelPending ? "Cancelling..." : "Cancel request"}
-                  </Button>
-                  {cancelError && (
-                    <p className="text-sm text-secondary-text" role="alert">
-                      {cancelError}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+            <CurrentRequestPanel
+              content={liquidityRequestContent}
+              active={vaultState === "active"}
+              showTimeline={vaultState === "active" && !liquidationActive && remainingMs !== null}
+              countdownLabel={formattedCountdown}
+              expired={remainingMs === 0}
+              flat
+            />
           ) : (
             <div className="text-sm text-secondary-text">
               {isPublicViewer ? "No live liquidity request." : "No liquidity request yet."}
             </div>
           )}
-          {isOwnerViewer && !liquidityRequestContent && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handleOpenRequestClick}
-                disabled={!vaultId || connectingWallet || ownerLoading}
-                aria-busy={connectingWallet || undefined}
-              >
-                Open request
-              </Button>
-            </div>
+          {currentTermsError && (
+            <p className="text-sm text-red-600" role="alert">
+              {currentTermsError}
+            </p>
           )}
         </FlatSection>
 
@@ -1230,7 +1260,7 @@ export default function VaultPage() {
 
         {showLiquidationProgress && (
           <FlatSection
-            title="Liquidation in progress"
+            title="Liquidation"
           >
             <LiquidationStatusSection
               role={liquidationViewerRole}
