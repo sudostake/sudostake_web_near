@@ -9,6 +9,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onRepay?: () => void;
+  onBeginLiquidation?: () => void;
   vaultId: string;
   tokenSymbol?: string;
   totalDueLabel?: string;
@@ -21,6 +22,7 @@ export function PostExpiryOwnerDialog({
   open,
   onClose,
   onRepay,
+  onBeginLiquidation,
   vaultId,
   tokenSymbol,
   totalDueLabel,
@@ -38,6 +40,11 @@ export function PostExpiryOwnerDialog({
           <Button variant="secondary" className="w-full sm:w-auto" onClick={onClose} disabled={pending}>
             {STRINGS.close}
           </Button>
+          {onBeginLiquidation ? (
+            <Button variant="secondary" className="w-full sm:w-auto" onClick={onBeginLiquidation} disabled={pending}>
+              {pending ? STRINGS.processing : STRINGS.beginLiquidation}
+            </Button>
+          ) : null}
           <Button className="w-full sm:w-auto" onClick={onRepay} disabled={pending}>
             {STRINGS.ownerRepayNow}
           </Button>

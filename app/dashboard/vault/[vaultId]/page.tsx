@@ -701,9 +701,6 @@ export default function VaultPage() {
   const pageBody = isPublicViewer
     ? publicViewBody
     : "Manage balances, collateral, and request terms.";
-  const ownerRepayDetail = remainingMs !== null && remainingMs > 0
-    ? `Repay before ${liquidationStartLabel ?? "the deadline"} to avoid liquidation.`
-    : "Repay now before liquidation begins.";
   const delegatedNearLabel = delegationsLoading
     ? "Loading delegated balance..."
     : delegationsError
@@ -984,6 +981,92 @@ export default function VaultPage() {
     router.replace(fallbackBackHref);
   }, [fallbackBackHref, returnHref, router]);
 
+  const currentTermsCaption = liquidityRequestContent
+    ? liquidationActive
+      ? "Original loan terms shown for reference while liquidation runs."
+      : vaultState === "active" && remainingMs === 0
+        ? isOwnerViewer
+          ? "Deadline passed. Choose repayment or liquidation."
+          : isAcceptedLenderViewer
+            ? "Deadline passed. Liquidation can begin now."
+            : "Deadline passed."
+        : undefined
+    : undefined;
+
+  const currentTermsActions = (
+    <>
+      {isOwnerViewer && !liquidityRequestContent && (
+        <Button
+          onClick={handleOpenRequestClick}
+          size="sm"
+          disabled={!vaultId || connectingWallet || ownerLoading}
+          aria-busy={connectingWallet || undefined}
+        >
+          Open request
+        </Button>
+      )}
+      {vaultState === "pending" && isOwnerViewer && liquidityRequestContent && (
+        <Button
+          variant="secondary"
+          onClick={() => void handleCancelRequest()}
+          size="sm"
+          disabled={!vaultId || connectingWallet || ownerLoading || cancelPending}
+          aria-busy={cancelPending || undefined}
+        >
+          {cancelPending ? "Cancelling..." : "Cancel request"}
+        </Button>
+      )}
+      {vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest && (
+        <>
+          <Button
+            type="button"
+            onClick={() => setRepayOpen(true)}
+            size="sm"
+            disabled={processPending}
+          >
+            {STRINGS.ownerRepayNow}
+          </Button>
+          {remainingMs === 0 && (
+            <Button
+              type="button"
+              onClick={() => void handleProcessClaims()}
+              variant="secondary"
+              size="sm"
+              disabled={processPending}
+              aria-busy={processPending ? true : undefined}
+            >
+              {processPending ? STRINGS.processing : STRINGS.beginLiquidation}
+            </Button>
+          )}
+        </>
+      )}
+      {vaultState === "active" && isAcceptedLenderViewer && !liquidationActive && remainingMs === 0 && (
+        <Button
+          type="button"
+          onClick={() => void handleProcessClaims()}
+          size="sm"
+          disabled={processPending}
+          aria-busy={processPending ? true : undefined}
+        >
+          {processPending ? STRINGS.processing : STRINGS.beginLiquidation}
+        </Button>
+      )}
+    </>
+  );
+  const hasCurrentTermsActions = Boolean(
+    (isOwnerViewer && !liquidityRequestContent) ||
+      (vaultState === "pending" && isOwnerViewer && liquidityRequestContent) ||
+      (vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest) ||
+      (vaultState === "active" && isAcceptedLenderViewer && !liquidationActive && remainingMs === 0)
+  );
+
+  const currentTermsError =
+    vaultState === "pending" && isOwnerViewer
+      ? cancelError
+      : vaultState === "active" && !liquidationActive && (isOwnerViewer || isAcceptedLenderViewer) && remainingMs === 0
+        ? processError
+        : null;
+
   return (
     <main id="main" className="min-h-screen bg-background">
       <Container className="space-y-10 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
@@ -1064,80 +1147,27 @@ export default function VaultPage() {
 
         <FlatSection
           title="Current terms"
+          caption={currentTermsCaption}
+          actions={hasCurrentTermsActions ? currentTermsActions : undefined}
         >
           {liquidityRequestContent ? (
-            <div className="space-y-3">
-              <CurrentRequestPanel
-                content={liquidityRequestContent}
-                active={vaultState === "active"}
-                showTimeline={vaultState === "active" && !liquidationActive && remainingMs !== null}
-                countdownLabel={formattedCountdown}
-                expired={remainingMs === 0}
-                flat
-              />
-              {vaultState === "active" && isPublicViewer && !liquidationActive && remainingMs !== null && (
-                <ActionRow
-                  title={isAcceptedLenderViewer ? "What next" : "Loan countdown"}
-                  detail={
-                    remainingMs > 0
-                      ? isAcceptedLenderViewer
-                        ? `Liquidation opens in ${formattedCountdown}. If the loan is not repaid, you can begin liquidation after ${liquidationStartLabel}.`
-                        : `Liquidation can begin in ${formattedCountdown} if the loan is not repaid. Deadline: ${liquidationStartLabel}.`
-                      : isAcceptedLenderViewer
-                        ? "Repayment window ended. You can begin liquidation now."
-                      : "Repayment window ended. Liquidation can begin now."
-                  }
-                />
-              )}
-              {vaultState === "active" && isOwnerViewer && !liquidationActive && liquidityRequest && (
-                <ActionRow
-                  title="Repay now"
-                  detail={ownerRepayDetail}
-                  action={
-                    <Button
-                      type="button"
-                      onClick={() => setRepayOpen(true)}
-                      variant="primary"
-                      size="sm"
-                    >
-                      {STRINGS.ownerRepayNow}
-                    </Button>
-                  }
-                />
-              )}
-              {vaultState === "pending" && isOwnerViewer && (
-                <div className="flex flex-col items-start gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => void handleCancelRequest()}
-                    disabled={!vaultId || connectingWallet || ownerLoading || cancelPending}
-                    aria-busy={cancelPending || undefined}
-                  >
-                    {cancelPending ? "Cancelling..." : "Cancel request"}
-                  </Button>
-                  {cancelError && (
-                    <p className="text-sm text-secondary-text" role="alert">
-                      {cancelError}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
+            <CurrentRequestPanel
+              content={liquidityRequestContent}
+              active={vaultState === "active"}
+              showTimeline={vaultState === "active" && !liquidationActive && remainingMs !== null}
+              countdownLabel={formattedCountdown}
+              expired={remainingMs === 0}
+              flat
+            />
           ) : (
             <div className="text-sm text-secondary-text">
               {isPublicViewer ? "No live liquidity request." : "No liquidity request yet."}
             </div>
           )}
-          {isOwnerViewer && !liquidityRequestContent && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handleOpenRequestClick}
-                disabled={!vaultId || connectingWallet || ownerLoading}
-                aria-busy={connectingWallet || undefined}
-              >
-                Open request
-              </Button>
-            </div>
+          {currentTermsError && (
+            <p className="text-sm text-red-600" role="alert">
+              {currentTermsError}
+            </p>
           )}
         </FlatSection>
 
