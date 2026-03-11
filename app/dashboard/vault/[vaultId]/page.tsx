@@ -12,6 +12,7 @@ import { RepayLoanDialog } from "@/app/components/dialogs/RepayLoanDialog";
 import { RequestLiquidityDialog } from "@/app/components/dialogs/RequestLiquidityDialog";
 import { WithdrawDialog } from "@/app/components/dialogs/WithdrawDialog";
 import { UndelegateDialog } from "@/app/components/dialogs/UndelegateDialog";
+import { ClaimUnstakedDialog } from "@/app/components/dialogs/ClaimUnstakedDialog";
 import { CurrentRequestPanel } from "./components/CurrentRequestPanel";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAcceptLiquidityRequest } from "@/hooks/useAcceptLiquidityRequest";
@@ -149,6 +150,8 @@ export default function VaultPage() {
   const [withdrawOpen, setWithdrawOpen] = React.useState(false);
   const [undelegateOpen, setUndelegateOpen] = React.useState(false);
   const [undelegateValidator, setUndelegateValidator] = React.useState("");
+  const [claimUnstakedOpen, setClaimUnstakedOpen] = React.useState(false);
+  const [claimUnstakedValidator, setClaimUnstakedValidator] = React.useState("");
   const [withdrawAsset, setWithdrawAsset] = React.useState<"NEAR" | "USDC">("NEAR");
   const [connectingWallet, setConnectingWallet] = React.useState(false);
   const [balanceVersion, setBalanceVersion] = React.useState(0);
@@ -591,6 +594,13 @@ export default function VaultPage() {
     setVaultVersion((current) => current + 1);
   }, [refetchDelegations]);
 
+  const handleClaimUnstakedSuccess = React.useCallback(() => {
+    showToast(`Unstaked ${NATIVE_TOKEN} moved back into the vault.`, { variant: "success" });
+    refetchNearBalance();
+    refetchDelegations();
+    setBalanceVersion((current) => current + 1);
+  }, [refetchDelegations, refetchNearBalance]);
+
   const viewerMode = !signedAccountId
     ? "guest"
     : ownerLoading
@@ -828,6 +838,24 @@ export default function VaultPage() {
     setUndelegateValidator(validator);
     setUndelegateOpen(true);
   }, [connectWallet, liquidationActive, owner, signedAccountId, vaultId, vaultState]);
+
+  const handleClaimUnstakedClick = React.useCallback((validator: string) => {
+    if (!vaultId) return;
+    if (liquidationActive) {
+      showToast(STRINGS.claimDisabledLiquidation, { variant: "info" });
+      return;
+    }
+    if (!signedAccountId) {
+      connectWallet();
+      return;
+    }
+    if (owner && signedAccountId !== owner) {
+      showToast(`Only the vault owner can withdraw unstaked ${NATIVE_TOKEN} back to the vault.`, { variant: "info" });
+      return;
+    }
+    setClaimUnstakedValidator(validator);
+    setClaimUnstakedOpen(true);
+  }, [connectWallet, liquidationActive, owner, signedAccountId, vaultId]);
 
   const handleOpenRequestClick = React.useCallback(() => {
     if (!vaultId) return;
@@ -1301,7 +1329,7 @@ export default function VaultPage() {
             </p>
           ) : delegationEntries.length > 0 ? (
             isOwnerViewer ? (
-              <DelegationsActionsProvider value={{ onUndelegate: handleUndelegateClick }}>
+              <DelegationsActionsProvider value={{ onUndelegate: handleUndelegateClick, onUnclaimUnstaked: handleClaimUnstakedClick }}>
                 <DelegationsSummary entries={delegationEntries} flat />
               </DelegationsActionsProvider>
             ) : (
@@ -1456,6 +1484,13 @@ export default function VaultPage() {
         balance={undelegateBalance}
         loading={delegationsLoading}
         onSuccess={handleUndelegateSuccess}
+      />
+      <ClaimUnstakedDialog
+        open={claimUnstakedOpen}
+        onClose={() => setClaimUnstakedOpen(false)}
+        vaultId={vaultId}
+        validator={claimUnstakedValidator}
+        onSuccess={handleClaimUnstakedSuccess}
       />
     </main>
   );

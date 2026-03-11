@@ -10,7 +10,7 @@ import { useVaultDelegations } from "@/hooks/useVaultDelegations";
 import { Button } from "@/app/components/ui/Button";
 
 /**
- * Dialog for claiming unstaked NEAR tokens from a vault contract for a validator.
+ * Dialog for withdrawing matured unstaked NEAR from a validator back into the vault.
  */
 export function ClaimUnstakedDialog({
   open,
@@ -47,8 +47,8 @@ export function ClaimUnstakedDialog({
       onSuccess?.();
       resetAndClose();
     } catch (e: unknown) {
-      console.warn("Claim unstaked failed", e);
-      const msg = error ?? "Claim unstaked failed. Please try again.";
+      console.warn("Withdraw unstaked failed", e);
+      const msg = error ?? "Withdraw unstaked failed. Please try again.";
       setLocalError(msg);
     }
   };
@@ -57,7 +57,7 @@ export function ClaimUnstakedDialog({
     <Modal
       open={open}
       onClose={resetAndClose}
-      title={`Claim unstaked ${NATIVE_TOKEN}`}
+      title={`Withdraw unstaked ${NATIVE_TOKEN} to vault`}
       disableBackdropClose={pending}
       footer={
         <div className="flex items-center justify-end gap-2">
@@ -65,20 +65,26 @@ export function ClaimUnstakedDialog({
             Cancel
           </Button>
           <Button onClick={confirm} disabled={pending}>
-            {pending ? "Claiming..." : "Continue"}
+            {pending ? "Withdrawing..." : "Continue"}
           </Button>
         </div>
       }
     >
       <div className="space-y-4">
+        <p className="text-sm text-secondary-text">
+          This moves matured unstaked {NATIVE_TOKEN} from the validator back into your vault&apos;s available balance.
+        </p>
         <div className="text-sm text-secondary-text">
           Validator: <span className="font-mono text-foreground" title={validator}>{validator}</span>
         </div>
         <div className="text-sm">
-          <span className="text-secondary-text mr-1">Amount to claim:</span>
+          <span className="text-secondary-text mr-1">Amount returning to vault:</span>
           <span className="font-mono font-medium">
             {loading ? "…" : claimDisplay ?? `0 ${NATIVE_TOKEN}`}
           </span>
+        </div>
+        <div className="text-sm text-secondary-text">
+          Vault destination: <span className="font-mono text-foreground" title={vaultId}>{vaultId}</span>
         </div>
         {(localError || error) && (
           <div className="text-xs text-red-500">{localError ?? error}</div>
