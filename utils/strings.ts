@@ -174,7 +174,7 @@ export const STRINGS = {
   statusWithdrawable: "Ready to withdraw",
   statusUnstaking: "Unstaking",
   statusActive: "Active",
-  claimAction: "Claim",
+  claimAction: "Withdraw unstaked",
   delegateAction: "Delegate",
   undelegateAction: "Undelegate",
   // Generic labels

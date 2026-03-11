@@ -12,7 +12,7 @@
 
 ## Owner controls
 - Manage vault funds: deposit, withdraw, transfer ownership.
-- Manage delegations: delegate, undelegate, claim unstaked (subject to state restrictions).
+- Manage delegations: delegate, undelegate, and withdraw matured unstaked NEAR from a validator back into the vault (subject to state restrictions).
 - Open request when idle.
 - Cancel request while pending.
 - Repay while active and before liquidation has started.
