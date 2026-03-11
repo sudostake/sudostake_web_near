@@ -1149,15 +1149,6 @@ export default function VaultPage() {
               </Button>
               <Button
                 variant="secondary"
-                onClick={handleDelegateClick}
-                className="w-full lg:w-auto"
-                disabled={!vaultId || connectingWallet || ownerLoading}
-                aria-busy={connectingWallet || undefined}
-              >
-                {`Delegate ${NATIVE_TOKEN}`}
-              </Button>
-              <Button
-                variant="secondary"
                 onClick={() => handleWithdrawClick("NEAR")}
                 className="w-full lg:w-auto"
                 disabled={!vaultId || connectingWallet || ownerLoading}
@@ -1320,6 +1311,19 @@ export default function VaultPage() {
 
         <FlatSection
           title={isPublicViewer ? "Validator collateral" : "Validator positions"}
+          actions={
+            isOwnerViewer ? (
+              <Button
+                variant="secondary"
+                onClick={handleDelegateClick}
+                size="sm"
+                disabled={!vaultId || connectingWallet || ownerLoading}
+                aria-busy={connectingWallet || undefined}
+              >
+                {`Delegate ${NATIVE_TOKEN}`}
+              </Button>
+            ) : undefined
+          }
         >
           {delegationsLoading ? (
             <p className="text-sm text-secondary-text">Loading delegations...</p>
