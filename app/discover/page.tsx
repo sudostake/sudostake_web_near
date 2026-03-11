@@ -27,49 +27,43 @@ export default function DiscoverPage() {
   }, [connecting, signIn]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden pb-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[-34vh] h-[62vh] bg-[radial-gradient(ellipse_at_top,rgba(15,118,110,0.2),transparent_68%)]"
-      />
-      <Container className="relative pt-8 sm:pt-10 lg:pt-12">
-        <main id="main" className="space-y-5">
-          <header className="surface-card rounded-3xl px-5 py-6 shadow-card-subtle sm:px-6 sm:py-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-2">
-                <h1 className="text-[clamp(1.75rem,3.4vw,2.35rem)] font-semibold leading-tight text-foreground">
-                  Open lending opportunities
-                </h1>
-                <p className="max-w-2xl text-sm text-secondary-text">
-                  See what you lend, what you get back, how long it takes, and what collateral backs each loan.
-                </p>
-              </div>
-              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
-                {signedAccountId ? (
-                  <Link href={APP_ROUTES.dashboard.href} className="w-full sm:w-auto">
-                    <Button size="sm" variant="secondary" className="w-full sm:w-auto">
-                      Dashboard
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    className="w-full sm:w-auto"
-                    onClick={onConnect}
-                    disabled={connecting}
-                    aria-busy={connecting || undefined}
-                  >
-                    {connecting ? "Opening wallet..." : "Connect wallet"}
-                  </Button>
-                )}
-              </div>
+    <main id="main" className="min-h-screen bg-background">
+      <Container className="space-y-6 pt-8 pb-16 sm:pt-10 sm:pb-20 lg:pt-12">
+        <header className="space-y-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-2">
+              <h1 className="text-[clamp(1.8rem,3.2vw,2.4rem)] font-semibold leading-tight text-foreground">
+                Requests to fund
+              </h1>
+              <p className="max-w-2xl text-sm text-secondary-text">
+                Review open requests and fund the ones you want to back.
+              </p>
             </div>
-          </header>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              {signedAccountId ? (
+                <Link href={APP_ROUTES.dashboard.href} className="w-full sm:w-auto">
+                  <Button size="sm" variant="secondary" className="w-full sm:w-auto">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="w-full sm:w-auto"
+                  onClick={onConnect}
+                  disabled={connecting}
+                  aria-busy={connecting || undefined}
+                >
+                  {connecting ? "Opening wallet..." : "Connect wallet"}
+                </Button>
+              )}
+            </div>
+          </div>
+        </header>
 
-          <PendingRequestsList factoryId={factoryId} />
-        </main>
+        <PendingRequestsList factoryId={factoryId} />
       </Container>
-    </div>
+    </main>
   );
 }

@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react";
 import { Card } from "@/app/components/ui/Card";
-import { Badge } from "@/app/components/ui/Badge";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Big from "big.js";
@@ -71,18 +70,20 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
       className="block focus:outline-none"
       aria-label={`Review opportunity to lend ${amountDisplay} and receive ${repayDisplay} back in ${durationDisplay}`}
     >
-      <Card className="group rounded-2xl p-4 transition-colors duration-150 hover:border-foreground/25 focus-visible:border-primary/40">
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-lg font-semibold text-foreground">Lend {amountDisplay}</p>
-            <Badge variant={aprLabel === "—" ? "neutral" : "success"} className="justify-center">
-              {aprLabel === "—" ? "Return unavailable" : `${aprLabel} APR`}
-            </Badge>
+      <Card className="group rounded-app-lg border-2 p-4 transition-colors duration-150 hover:border-foreground/25 focus-visible:border-primary/40 sm:p-5">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-1">
+              <p className="text-lg font-semibold text-foreground">Lend {amountDisplay}</p>
+              <p className="text-sm text-secondary-text">Repay {repayDisplay} in {durationDisplay}</p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-[0.65rem] font-medium uppercase tracking-[0.08em] text-secondary-text">APR</p>
+              <p className="font-mono text-sm font-semibold text-foreground">{aprLabel}</p>
+            </div>
           </div>
 
-          <p className="text-sm text-secondary-text">Get {repayDisplay} back in {durationDisplay}</p>
-
-          <div className="space-y-1.5">
+          <div className="grid gap-3 text-sm sm:grid-cols-2">
             <DetailRow
               label="Borrower"
               value={ownerLabel}
@@ -91,10 +92,6 @@ export function PendingRequestCard({ item, factoryId, tokenSymbol, tokenDecimals
             />
             <DetailRow label="Collateral" value={collateralDisplay} />
           </div>
-
-          <span className="inline-flex text-xs font-medium text-primary transition group-hover:text-primary">
-            Review opportunity
-          </span>
         </div>
       </Card>
     </Link>
@@ -113,17 +110,17 @@ function DetailRow({
   mono?: boolean;
 }) {
   return (
-    <p className="text-sm text-secondary-text">
-      <span className="font-medium text-secondary-text">{label}</span>{" "}
-      <span
+    <div className="space-y-1">
+      <p className="text-[0.65rem] font-medium uppercase tracking-[0.08em] text-secondary-text">{label}</p>
+      <p
         className={[
-          "text-foreground",
+          "text-sm text-foreground",
           mono ? "break-all font-mono" : "break-words font-semibold",
         ].join(" ")}
         title={title ?? value}
       >
         {value}
-      </span>
-    </p>
+      </p>
+    </div>
   );
 }
