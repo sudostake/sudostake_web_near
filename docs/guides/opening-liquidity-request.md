@@ -5,29 +5,30 @@
 - Requirement: owner wallet connected, vault created, enough staked NEAR for collateral.
 - Result: request moves to `pending` and appears in Discover.
 
-## What this dialog does today
-- Token is fixed to the default USDC for the active network.
-- You set: amount, interest, collateral, and duration.
-- The app validates token storage registration for the vault before submission.
-- Duration is used as the loan term after the request is accepted.
+## Before you start
+- Requests use the default USDC token for the active network.
+- You choose the amount, interest, collateral, and duration.
+- The app checks storage registration before submission.
+- The duration becomes the loan term after a lender accepts the request.
 
-## Steps
+## Do this
 1. Open your vault page.
-2. In the liquidity section, click `Open request`.
+2. Click `Open request` in the liquidity section.
 3. If prompted, register the vault with the token.
-4. Fill in request values: amount, interest, collateral (NEAR), and duration (days).
-5. Click `Continue` and approve `request_liquidity` in wallet.
-6. Wait for indexing.
+4. Enter the amount, interest, collateral in NEAR, and duration in days.
+5. Click `Continue`.
+6. Approve `request_liquidity` in your wallet.
+7. Wait for indexing to finish.
 
-## After submission
-- Vault state becomes `pending`.
-- Discover shows the request fields (`Amount`, `Interest`, `Repay`, `Term`, `Collateral`, `Est. APR`).
-- As owner, you can cancel while still pending.
+## Check it worked
+- The vault state changes to `pending`.
+- The request appears in Discover with `Amount`, `Interest`, `Repay`, `Term`, `Collateral`, and `Est. APR`.
+- As the owner, you can still cancel the request while it is pending.
 
-## Common issues
-- Collateral too high: reduce collateral or increase staked NEAR.
-- Storage not registered: run registration prompt and retry.
-- Request not visible yet: wait for indexing or retry.
+## If it fails
+- Collateral too high: lower the collateral amount or add more staked NEAR.
+- Storage not registered: complete the registration prompt and retry.
+- Request not visible yet: wait for indexing, then refresh or retry.
 
 ## Next
 - [Fund a liquidity request (lender flow)](./fund-liquidity-request.md)
