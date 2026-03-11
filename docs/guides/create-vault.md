@@ -12,7 +12,7 @@
 
 ## Steps
 1. Open `/dashboard`.
-2. Click `Create new vault`.
+2. Click `New vault` in the header area, or `Create vault` from the vault tools area.
 3. Review the one-time cost in the dialog.
 4. Click `Create Vault` and approve in wallet.
 5. Wait for indexing to complete.

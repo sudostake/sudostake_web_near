@@ -5,7 +5,7 @@ import { Input } from "@/app/components/ui/Input";
 import { Card } from "@/app/components/ui/Card";
 
 export type DocLink = { title: string; href: string; description?: string };
-export type Section = { id: string; title: string; items: DocLink[] };
+export type Section = { id: string; title: string; description?: string; items: DocLink[] };
 
 // Keep this component very simple: filter sections by a basic search and render anchors.
 
@@ -70,7 +70,12 @@ export default function DocsIndexClient({ sections }: { sections: Section[] }) {
         <div className="flex-1 space-y-8">
           {filtered.map((s) => (
             <section key={s.id} id={s.id}>
-              <h2 className="mb-3 text-xl font-semibold">{s.title}</h2>
+              <div className="mb-3 space-y-1">
+                <h2 className="text-xl font-semibold">{s.title}</h2>
+                {s.description ? (
+                  <p className="max-w-3xl text-sm text-secondary-text">{s.description}</p>
+                ) : null}
+              </div>
               <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {s.items.map((item) => (
                   <li key={item.href}>

@@ -1,35 +1,28 @@
-# Vault actions
+# Vault page
 
 ## TL;DR
-- The vault page is the main operating screen for borrowing and repayment.
-- Actions shown depend on your role (`owner`, `activeLender`, `potentialLender`, `guest`) and vault state.
+- The vault page is the main screen for one vault.
+- Actions depend on your role (`owner`, `activeLender`, `potentialLender`, `guest`) and the vault state.
 - Core states are `idle`, `pending`, and `active`.
 
-## State flow
-- `idle`: owner can open a new request.
-- `pending`: request is open; owner can cancel; potential lender can accept.
-- `active`: loan funded; owner can repay; lender can process claims after expiry when claimable.
+## What each state means
 
-## Owner controls
-- Manage vault funds: deposit, withdraw, transfer ownership.
-- Manage delegations: delegate, undelegate, and withdraw matured unstaked NEAR from a validator back into the vault (subject to state restrictions).
-- Open request when idle.
-- Cancel request while pending.
-- Repay while active and before liquidation has started.
-- Start liquidation/claim processing after expiry.
+| State | What it means | Owner can do | Lender can do |
+| --- | --- | --- | --- |
+| `idle` | No open request | Manage funds and delegations, open a request | View only |
+| `pending` | Request is waiting for funding | Cancel the request | Accept the request if eligible |
+| `active` | Loan has been funded | Repay before liquidation, handle expiry flow | Process claims after expiry when available |
 
-## Lender controls
-- Accept request when pending and eligible.
-- Process claims after expiry when available.
+Some fund and delegation actions are restricted while a request is pending or active.
 
-## Shared page sections
-- Vault header (account, balances, state).
-- Available balance and delegations.
-- Liquidity request card and dialogs.
-- Liquidation status section when liquidation exists.
+## Main sections on the page
+- Vault header with account, balances, and state.
+- Available balance and delegation details.
+- Liquidity request card and related dialogs.
+- Liquidation section when liquidation data exists.
 
-## Indexing
-After state-changing actions, the app re-indexes vault data. If indexing fails, the app shows a blocking `Retry indexing` modal.
+## What happens after an action
+The app re-indexes vault data after state-changing actions. If indexing fails, the page shows a blocking `Retry indexing` modal.
 
 ## Related
 - [Viewer roles](../reference/roles.md)

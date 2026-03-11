@@ -1,32 +1,33 @@
 # Architecture overview
 
 ## TL;DR
-- NEAR is source of truth for vault state.
-- Firestore mirrors vault state for fast UI reads.
-- Next.js API routes handle RPC proxying, reads, and indexing writes.
+- NEAR is the source of truth for vault state.
+- Firestore stores a fast read model for the UI.
+- Next.js API routes proxy chain calls and trigger indexing.
 
 ## Main pieces
-- Frontend (Next.js app): landing, dashboard, discover, vault, docs.
-- Wallet layer: NEAR Wallet Selector for sign-in and transaction approval.
-- Data mirror: Firestore documents keyed by factory ID and vault ID.
-- API layer: `/api/rpc`, list/read routes, and indexing routes.
+- Frontend: landing page, dashboard, discover, vault pages, and docs.
+- Wallet layer: NEAR Wallet Selector handles sign-in and transaction approval.
+- Firestore: indexed vault documents for fast list and detail views.
+- API layer: `/api/rpc` plus app routes for reads and indexing.
 
-## Runtime flow
-1. User opens app and optionally connects wallet.
-2. By default, UI subscribes to Firestore for vaults, pending requests, and lender positions.
-3. User approves a transaction in wallet.
-4. App triggers indexing via `/api/index_vault` (and best-effort enqueue).
-5. Firestore subscribers update Discover, dashboard, and vault views.
+## How data moves
+1. User opens the app and optionally connects a wallet.
+2. The UI reads Firestore for vaults, pending requests, and lender positions.
+3. The user signs a transaction in their wallet.
+4. The app calls `/api/index_vault` and related indexing helpers.
+5. Firestore updates flow back into Discover, dashboard, and vault pages.
 
-## Why this model
-- Fast list/detail rendering from indexed documents.
-- Clear wallet approval boundary for state-changing actions.
-- Deterministic recovery path through retry indexing.
+## Why it works this way
+- Firestore makes list and detail screens fast.
+- Wallet approval stays the clear boundary for state changes.
+- Retry indexing gives the app a recovery path after sync failures.
 
-## Data source notes
-- Pending requests and lender positions can use REST polling.
+## When data looks stale
+- Pending requests and lender positions can switch to REST polling.
 - Enable polling with `NEXT_PUBLIC_PENDING_USE_API=true` and `NEXT_PUBLIC_LENDING_USE_API=true`.
-- Vault detail views always subscribe directly to Firestore.
+- Vault detail pages always read from Firestore.
+- If indexing fails after a transaction, the app shows a retry modal.
 
 ## Related docs
 - [Playbook](./playbook.md)

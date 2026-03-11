@@ -5,6 +5,11 @@
 - Browsing Discover and reading vault pages works without signing in.
 - Supported wallets are configured via NEAR Wallet Selector.
 
+## What changes after connect
+- The navigation switches from public routes to your signed-in workspace.
+- `Dashboard` becomes available in the header.
+- Vault pages can now show owner or lender actions based on your account.
+
 ## Supported wallets
 - Bitte
 - Meteor
@@ -18,7 +23,7 @@
 - Account-specific lists in dashboard (`Vaults`, `Positions`).
 
 ## Where to connect
-- Landing page borrower CTA.
+- Landing page `Connect wallet`.
 - Top navigation `Connect Wallet`.
 - Vault page prompt when viewing while signed out.
 
