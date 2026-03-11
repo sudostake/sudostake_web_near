@@ -1135,22 +1135,24 @@ export default function VaultPage() {
 
           {isOwnerViewer && (
             <div
-              className="grid w-full gap-2 min-[420px]:grid-cols-2 lg:flex lg:flex-wrap"
+              className="grid w-full gap-2 sm:grid-cols-3"
               role="group"
-              aria-label="Vault owner actions"
+              aria-label="Vault balance actions"
             >
               <Button
                 onClick={handleDepositClick}
-                className="w-full min-[420px]:col-span-2 lg:w-auto"
+                size="sm"
+                className="w-full"
                 disabled={!vaultId || connectingWallet}
                 aria-busy={connectingWallet || undefined}
               >
-                {signedAccountId ? `Deposit ${NATIVE_TOKEN}` : connectingWallet ? "Opening wallet..." : `Connect wallet to deposit ${NATIVE_TOKEN}`}
+                {`Deposit ${NATIVE_TOKEN}`}
               </Button>
               <Button
                 variant="secondary"
                 onClick={() => handleWithdrawClick("NEAR")}
-                className="w-full lg:w-auto"
+                size="sm"
+                className="w-full"
                 disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
@@ -1159,7 +1161,8 @@ export default function VaultPage() {
               <Button
                 variant="secondary"
                 onClick={() => handleWithdrawClick("USDC")}
-                className="w-full min-[420px]:col-span-2 lg:w-auto"
+                size="sm"
+                className="w-full"
                 disabled={!vaultId || connectingWallet || ownerLoading}
                 aria-busy={connectingWallet || undefined}
               >
